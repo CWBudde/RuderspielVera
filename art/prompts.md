@@ -120,7 +120,8 @@ backdrop as described. PORTRAIT orientation, aspect 3:4. No text anywhere.
 ## Boats (Objects)
 
 Side views kept failing on direction and oar counts; these high-angle entries produced the picks
-(1x, 2x, 4x). The 8x entry has not produced an image yet (.20 disk full).
+(1x, 2x, 4x). The 8x pick came from a top-down (bird's-eye) entry; high-angle and side views drew too many oars
+per side.
 
 **boat-1x** [objects] single scull
 
@@ -182,22 +183,24 @@ percent empty water left and right.
 **boat-8x** [objects] sweep eight with coxswain
 
 ```text
-A sweep-rowing eight with coxswain on the Maschsee seen from a HIGH ANGLE, looking down at about 50
-degrees from above and slightly to the side, so that both sides of the long boat and all oars are
-clearly visible, spread out like the legs of a water strider. Exactly 8 rowers in one long shell, each
-holding ONE oar with both hands, plus a coxswain. The oars alternate sides seat by seat: rower 1 left,
-rower 2 right, rower 3 left, rower 4 right, and so on, so exactly 4 oars stick out on the left-hand
-side and exactly 4 on the right-hand side, 8 in total, never more than 4 on one side; the riggers
-alternate the same way. Each oar starts at the oarlock beside its own rower, the oars on one side are
-parallel and evenly spaced and never cross each other or the hull. All eight oars identical (same
-length, dark shaft, same white blades), all blades at the water surface in the same stroke phase. The
-boat travels diagonally toward the upper LEFT of the canvas: the pointed bow leads at the upper left,
-a white wake trails behind the stern toward the lower right. The coxswain (cap, navy jacket) sits at
-the stern end at the lower right, facing the crew and the bow; all eight rowers face the coxswain,
-backs to the bow. Long yellow-green shell, rowers in plain navy tank tops with no marks. Blue water
-with sparkles all around, a strip of tree-lined shore along the top edge. LANDSCAPE, aspect 3:2 (for
-example 1536 x 1024 pixels). The whole boat with its oars fits inside the canvas and spans at most 80
-percent of its width.
+A sweep-rowing eight with coxswain on the Maschsee, seen from DIRECTLY ABOVE (bird's-eye, top-down
+view, like a drone photo), so the whole boat and every oar can be counted. The long narrow shell lies
+diagonally across the canvas: the pointed bow at the upper LEFT, the stern at the lower RIGHT, a white
+wake trailing behind the stern toward the lower right corner. Eight rowers sit in a single line along
+the centre of the shell, plus a coxswain in the stern.
+SWEEP OARS: each rower holds ONE single oar with both hands on its handle. The oar goes from the
+rower's hands out over ONE side of the boat only to the oarlock on that rower's rigger, then out to
+the blade in the water; it never crosses the hull and never sticks out on the other side. The sides
+alternate seat by seat like the teeth of a zip: rower 1 (at the bow) left, rower 2 right, rower 3 left,
+rower 4 right, rower 5 left, rower 6 right, rower 7 left, rower 8 right. Exactly 4 oars on each side,
+8 in total; on each side the 4 oars are parallel, evenly spaced, one seat gap between neighbours, all
+the same length, dark shafts and identical white blades, all blades touching the water at the same
+moment. Every rower faces the STERN (lower right): knees and feet toward the bow, backs toward the bow.
+The coxswain (navy cap, navy jacket, no oar) sits at the very stern end at the lower right, behind
+rower 8, facing the crew and the bow. Yellow-green shell, rowers in plain navy tank tops with no
+marks. Deep blue water with sparkles and small waves all around; no shore, no buildings, no other
+boats. LANDSCAPE, aspect 3:2 (for example 1536 x 1024 pixels). The boat with its oars spans at most 85
+percent of the canvas width and fits fully inside the canvas.
 ```
 
 ## Board (Board)
@@ -232,6 +235,11 @@ and gold clouds. Keep the upper third of the canvas calm, open sky with only sof
 buildings or towers reaching into it (a title will be overlaid later by the game; paint no text
 yourself). The Neues Rathaus sits in the middle band, below the upper third. LANDSCAPE, wide aspect 16:9 (for example 1792 x 1008
 pixels).
+OAR CHECK: every oar belongs to exactly one rower. Each rower holds two oar handles, one in each hand;
+one oar goes out to the near side and one to the far side from the rigger beside that rower. So there
+are exactly 4 near-side blades and exactly 4 far-side blades, each far blade directly opposite the near
+blade of the same rower; no blade in front of the first rower or behind the last rower, no loose or
+floating oar, no blade without a shaft leading to a rower's hands.
 ```
 
 ## Icons (Icons)

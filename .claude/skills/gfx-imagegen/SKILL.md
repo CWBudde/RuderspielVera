@@ -147,6 +147,10 @@ For a club member with a photo in `reference-rowers/<Name>.jpg`:
    `art/gen/$GEN_DIR/people/<id>-entry.txt`, fill the placeholders (name, age group, gender, what to
    keep from the photo after looking at it yourself: face shape, hair colour and style, glasses, skin
    tone, age) and assemble with kind `portraits`. Group `people`, try ids `people-<card-id>01`, `…01b`.
+   `gen.sh` takes the group from the id up to its LAST "-", so a hyphenated card id (`people-lea-b01`)
+   lands in its own folder (`art/gen/<date>/people-lea/`); that is harmless, pass the prompt from
+   wherever you wrote it. Photo names with spaces (`Herr Sack.jpg`) break `gen.sh` (scp and `-i`):
+   attach a symlink named after the card id from a scratch dir instead (a link, not a copy).
 3. **Attachments**: image 1 the photo ("LIKENESS REFERENCE: keep this person's recognisable features;
    do not copy the photo's background, clothing, lighting or framing"), image 2 `examples/vera-karte.png`
    ("STYLE AND BACKDROP REFERENCE ONLY: do not copy the face, hair or features of the person in it, nor
@@ -154,7 +158,8 @@ For a club member with a photo in `reference-rowers/<Name>.jpg`:
 4. **Review**: Read the photo and the result side by side. Reject (new id, at most 3 tries per person)
    for wrong apparent age, lost likeness, text in the image, the photo's background or clothing copied,
    or a broken composition (person in the right half, cropped head).
-5. **Install** with `fit -bits 6 … web/src/assets/art/people/<card-id>.png 600 800` and add a manifest
+5. **Install** with `fit -q 78 … web/src/assets/art/people/<card-id>.jpg 600 800` (JPEG like the other art,
+   ~80-120 KB) and add a manifest
    line with artKey `people/<card-id>`. `Art.tsx` uses `people/<card id>` for a rower or trainer card
    when it exists and falls back to the generic artKey portrait otherwise.
 
@@ -191,5 +196,12 @@ deploy such a build.
   mixed blade colours, boats filling 90 % of the width. State the direction (bow left, rowers face
   right), the oar count per side, "identical, parallel, same stroke phase", and a maximum width; a high
   camera angle (about 50 degrees down) makes the oars on both sides visible and countable.
+- **Sweep eights work top-down**: high-angle and side views drew 5+ oars per side, sculling pairs
+  or poles across the hull. A bird's-eye (drone) view with "one oar per rower, out over ONE side,
+  alternating like the teeth of a zip, rower 1 left, rower 2 right …" gave 4 + 4 on the first try. Do
+  not attach a sculling boat as a reference for a sweep boat: the model copies the oar pairs.
+- **Edit-by-reference does not fix details**: attaching a near-miss (title-01d) and asking to remove
+  one blade returned the same picture unchanged. Regenerate with a counting rule in the entry
+  ("OAR CHECK: … no blade in front of the first or behind the last rower") instead.
 - **`ssh` eats stdin**: in a `while read` loop over ids, run `gen.sh … </dev/null`, or the loop ends
   after the first image.

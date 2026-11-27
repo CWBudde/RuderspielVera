@@ -22,4 +22,5 @@ members from private photos, git-ignored and local only (not to be published wit
 | boat-1x        | web/src/assets/art/boat-1x.jpg        | 900x600   | boats-b1x01d  | thread-01a21e70-6b30-75a0-9c3f-e6c6527d9515 | 2026-11-27 | high angle, 2 oars                       |
 | boat-2x        | web/src/assets/art/boat-2x.jpg        | 900x600   | boats-b2x01d  | thread-01a21e6f-ac3d-7c22-8387-4c0ed4ac419f | 2026-11-27 | high angle, 2+2 oars                     |
 | boat-4x        | web/src/assets/art/boat-4x.jpg        | 900x600   | boats-b4x01e  | thread-01a21e74-a99f-7773-ad02-9ba33c25886c | 2026-11-27 | high angle, 4+4 oars                     |
-| title          | web/src/assets/art/title.jpg          | 1600x900  | title-01d     | exec-00600c58-e2e0-4002-8d17-1731193fe311   | 2026-11-27 | JPEG q78; flaw: one extra far-side blade |
+| boat-8x        | web/src/assets/art/boat-8x.jpg        | 900x600   | boats-b8x02b  | exec-6f459c50-0a8d-4f42-ac6e-9568f64ffb50   | 2026-11-27 | top-down sweep eight, 4+4 alternating    |
+| title          | web/src/assets/art/title.jpg          | 1600x900  | title-02b     | exec-6e6fb6e6-2857-4460-bda8-0289062c3aae   | 2026-11-27 | JPEG q78; 4 near + 4 far blades          |

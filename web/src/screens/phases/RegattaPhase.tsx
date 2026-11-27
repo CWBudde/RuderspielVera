@@ -440,9 +440,14 @@ function LineupBuilder({
                 />
               )}
               {race.class === "8x" && (
-                <p className="mt-2 text-xs text-muted-foreground">
-                  Gemeinsamer Achter für alle Teams, Bootswert {race.fixedBoatValue ?? 0}.
-                </p>
+                <div className="mt-2 flex items-center gap-3">
+                  <div className="aspect-[3/2] w-24 shrink-0 overflow-hidden rounded-[8px] border-2 border-ink">
+                    <Art artKey="boat-8x" label="Achter" />
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    Gemeinsamer Achter für alle Teams, Bootswert {race.fixedBoatValue ?? 0}.
+                  </p>
+                </div>
               )}
 
               {(problems.length > 0 || filled > 0) && (
