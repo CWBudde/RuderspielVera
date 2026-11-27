@@ -11,8 +11,9 @@ import (
 // makes old decision logs replay differently (2: per-mille incidents, no Motivation training,
 // Hildesheim loan boats, Motivation weight 1 everywhere; 3: season-aware Ereignisse, the larger
 // event and Ereignis decks, trainer mood; 4: temporary Siegesmotivation instead of permanent Gold
-// motivation, weaker guest crews, shorter regular regattas).
-const SnapshotVersion = 4
+// motivation, weaker guest crews, shorter regular regattas; 5: Krebs chance scaled by boat size
+// and crew Technik, Seelenzwilling links a teammate, Wanderfahrt for Junioren only).
+const SnapshotVersion = 5
 
 // Snapshot is everything needed to rebuild a game with engine.Replay: config (incl. seed),
 // tokens and the decision log. It is the on-disk file of the HTTP server and the localStorage

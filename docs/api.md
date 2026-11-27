@@ -72,7 +72,9 @@ resolves and opens the next phase.
 - Saved games (`gameservice.Snapshot`: server files, WASM localStorage) carry a `version`. It is
   bumped when a rule change makes old decision logs replay differently (2: per-mille incidents, no
   Motivation training, Hildesheim loan boats; 3: season-aware Ereignisse, larger event and Ereignis
-  decks, trainer mood; 4: temporary Siegesmotivation, weaker guest crews, shorter regular regattas).
+  decks, trainer mood; 4: temporary Siegesmotivation, weaker guest crews, shorter regular regattas;
+  5: Krebs chance scaled by boat size and crew Technik, Seelenzwilling links a teammate, Wanderfahrt
+  for Junioren only).
   Importing an older version fails with a German
   message ("Dieser Spielstand stammt aus einer älteren Spielversion …").
 - Bots: `internal/bot.Decide(g, playerID, personality, rng)` (`Taktiker` / `Bauchgefuehl`,
