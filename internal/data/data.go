@@ -154,6 +154,8 @@ type Competition struct {
 	Races    []Race             `json:"races,omitempty"`
 	Variants map[string][]Race  `json:"variants,omitempty"` // JTFO: variant key -> races
 	Notes    []string           `json:"notes,omitempty"`
+	// GuestOffset is added to the guest crews' stat level at this competition.
+	GuestOffset float64 `json:"guestOffset,omitempty"`
 }
 
 type Selection struct {
@@ -194,6 +196,42 @@ type Rules struct {
 	GoldMotivation int               `json:"goldMotivation"`
 	LoanBoatValue  int               `json:"loanBoatValue"`
 	JTFOVariants   map[string]string `json:"jtfoVariants"` // player count -> variant key
+	// BoatValuePerSeat: a boat's value counts once per seat (1x ×1, 2x ×2, 4x ×4) instead of once.
+	BoatValuePerSeat bool `json:"boatValuePerSeat"`
+	// TrainerPerSeat: a trainer effect counts once per seat instead of once per boat.
+	TrainerPerSeat bool `json:"trainerPerSeat"`
+	// BoatValueFactor and TrainerFactor multiply boat values and trainer effects (0 means 1).
+	BoatValueFactor int    `json:"boatValueFactor"`
+	TrainerFactor   int    `json:"trainerFactor"`
+	Guests          Guests `json:"guests"`
+}
+
+// BoatScale is how often a boat value counts in a race with the given number of seats.
+func (r Rules) BoatScale(seats int) int { return scale(r.BoatValuePerSeat, r.BoatValueFactor, seats) }
+
+// TrainerScale is how often a trainer effect counts in a race with the given number of seats.
+func (r Rules) TrainerScale(seats int) int { return scale(r.TrainerPerSeat, r.TrainerFactor, seats) }
+
+func scale(perSeat bool, factor, seats int) int {
+	if factor == 0 {
+		factor = 1
+	}
+	if perSeat {
+		return factor * seats
+	}
+	return factor
+}
+
+// Guests configures the guest crews (Gastmannschaften): one fixed-strength crew per contested
+// race that takes a place like a player but never scores medal points.
+type Guests struct {
+	Enabled bool   `json:"enabled"`
+	Name    string `json:"name"`
+	// StatLevel is the value of every stat of a guest rower by the race's oldest allowed age group.
+	StatLevel map[string]float64 `json:"statLevel"`
+	// GrowthPerStation is added to every stat level per calendar station (season progress).
+	GrowthPerStation float64 `json:"growthPerStation"`
+	BoatValue        int     `json:"boatValue"` // value of the guest boat (scaled like player boats)
 }
 
 // Data is the complete, validated rule data set. Treat it as read-only.

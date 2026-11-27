@@ -155,6 +155,24 @@ func (d *Data) Validate() error {
 		}
 	}
 
+	// Balancing rules.
+	if d.Rules.BoatValueFactor < 0 || d.Rules.TrainerFactor < 0 {
+		add("rules: boatValueFactor and trainerFactor must be >= 0")
+	}
+	if gs := d.Rules.Guests; gs.Enabled {
+		if gs.Name == "" {
+			add("rules: guests need a name")
+		}
+		for _, a := range validAges {
+			if gs.StatLevel[a] <= 0 {
+				add("rules: guests statLevel for %s must be > 0", a)
+			}
+		}
+		if gs.GrowthPerStation < 0 || gs.BoatValue < 0 {
+			add("rules: guests growthPerStation and boatValue must be >= 0")
+		}
+	}
+
 	// Calendar and competitions.
 	if len(d.Calendar) != 52 {
 		add("calendar: want 52 stations, got %d", len(d.Calendar))

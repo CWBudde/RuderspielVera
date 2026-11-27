@@ -34,3 +34,9 @@ resolves and opens the next phase.
   in races with `loanBoat: true` (JTFO: a loan boat is used).
 - Engine errors: `engine.ErrStalePhase` → 409; `*engine.ValidationError` (German `Msg`) → 400.
 - Hidden info: other players' regatta decisions are never in a view before resolution.
+- Guest crews (Gastmannschaften, `rules.json` `guests`): every contested race has one extra
+  `EntryResult` with `playerId: ""` and `guest: "<name>"`. It is ranked like a player entry (it
+  can take gold or silver away) but never scores points; it has no incident. At JTFO the guest
+  appears only in the `team` row.
+- Bots: `internal/bot.Decide(g, playerID, personality, rng)` (`Taktiker` / `Bauchgefuehl`,
+  `bot.PersonalityFor(seat)`); the bot RNG is separate from the game RNG.

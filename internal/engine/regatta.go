@@ -227,6 +227,11 @@ func (g *Game) resolveCompetition(p *phase) {
 			}
 			rr.Entries = append(rr.Entries, er)
 		}
+		if len(rr.Entries) > 0 && !cs.team() {
+			if ge, ok := g.guestEntry(cs, race); ok {
+				rr.Entries = append(rr.Entries, ge)
+			}
+		}
 		rankEntries(rr.Entries)
 		if cs.team() {
 			for i := range rr.Entries {
@@ -264,6 +269,19 @@ func (g *Game) resolveCompetition(p *phase) {
 				tr.Entries = append(tr.Entries, acc.entry)
 			}
 		}
+		if len(tr.Entries) > 0 {
+			guest, any := EntryResult{Guest: g.d.Rules.Guests.Name}, false
+			for _, race := range cs.races {
+				if ge, ok := g.guestEntry(cs, race); ok {
+					guest.Crew += ge.Crew
+					guest.Total += ge.Total
+					any = true
+				}
+			}
+			if any {
+				tr.Entries = append(tr.Entries, guest)
+			}
+		}
 		rankEntries(tr.Entries)
 		for _, er := range tr.Entries {
 			g.awardMedal(er, "", outcomes)
@@ -280,6 +298,9 @@ func (g *Game) resolveCompetition(p *phase) {
 // records rower outcomes for missions.
 func (g *Game) awardMedal(er EntryResult, class BoatClass, outcomes map[string]rowerOutcome) {
 	pl := g.playerByID(er.PlayerID)
+	if pl == nil {
+		return // guest crew: takes the place, scores nothing
+	}
 	switch er.Medal {
 	case MedalGold:
 		pl.gold++
@@ -303,8 +324,11 @@ func (g *Game) logResult(res CompetitionResult) {
 	for _, rr := range res.Races {
 		var parts []string
 		for _, er := range rr.Entries {
-			pl := g.playerByID(er.PlayerID)
-			s := fmt.Sprintf("%s %d", pl.name, er.Total)
+			name := er.Guest
+			if pl := g.playerByID(er.PlayerID); pl != nil {
+				name = pl.name
+			}
+			s := fmt.Sprintf("%s %d", name, er.Total)
 			if er.Medal != MedalNone {
 				s = medalNames[er.Medal] + ": " + s
 			}

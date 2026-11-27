@@ -3,6 +3,8 @@ package engine
 import (
 	"math"
 	"slices"
+
+	"ruderspiel/internal/data"
 )
 
 // scoreEntry computes an entry without incident:
@@ -21,13 +23,13 @@ func (g *Game) scoreEntry(cs *compState, race RaceSpec, re raceEntry) EntryResul
 		}
 	}
 	er.Crew = int(math.Round(crew))
-	er.BoatValue = g.boatValue(cs, race, re.boat)
+	er.BoatValue = g.boatValue(cs, race, re.boat) * g.d.Rules.BoatScale(race.Seats)
 	if re.boat != nil {
 		er.BoatID = re.boat.id
 	}
 	if re.trainer != nil {
 		er.TrainerID = re.trainer.def.ID
-		er.Trainer = trainerEffect(re.trainer, cs)
+		er.Trainer = trainerEffect(re.trainer, cs) * g.d.Rules.TrainerScale(race.Seats)
 	}
 	er.Total = er.Crew + er.BoatValue + er.Trainer + er.EventBonus
 	return er
@@ -145,4 +147,50 @@ func EstimateEntry(g *Game, playerID, raceID string, rowerIDs []string, boatID, 
 		re.rowers = append(re.rowers, r)
 	}
 	return g.scoreEntry(cs, *race, re).Total
+}
+
+// ageRank ranks age groups from youngest to oldest.
+var ageRank = map[AgeGroup]int{AgeKinder: 0, AgeB: 1, AgeA: 2}
+
+// GuestScore returns the total of the guest crew (Gastmannschaft) of a race, or false when the
+// rules have no guest crews. A guest rower has every stat at the level of the race's oldest
+// allowed age group plus season growth; its boat is valued like a player boat. The score is
+// deterministic, so bots and the UI can compute it in advance.
+func GuestScore(d *data.Data, c *data.Competition, station int, race RaceSpec) (float64, bool) {
+	gc := d.Rules.Guests
+	if !gc.Enabled || len(race.Ages) == 0 {
+		return 0, false
+	}
+	oldest := race.Ages[0]
+	for _, a := range race.Ages {
+		if ageRank[a] > ageRank[oldest] {
+			oldest = a
+		}
+	}
+	level := gc.StatLevel[string(oldest)] + gc.GrowthPerStation*float64(station) + c.GuestOffset
+	wsum := 0.0
+	for _, st := range data.StatNames {
+		wsum += c.Weights[st]
+	}
+	crew := math.Round(float64(race.Seats) * wsum * level)
+	boat := 0
+	switch race.Class {
+	case BoatErgo:
+	case Boat8x:
+		if sb := d.SharedBoat(); sb != nil {
+			boat = sb.Value
+		}
+	default:
+		boat = gc.BoatValue
+	}
+	return crew + float64(boat*d.Rules.BoatScale(race.Seats)), true
+}
+
+// guestEntry builds the result row of a race's guest crew.
+func (g *Game) guestEntry(cs *compState, race RaceSpec) (EntryResult, bool) {
+	total, ok := GuestScore(g.d, cs.def, cs.station, race)
+	if !ok {
+		return EntryResult{}, false
+	}
+	return EntryResult{Guest: g.d.Rules.Guests.Name, Crew: int(total), Total: int(total)}, true
 }

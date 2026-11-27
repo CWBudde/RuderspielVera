@@ -3,6 +3,7 @@ package engine
 import (
 	"encoding/json"
 	"errors"
+	"math"
 	"math/rand/v2"
 	"reflect"
 	"strings"
@@ -483,6 +484,20 @@ func TestJTFOTeamScore(t *testing.T) {
 	}
 	golds := 0
 	for _, te := range team.Entries {
+		if te.Guest != "" {
+			want := 0
+			for _, race := range p.comp.races {
+				ge, _ := g.guestEntry(p.comp, race)
+				want += ge.Total
+			}
+			if te.Total != want || te.PlayerID != "" {
+				t.Errorf("guest team %+v, want total %d", te, want)
+			}
+			if te.Medal == MedalGold {
+				golds++
+			}
+			continue
+		}
 		sum := 0
 		for _, rr := range res.Races[:len(res.Races)-1] {
 			for _, e := range rr.Entries {
@@ -690,5 +705,40 @@ func TestOtherPlayerCounts(t *testing.T) {
 		if len(jtfo.Races) != wantBoats+1 {
 			t.Errorf("%d players: JTFO has %d races", n, len(jtfo.Races))
 		}
+	}
+}
+
+func TestGuestCrews(t *testing.T) {
+	g := newGame(t, 3)
+	g.station = g.competitionIndex("bremen")
+	g.openCompetition()
+	cs := g.phase.comp
+	race := *cs.race("4x-b-w")
+	gc := g.d.Rules.Guests
+	if !gc.Enabled {
+		t.Skip("guest crews disabled in rules.json")
+	}
+	got, ok := GuestScore(g.d, cs.def, cs.station, race)
+	wsum := 0.0
+	for _, w := range cs.def.Weights {
+		wsum += w
+	}
+	level := gc.StatLevel["b"] + gc.GrowthPerStation*float64(cs.station) + cs.def.GuestOffset
+	want := math.Round(4*wsum*level) + float64(gc.BoatValue*g.d.Rules.BoatScale(4))
+	if !ok || got != want {
+		t.Fatalf("guest score %v (%v), want %v", got, ok, want)
+	}
+	// A lone entry far below the guest crew gets silver, the guest takes first place but no points.
+	pl := g.players[0]
+	before := g.points(pl)
+	es := []EntryResult{{PlayerID: pl.id, Total: int(want) - 50}}
+	ge, _ := g.guestEntry(cs, race)
+	es = append(es, ge)
+	rankEntries(es)
+	for _, e := range es {
+		g.awardMedal(e, race.Class, map[string]rowerOutcome{})
+	}
+	if es[0].Guest == "" || es[0].Place != 1 || es[1].Medal != MedalSilver || g.points(pl) != before+g.d.Rules.MedalPoints.Silver {
+		t.Errorf("ranking with guest: %+v, points %d -> %d", es, before, g.points(pl))
 	}
 }

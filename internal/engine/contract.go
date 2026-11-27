@@ -127,7 +127,7 @@ type BoatView struct {
 type TrainerEffect struct {
 	Weather Weather `json:"weather,omitempty"` // empty = applies regardless of weather
 	Context string  `json:"context,omitempty"` // "", "ergo", "sprint", "langstrecke"
-	Value   int     `json:"value"`             // per boat / ergo entry
+	Value   int     `json:"value"`             // per seat (rules.json trainerPerSeat) or per boat
 }
 
 type TrainerView struct {
@@ -228,7 +228,8 @@ type DraftCard struct {
 // ---------- results / log ----------
 
 type EntryResult struct {
-	PlayerID   string       `json:"playerId"`
+	PlayerID   string       `json:"playerId"`        // empty for a guest crew
+	Guest      string       `json:"guest,omitempty"` // display name of a guest crew (Gastmannschaft)
 	RowerIDs   []string     `json:"rowerIds"`
 	BoatID     string       `json:"boatId,omitempty"`
 	TrainerID  string       `json:"trainerId,omitempty"`

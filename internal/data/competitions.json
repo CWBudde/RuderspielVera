@@ -3,6 +3,7 @@
     "name": "Regatta Bremen",
     "kind": "regatta",
     "water": true,
+    "guestOffset": -2.5,
     "weights": {
       "geschwindigkeit": 1,
       "motivation": 0.5,
@@ -92,6 +93,7 @@
     "kind": "ergocup",
     "context": "ergo",
     "water": false,
+    "guestOffset": 5.5,
     "weights": {
       "kraft": 2,
       "motivation": 1
@@ -176,6 +178,7 @@
     "kind": "regatta",
     "context": "langstrecke",
     "water": true,
+    "guestOffset": -4,
     "weights": {
       "ausdauer": 2,
       "motivation": 1
@@ -539,6 +542,7 @@
     "kind": "ergocup",
     "context": "ergo",
     "water": false,
+    "guestOffset": 1.5,
     "weights": {
       "kraft": 2,
       "motivation": 1
@@ -623,6 +627,7 @@
     "kind": "ergocup",
     "context": "ergo",
     "water": false,
+    "guestOffset": 6,
     "weights": {
       "kraft": 2,
       "motivation": 1
@@ -756,6 +761,7 @@
     "kind": "regatta",
     "context": "sprint",
     "water": true,
+    "guestOffset": -1.5,
     "weights": {
       "geschwindigkeit": 2,
       "kraft": 1
@@ -940,6 +946,7 @@
     "name": "Verbandsregatta I",
     "kind": "regatta",
     "water": true,
+    "guestOffset": -3.5,
     "weights": {
       "geschwindigkeit": 1,
       "motivation": 0.5,

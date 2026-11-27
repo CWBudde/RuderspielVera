@@ -15,5 +15,10 @@
   "medalPoints": {"gold": 2, "silver": 1},
   "goldMotivation": 1,
   "loanBoatValue": 2,
-  "jtfoVariants": {"2": "C", "3": "B", "4": "A"}
+  "jtfoVariants": {"2": "C", "3": "B", "4": "A"},
+  "boatValuePerSeat": true,
+  "trainerPerSeat": true,
+  "boatValueFactor": 2,
+  "trainerFactor": 1,
+  "guests": {"enabled": true, "name": "Gastmannschaft", "statLevel": {"kinder": 15, "b": 19, "a": 23}, "growthPerStation": 0.3, "boatValue": 5}
 }
