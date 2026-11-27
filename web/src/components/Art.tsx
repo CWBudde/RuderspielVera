@@ -1,8 +1,11 @@
 import { useState } from "react";
 import { cn } from "@/lib/utils";
+import { PEOPLE_MANIFEST } from "@/components/peopleArt";
+
+export { PEOPLE_MANIFEST };
 
 /**
- * Art manifest: every `src/assets/art/<artKey>.webp` (or .png) is picked up at build time.
+ * Art manifest: every `src/assets/art/<artKey>.{webp,png,jpg}` is picked up at build time.
  * Dropping a file with the right name replaces the placeholder — no code change needed.
  */
 const files = import.meta.glob<string>("../assets/art/*.{webp,png,jpg}", {
@@ -16,30 +19,29 @@ export const ART_MANIFEST: Record<string, string> = Object.fromEntries(
 );
 
 /**
- * Named portraits: `src/assets/art/people/<card id>.png`, likenesses of real club members
- * (git-ignored, local only). An empty or missing directory yields an empty manifest.
+ * Generic art keys without an own file, mapped to the numbered portraits that fit them
+ * (trainer-1/-3 are men, trainer-2/-4 women). Unlisted keys fall back to their family.
  */
-const peopleFiles = import.meta.glob<string>("../assets/art/people/*.{webp,png,jpg}", {
-  eager: true,
-  query: "?url",
-  import: "default",
-});
-
-export const PEOPLE_MANIFEST: Record<string, string> = Object.fromEntries(
-  Object.entries(peopleFiles).map(([path, url]) => [path.replace(/^.*\/(.+)\.\w+$/, "$1"), url]),
-);
+const VARIANTS: Record<string, string[]> = {
+  "trainer-m": ["trainer-1", "trainer-3"],
+  "trainer-w": ["trainer-2", "trainer-4"],
+};
 
 /**
- * Resolves an artKey to a file. Exact match first; otherwise a numbered variant of the same
- * family is picked deterministically by `seed` (e.g. "trainer-m" -> one of "trainer-1..4").
+ * Resolves an artKey to a file. Exact match first; otherwise one of the key's variants (or the
+ * numbered files of its family, e.g. "boat-x" -> "boat-1..n") is picked deterministically by
+ * `seed`, which should be the card id so a card always shows the same face.
  */
 export function artUrl(key: string | undefined, seed = ""): string | undefined {
   if (!key) return undefined;
   if (ART_MANIFEST[key]) return ART_MANIFEST[key];
   const family = key.split("-")[0];
-  const variants = Object.keys(ART_MANIFEST)
-    .filter((k) => new RegExp(`^${family}-\\d+$`).test(k))
-    .sort();
+  let variants = (VARIANTS[key] ?? []).filter((k) => ART_MANIFEST[k]);
+  if (variants.length === 0) {
+    variants = Object.keys(ART_MANIFEST)
+      .filter((k) => new RegExp(`^${family}-\\d+$`).test(k))
+      .sort();
+  }
   if (variants.length === 0) return undefined;
   return ART_MANIFEST[variants[hash(seed + key) % variants.length]];
 }
@@ -58,7 +60,7 @@ interface ArtProps {
 
 /** Image for an artKey, falling back to a drawn placeholder (portrait, boat or trainer). */
 export function Art({ artKey, label, className, alt, thumb, cardId }: ArtProps) {
-  const url = (cardId && PEOPLE_MANIFEST[cardId.replace(/-zwilling$/, "")]) || artUrl(artKey, label);
+  const url = (cardId && PEOPLE_MANIFEST[cardId.replace(/-zwilling$/, "")]) || artUrl(artKey, cardId ?? label);
   const [failed, setFailed] = useState(false);
   if (url && !failed) {
     return (

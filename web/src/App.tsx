@@ -1,11 +1,12 @@
-import { useEffect, useState } from "react";
+import { lazy, Suspense, useEffect, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
 import { ApiError, createGame, isMockRequested, loadSession, saveSession, type Session } from "@/api/client";
 import { GameProvider, useGameQuery } from "@/hooks/game";
 import { StartScreen } from "@/screens/StartScreen";
-import { AppShell } from "@/screens/AppShell";
+// The game screens load after the start screen (route-level code split).
+const AppShell = lazy(() => import("@/screens/AppShell").then((m) => ({ default: m.AppShell })));
 import { Button } from "@/components/ui/button";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 
@@ -72,7 +73,9 @@ function GameRoot({ session, onLeave, onLost }: { session: Session; onLeave: () 
     return (
       <ErrorBoundary onHome={onLeave}>
         <GameProvider session={session} view={q.data} onLeave={onLeave}>
-          <AppShell />
+          <Suspense fallback={<Loading />}>
+            <AppShell />
+          </Suspense>
         </GameProvider>
       </ErrorBoundary>
     );
@@ -95,6 +98,10 @@ function GameRoot({ session, onLeave, onLost }: { session: Session; onLeave: () 
       </div>
     );
   }
+  return <Loading />;
+}
+
+function Loading() {
   return (
     <div className="grid min-h-dvh place-items-center" role="status">
       <Loader2 className="size-8 animate-spin text-navy" aria-label="Spiel wird geladen" />

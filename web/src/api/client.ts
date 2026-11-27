@@ -1,6 +1,5 @@
 import type { CatalogView, CompetitionResult, Decision, GameView, LogEntry } from "./types.gen";
 import { readStorage, writeStorage } from "@/lib/storage";
-import { mockApi } from "./mock";
 import { ApiError } from "./errors";
 import { wasmBackend } from "./wasmTransport";
 
@@ -118,8 +117,18 @@ const httpBackend: Backend = {
 // VITE_TRANSPORT=wasm (static GitHub Pages build): the engine runs in the browser as WebAssembly.
 const realBackend: Backend = import.meta.env.VITE_TRANSPORT === "wasm" ? wasmBackend : httpBackend;
 
+// The in-browser mock (?mock=1) is loaded on demand, so it stays out of the main bundle.
+const loadMock = () => import("./mock").then((m) => m.mockApi);
+const lazyMock: Backend = {
+  createGame: async (req) => (await loadMock()).createGame(req),
+  getGame: async (s) => (await loadMock()).getGame(s),
+  submitDecision: async (s, d) => (await loadMock()).submitDecision(s, d),
+  getLog: async (s) => (await loadMock()).getLog(s),
+  getCatalog: async () => (await loadMock()).getCatalog(),
+};
+
 function backendFor(mock: boolean): Backend {
-  return mock ? mockApi : realBackend;
+  return mock ? lazyMock : realBackend;
 }
 
 export async function createGame(playerName: string, seed: number | undefined, mock: boolean) {

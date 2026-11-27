@@ -1,10 +1,11 @@
-import { useEffect, useRef, useState } from "react";
+import { lazy, Suspense, useEffect, useRef, useState } from "react";
 import { Flag, LogOut, Map as MapIcon, Medal, Menu, Users } from "lucide-react";
 import { useGame } from "@/hooks/game";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Emblem, MedalIcon, StationIcon } from "@/components/icons";
-import { DevPhaseSwitcher } from "@/components/DevPhaseSwitcher";
+// Mock-mode tool: loaded only when a mock game is open (keeps the mock out of the main bundle).
+const DevPhaseSwitcher = lazy(() => import("@/components/DevPhaseSwitcher").then((m) => ({ default: m.DevPhaseSwitcher })));
 import { stationColor } from "@/lib/labels";
 import { cn } from "@/lib/utils";
 import { SeasonScreen } from "@/screens/SeasonScreen";
@@ -97,7 +98,11 @@ export function AppShell() {
               <h1 className="truncate num text-2xl leading-tight">{station?.name}</h1>
             </div>
             <MedalTally gold={you.gold} silver={you.silver} points={you.points} light compact />
-            {session.mock && <DevPhaseSwitcher />}
+            {session.mock && (
+              <Suspense fallback={null}>
+                <DevPhaseSwitcher />
+              </Suspense>
+            )}
             <Button
               variant="ghost"
               size="icon"

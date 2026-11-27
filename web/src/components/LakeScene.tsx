@@ -4,10 +4,10 @@ import { cn } from "@/lib/utils";
 
 /**
  * Maschsee mood illustration: sky, Neues Rathaus silhouette, tree line, water and a gliding
- * four. Replaced by `assets/art/title-splash.webp` once that art lands.
+ * four. Replaced by `assets/art/title.jpg` when present.
  */
 export function LakeScene({ className, children }: { className?: string; children?: ReactNode }) {
-  const splash = artUrl("title-splash");
+  const splash = artUrl("title");
   return (
     <div className={cn("relative overflow-hidden", className)}>
       {splash ? (
