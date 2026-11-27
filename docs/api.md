@@ -1,7 +1,15 @@
 # API contract (PoC)
 
 Source of truth for all JSON shapes: `internal/engine/contract.go`. TS types are generated from it
-into `web/src/api/types.gen.ts` (`just gen-types`). All UI-facing strings in views are German.
+into `web/src/api/types.gen.ts` (`just gen-types`).
+
+**Text is language-neutral** (see `docs/i18n.md`): the engine never sends sentences. Player-facing
+text is a `Msg` (`{"key": "log.draftPick", "args": {...}}`) in `log[].msg`, `phase.title`,
+`phase.prompt`, `competition.notes`, `activeEreignisse` and `ereignis.details`; the UI renders it per
+language. Data names (`name`, `description`, `ability`, `info`, `reward`, `text`, …) are German
+fallbacks only; the UI looks up the translated text by id (`station.id`, `competition.id`,
+`boat.defId`, `race.nameKey`, `mission.id`, `phase.selectionId`, `ereignis.id`, event `type`,
+trainer `id`).
 
 ## Endpoints
 
@@ -13,7 +21,8 @@ into `web/src/api/types.gen.ts` (`just gen-types`). All UI-facing strings in vie
 | GET    | `/api/games/{id}/log`       | bearer token                                                | `{"log": LogEntry[], "results": CompetitionResult[]}`                                                 |
 | GET    | `/api/catalog`              | –                                                           | `CatalogView` (`{"rowers", "boats", "trainers", "events": EventTypeView[]}`, from `engine.Catalog()`) |
 
-Errors: HTTP 4xx with `{"error": "<German message for the UI>"}`. A decision with a stale
+Errors: HTTP 4xx/5xx with `{"error": "<message key>", "msg": Msg}` (the wasm transport returns the
+same in its envelope). A decision with a stale
 `phaseId` returns 409.
 
 ## Phase model
@@ -33,7 +42,7 @@ resolves and opens the next phase.
 - Entries: `boatId` is empty for ergo races and the shared eight (`class: "8x"`), and may be empty
   in races with `loanBoat: true` (JTFO and Hildesheim: a loan boat is used; it is not an own boat,
   so any number of entries may use one).
-- Engine errors: `engine.ErrStalePhase` → 409; `*engine.ValidationError` (German `Msg`) → 400.
+- Engine errors: `engine.ErrStalePhase` → 409; `*engine.ValidationError` (a `Msg`) → 400.
 - Hidden info: other players' regatta decisions are never in a view before resolution.
 - Guest crews (Gastmannschaften, `rules.json` `guests`): every contested race has one extra
   `EntryResult` with `playerId: ""` and `guest: "<name>"`. It is ranked like a player entry (it
@@ -75,7 +84,6 @@ resolves and opens the next phase.
   decks, trainer mood; 4: temporary Siegesmotivation, weaker guest crews, shorter regular regattas;
   5: Krebs chance scaled by boat size and crew Technik, Seelenzwilling links a teammate, Wanderfahrt
   for Junioren only).
-  Importing an older version fails with a German
-  message ("Dieser Spielstand stammt aus einer älteren Spielversion …").
+  Importing an older version fails with `err.snapshotOld`.
 - Bots: `internal/bot.Decide(g, playerID, personality, rng)` (`Taktiker` / `Bauchgefuehl`,
   `bot.PersonalityFor(seat)`); the bot RNG is separate from the game RNG.

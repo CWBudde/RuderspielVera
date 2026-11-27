@@ -9,7 +9,10 @@ Multiplayer rowing-management game (board game + computer game). Rules draft:
 - `internal/engine/contract.go` is the JSON contract with the frontend; keep `docs/api.md` in sync and
   regenerate TS types with `just gen-types`.
 - Rule numbers live in `internal/data/*.json`, not in code.
-- UI text is German. Code, comments, docs and commit messages are English.
+- Player text is German (default) and English: UI text in `web/src/i18n/ui.*.ts`, engine messages in
+  `web/src/i18n/messages.*.ts`, data texts in `internal/data/*.json` + `internal/data/i18n/en.json`
+  (`just gen-i18n`). The engine emits message keys (`engine.Msg`), never sentences. See `docs/i18n.md`.
+- Code, comments, docs and commit messages are English.
 - Style references: `examples/` (vera-karte.png is the current card design). Generated art via the
   `gfx-imagegen` skill only; never run a local `codex`.
 - Tests: `just test` (Go), `cd web && pnpm build` (types + bundle).
