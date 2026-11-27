@@ -6,7 +6,12 @@
     "basketball": { "count": 5, "effect": { "motivation": 10 }, "label": "+10 Motivation" },
     "wanderfahrt": { "count": 5, "effect": { "ausdauer": 4, "motivation": 3 }, "label": "+4 Ausdauer, +3 Motivation" }
   },
-  "incidents": { "kenternBySeats": { "1": 20, "2": 10, "4": 5, "8": 2 }, "material": 30, "krebs": 150 },
+  "incidents": {
+    "kenternBySeats": { "1": 20, "2": 10, "4": 5, "8": 2 },
+    "material": 30,
+    "krebs": 150,
+    "krebsScaling": { "seatPercent": { "1": 100, "2": 115, "4": 130, "8": 150 }, "technikPerSeat": 14, "min": 20, "max": 450 }
+  },
   "krebsPenalty": 10,
   "weatherTable": ["regen", "hitze", "wind", "kaelte", "normal", "normal"],
   "eventCardsPerStation": [1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2],

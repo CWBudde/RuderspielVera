@@ -612,14 +612,31 @@ func (d *Data) validateDealRowers(p *problems) {
 }
 
 // validateIncidents checks the per-mille incident probabilities: a capsize value for every boat
-// size, and Kentern + Material + Krebs (also with Krebs / Material Ereignisse) must fit into one d1000.
+// size, the Krebs scaling, and Kentern + Material + Krebs (Krebs at its scaling cap, Material also
+// with Material Ereignisse) must fit into one d1000.
 func (d *Data) validateIncidents(p *problems) {
 	inc := d.Rules.Incidents
 	if inc.Material < 0 || inc.Krebs < 0 {
 		p.addf("rules: incident probabilities must be >= 0")
 	}
 
-	krebs, material := inc.Krebs, inc.Material
+	ks := inc.KrebsScaling
+	if ks.TechnikPerSeat <= 0 {
+		p.addf("rules: krebsScaling.technikPerSeat must be > 0")
+	}
+
+	if ks.Min < 0 || ks.Min > ks.Max {
+		p.addf("rules: krebsScaling needs 0 <= min <= max")
+	}
+
+	for _, seats := range []int{1, 2, 4, 8} {
+		if v, ok := ks.SeatPercent[seats]; !ok || v <= 0 {
+			p.addf("rules: krebsScaling.seatPercent needs a value > 0 for %d seats", seats)
+		}
+	}
+
+	// The scaling clamps every crew's Krebs chance to Max, whatever base an Ereignis sets.
+	krebs, material := ks.Max, inc.Material
 
 	for _, e := range d.Ereignisse {
 		if e.Effect != EffKrebsChance && e.Effect != EffMaterialChance {
@@ -630,9 +647,7 @@ func (d *Data) validateIncidents(p *problems) {
 			p.addf("ereignis %s: %s %d ‰ outside 0..1000", e.ID, e.Effect, e.Value)
 		}
 
-		if e.Effect == EffKrebsChance {
-			krebs = max(krebs, e.Value)
-		} else {
+		if e.Effect == EffMaterialChance {
 			material = max(material, e.Value)
 		}
 	}

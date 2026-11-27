@@ -480,10 +480,46 @@ func TestIncidentRules(t *testing.T) {
 		t.Errorf("material %d ‰, krebs %d ‰, want 30 / 150", inc.Material, inc.Krebs)
 	}
 
+	ks := inc.KrebsScaling
+	if ks.TechnikPerSeat != 14 || ks.Min != 20 || ks.Max != 450 || ks.SeatPercent[1] != 100 || ks.SeatPercent[8] != 150 {
+		t.Errorf("krebsScaling %+v, want perSeat 14, min 20, max 450, 1x 100 %%, 8x 150 %%", ks)
+	}
+
 	for v, s := range map[int]string{300: "30", 150: "15", 5: "0,5", 2: "0,2"} {
 		if got := perMilleText(v); got != s {
 			t.Errorf("perMilleText(%d) = %q, want %q", v, got, s)
 		}
+	}
+}
+
+func TestKrebsChance(t *testing.T) {
+	t.Parallel()
+
+	ks := data.KrebsScaling{SeatPercent: map[int]int{1: 100, 2: 115, 4: 130, 8: 150}, TechnikPerSeat: 14, Min: 20, Max: 450}
+	tests := []struct {
+		name                     string
+		base, seats, technik, want int
+	}{
+		{"1x at reference keeps base", 150, 1, 14, 150},
+		{"1x half reference doubles", 150, 1, 7, 300},
+		{"1x double reference halves", 150, 1, 28, 75},
+		{"8x at reference scales by seats", 150, 8, 112, 225},
+		{"4x at reference", 150, 4, 56, 195},
+		{"8x strong crew", 150, 8, 224, 113},
+		{"sum 0 hits max", 150, 1, 0, 450},
+		{"clamped to min", 50, 1, 60, 20},
+		{"Ereignis base with weak crew clamped to max", 300, 1, 8, 450},
+	}
+
+	for _, tt := range tests {
+		if got := krebsChance(tt.base, tt.seats, tt.technik, ks); got != tt.want {
+			t.Errorf("%s: krebsChance(%d, %d, %d) = %d, want %d", tt.name, tt.base, tt.seats, tt.technik, got, tt.want)
+		}
+	}
+
+	// Equally skilled crews: the bigger boat catches more crabs.
+	if one, eight := krebsChance(150, 1, 14, ks), krebsChance(150, 8, 112, ks); eight <= one {
+		t.Errorf("8x %d ‰ should exceed 1x %d ‰", eight, one)
 	}
 }
 

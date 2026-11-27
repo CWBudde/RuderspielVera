@@ -124,7 +124,7 @@ func (g *Game) applyCompetitionEreignisse(cs *compState) {
 		switch mod.Effect {
 		case data.EffKrebsChance:
 			cs.krebs = mod.Value
-			cs.notes = append(cs.notes, fmt.Sprintf("%s: Krebs-Wahrscheinlichkeit %s %%.", mod.Name, perMilleText(mod.Value)))
+			cs.notes = append(cs.notes, fmt.Sprintf("%s: Krebs-Grundwahrscheinlichkeit %s %%.", mod.Name, perMilleText(mod.Value)))
 		case data.EffMaterialChance:
 			cs.material = mod.Value
 			cs.notes = append(cs.notes, fmt.Sprintf("%s: Materialschaden-Wahrscheinlichkeit %s %%.",
@@ -378,7 +378,13 @@ func (g *Game) scoreRace(p *phase, race RaceSpec) RaceResult {
 		if cs.def.Water {
 			inc := g.d.Rules.Incidents
 
-			er.Incident = rollIncident(g.rng, inc.Kentern(race.Seats), cs.material, cs.krebs)
+			technik := 0
+			for _, r := range re.rowers {
+				technik += r.stat(StatTechnik)
+			}
+
+			krebs := krebsChance(cs.krebs, race.Seats, technik, inc.KrebsScaling)
+			er.Incident = rollIncident(g.rng, inc.Kentern(race.Seats), cs.material, krebs)
 			if er.Incident == IncidentKrebs {
 				er.Penalty = g.d.Rules.KrebsPenalty
 				er.Total -= er.Penalty

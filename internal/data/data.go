@@ -288,6 +288,21 @@ type Incidents struct {
 	KenternBySeats map[int]int `json:"kenternBySeats"`
 	Material       int         `json:"material"`
 	Krebs          int         `json:"krebs"`
+	// KrebsScaling turns the Krebs base (Krebs or an Ereignis value) into one crew's chance.
+	KrebsScaling KrebsScaling `json:"krebsScaling"`
+}
+
+// KrebsScaling makes the Krebs chance depend on boat size and crew Technik:
+//
+//	chance = clamp(round(base × SeatPercent[seats]/100 × TechnikPerSeat×seats / max(Σ Technik, 1)), Min, Max)
+//
+// More rowers catch more crabs (SeatPercent grows with the seats); a crew below the reference
+// Technik catches more, one above it fewer.
+type KrebsScaling struct {
+	SeatPercent    map[int]int `json:"seatPercent"`
+	TechnikPerSeat int         `json:"technikPerSeat"`
+	Min            int         `json:"min"`
+	Max            int         `json:"max"`
 }
 
 // Kentern is the capsize probability (‰) of a boat with the given number of seats.

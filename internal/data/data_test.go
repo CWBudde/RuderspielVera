@@ -149,6 +149,7 @@ func TestValidateIncidentsAndMotivation(t *testing.T) {
 
 	d.Rules.Incidents.KenternBySeats = map[int]int{1: 20, 2: 10, 4: 5, 3: 1}
 	d.Rules.Incidents.Material = 900
+	d.Rules.Incidents.KrebsScaling = KrebsScaling{SeatPercent: map[int]int{1: 100, 2: 100, 4: 100}, Min: 50, Max: 10}
 	d.Competitions["jtfo"].Weights = map[string]float64{"technik": 1}
 
 	err = d.Validate()
@@ -160,6 +161,9 @@ func TestValidateIncidentsAndMotivation(t *testing.T) {
 		"kenternBySeats needs a value >= 0 for 8 seats",
 		"unknown boat size 3",
 		"exceed 1000 ‰",
+		"technikPerSeat must be > 0",
+		"0 <= min <= max",
+		"seatPercent needs a value > 0 for 8 seats",
 		"competition jtfo: Motivation must count",
 	} {
 		if !strings.Contains(err.Error(), want) {
