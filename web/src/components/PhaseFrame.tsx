@@ -1,8 +1,7 @@
 import type { ReactNode } from "react";
 import { Dice5 } from "lucide-react";
 import { useGame } from "@/hooks/game";
-import { StationIcon } from "@/components/icons";
-import { stationColor } from "@/lib/labels";
+import { stationName } from "@/i18n/data";
 import { cn } from "@/lib/utils";
 import { t, tm } from "@/i18n";
 
@@ -24,23 +23,26 @@ export function PhaseFrame({
 }) {
   const { view } = useGame();
   const st = view.calendar[view.current];
-  const c = stationColor(st?.type ?? "setup");
+  const ownTitle = title !== stationName(st);
   const ereignisse = view.activeEreignisse ?? [];
   return (
     <div className={cn("flex flex-col", className)}>
       <header className="mb-3">
-        <div className="flex items-start gap-3">
-          <span
-            className="mt-0.5 hidden size-12 shrink-0 place-items-center rounded-full border-2 border-ink sm:grid"
-            style={{ background: c.bg, color: c.text }}
+        {/* The shell header already shows the station icon and name; repeat neither. Only a
+            phase with a title of its own (draft, swap, result …) gets a visible heading. */}
+        <h2 className={cn("num text-[2rem] leading-[0.95] text-ink sm:text-4xl", ownTitle ? "mb-1.5" : "sr-only")}>
+          {title}
+        </h2>
+        {prompt && (
+          <p
+            className={cn(
+              "max-w-prose leading-snug",
+              ownTitle ? "text-[15px] text-ink/80" : "text-base font-semibold text-ink/85 sm:text-lg",
+            )}
           >
-            <StationIcon type={st?.type ?? "setup"} name={st?.name} className="size-6" />
-          </span>
-          <div className="min-w-0 flex-1">
-            <h2 className="num text-[2rem] leading-[0.95] text-ink sm:text-4xl">{title}</h2>
-            {prompt && <p className="mt-1.5 max-w-prose text-[15px] leading-snug text-ink/80">{prompt}</p>}
-          </div>
-        </div>
+            {prompt}
+          </p>
+        )}
         {headerExtra}
         {ereignisse.length > 0 && (
           <ul className="mt-2 flex flex-wrap gap-1.5" aria-label={t("phase.activeEreignisse")}>

@@ -104,7 +104,7 @@ export function AppShell() {
                   {t("shell.stationLong", { n: view.current + 1, total: view.calendar.length })}
                 </span>
               </p>
-              <h1 className="truncate num text-2xl leading-tight">{stationName(station)}</h1>
+              <h1 className="line-clamp-2 num text-xl leading-none break-words sm:text-2xl sm:leading-tight">{stationName(station)}</h1>
             </div>
             <MedalTally gold={you.gold} silver={you.silver} points={you.points} light compact />
             <LanguageToggle className="hidden sm:flex" />
