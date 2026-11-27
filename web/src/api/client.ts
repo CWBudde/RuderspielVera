@@ -2,6 +2,7 @@ import type { CatalogView, CompetitionResult, Decision, GameView, LogEntry } fro
 import { readStorage, writeStorage } from "@/lib/storage";
 import { mockApi } from "./mock";
 import { ApiError } from "./errors";
+import { wasmBackend } from "./wasmTransport";
 
 export { ApiError };
 
@@ -114,8 +115,11 @@ const httpBackend: Backend = {
   getCatalog: () => request<Catalog>("/api/catalog"),
 };
 
+// VITE_TRANSPORT=wasm (static GitHub Pages build): the engine runs in the browser as WebAssembly.
+const realBackend: Backend = import.meta.env.VITE_TRANSPORT === "wasm" ? wasmBackend : httpBackend;
+
 function backendFor(mock: boolean): Backend {
-  return mock ? mockApi : httpBackend;
+  return mock ? mockApi : realBackend;
 }
 
 export async function createGame(playerName: string, seed: number | undefined, mock: boolean) {

@@ -80,12 +80,12 @@ func (c *client) create(seed uint64) createResponse {
 // (under the game lock), using only public engine API.
 func humanDecision(t *testing.T, s *Server, gameID, pid string, rng *mrand.Rand) engine.Decision {
 	t.Helper()
-	s.mu.RLock()
-	e := s.games[gameID]
-	s.mu.RUnlock()
-	e.mu.Lock()
-	defer e.mu.Unlock()
-	d, err := SimpleDecider(e.game, pid, 0, rng)
+	var d engine.Decision
+	err := s.Service().WithGame(gameID, func(g *engine.Game) error {
+		var err error
+		d, err = SimpleDecider(g, pid, 0, rng)
+		return err
+	})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -227,21 +227,5 @@ func TestPersistenceRoundTrip(t *testing.T) {
 	}
 	if !reflect.DeepEqual(before, after) {
 		t.Fatalf("view differs after reload (phase %s vs %s)", before.Phase.ID, after.Phase.ID)
-	}
-}
-
-func TestCleanName(t *testing.T) {
-	cases := map[string]string{
-		"":                              "Du",
-		"   ":                           "Du",
-		"  Vera  ":                      "Vera",
-		"Anna   Lena":                   "Anna Lena",
-		"Ruderin mit sehr langem Namen": "Ruderin mit sehr langem",
-		"ÄÖÜäöüßÄÖÜäöüßÄÖÜäöüßÄÖÜ": "ÄÖÜäöüßÄÖÜäöüßÄÖÜäöüßÄÖÜ",
-	}
-	for in, want := range cases {
-		if got := cleanName(in); got != want {
-			t.Errorf("cleanName(%q) = %q, want %q", in, got, want)
-		}
 	}
 }

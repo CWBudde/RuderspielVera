@@ -39,6 +39,26 @@ gen-types:
     go run github.com/gzuidhof/tygo@latest generate
 
 #################################
+# Static build (GitHub Pages, engine as WebAssembly)
+#################################
+
+# Build the engine + bots as WebAssembly into web/public (not committed)
+wasm:
+    mkdir -p web/public
+    GOOS=js GOARCH=wasm go build -ldflags="-s -w" -trimpath -o web/public/ruderspiel.wasm ./cmd/wasm
+    cp "$(go env GOROOT)/lib/wasm/wasm_exec.js" web/public/wasm_exec.js
+    @ls -l web/public/ruderspiel.wasm
+
+# Play a full game against the wasm build in Node
+wasm-smoke: wasm
+    node cmd/wasm/smoke.cjs web/public
+
+# Static SPA with the wasm transport into web/dist (+ 404.html SPA fallback)
+pages base="/RuderspielVera/": wasm
+    cd web && pnpm install --frozen-lockfile && VITE_TRANSPORT=wasm VITE_BASE={{base}} VITE_WASM_VERSION="$(cat public/ruderspiel.wasm public/wasm_exec.js | sha256sum | cut -c1-12)" pnpm build
+    cp web/dist/index.html web/dist/404.html
+
+#################################
 # Formatting & linting
 #################################
 

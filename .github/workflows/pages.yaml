@@ -1,0 +1,64 @@
+name: pages
+
+# Static build for GitHub Pages: the Go engine + bots run in the browser as WebAssembly.
+# Requires Settings -> Pages -> Source: "GitHub Actions".
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-go@v7
+        with:
+          go-version-file: go.mod
+          cache-dependency-path: go.mod
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: "24"
+          cache: pnpm
+          cache-dependency-path: web/pnpm-lock.yaml
+
+      - uses: extractions/setup-just@v3
+
+      - id: pages
+        uses: actions/configure-pages@v5
+
+      - name: Build wasm + static SPA
+        run: just pages "${{ steps.pages.outputs.base_path }}/"
+
+      - name: Smoke-test the wasm engine in Node
+        run: node cmd/wasm/smoke.cjs web/public
+
+      - uses: actions/upload-pages-artifact@v4
+        with:
+          path: web/dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

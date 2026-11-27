@@ -1,4 +1,4 @@
-package api
+package gameservice
 
 import (
 	mrand "math/rand/v2"
