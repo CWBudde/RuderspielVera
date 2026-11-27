@@ -81,7 +81,9 @@ export function StartScreen({ stored, mock, busy, onCreate, onResume }: Props) {
                 aria-invalid={!seedValid}
                 className="h-12 w-full rounded-xl border-2 border-ink bg-white px-3 text-base font-semibold tabular-nums outline-none focus-visible:ring-4 focus-visible:ring-lake/30"
               />
-              <p className="mt-1 text-sm text-muted-foreground">Gleicher Startwert, gleiche Kartenverteilung und Würfel.</p>
+              <p className="mt-1 text-sm text-muted-foreground">
+                Gleicher Startwert, gleiche Kartenverteilung und Würfel.
+              </p>
             </div>
           )}
 
@@ -90,7 +92,14 @@ export function StartScreen({ stored, mock, busy, onCreate, onResume }: Props) {
             {busy ? "Karten werden gemischt …" : "Neues Spiel gegen 2 Computer"}
           </Button>
           {stored && (
-            <Button type="button" variant="outline" size="lg" className="mt-3 w-full" onClick={onResume} disabled={busy}>
+            <Button
+              type="button"
+              variant="outline"
+              size="lg"
+              className="mt-3 w-full"
+              onClick={onResume}
+              disabled={busy}
+            >
               <RotateCcw />
               Spiel fortsetzen
             </Button>

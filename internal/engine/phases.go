@@ -2,6 +2,7 @@ package engine
 
 import (
 	"fmt"
+	"slices"
 	"strings"
 
 	"ruderspiel/internal/data"
@@ -40,12 +41,7 @@ type phase struct {
 }
 
 func (p *phase) isRequired(playerID string) bool {
-	for _, id := range p.required {
-		if id == playerID {
-			return true
-		}
-	}
-	return false
+	return slices.Contains(p.required, playerID)
 }
 
 func (g *Game) allPlayerIDs() []string {
@@ -53,6 +49,7 @@ func (g *Game) allPlayerIDs() []string {
 	for i, p := range g.players {
 		ids[i] = p.id
 	}
+
 	return ids
 }
 
@@ -68,17 +65,21 @@ func (g *Game) newPhase(kind PhaseKind, st stage, required []string, title, prom
 	}
 	g.phaseSeq++
 	g.phase = p
+
 	return p
 }
 
 // enterStation moves the calendar figure and opens the station's first phase.
 func (g *Game) enterStation(i int) {
 	g.station = i
+
 	st := g.currentStation()
 	if i > 0 {
 		g.addLog("station", "", st.Name)
 	}
+
 	all := g.allPlayerIDs()
+
 	switch StationType(st.Type) {
 	case StationSetup:
 		g.newPhase(PhaseAck, stageSetup, all, "Spielvorbereitung",
@@ -116,6 +117,7 @@ func (g *Game) nextStation() {
 		g.gameOver()
 		return
 	}
+
 	g.enterStation(g.station + 1)
 }
 
@@ -133,6 +135,7 @@ func (g *Game) afterPhase(p *phase) {
 				g.gameOver()
 				return
 			}
+
 			if g.openDraft() {
 				return
 			}
@@ -149,6 +152,7 @@ func (g *Game) afterPhase(p *phase) {
 			return
 		}
 	}
+
 	g.nextStation()
 }
 
@@ -163,10 +167,11 @@ func (g *Game) gameOver() {
 		for _, r := range pl.rowers {
 			if r.event != nil && r.event.mission != nil && !r.event.mission.done && !r.event.mission.failed {
 				r.event.mission.failed = true
-				g.addLog("mission", pl.id, fmt.Sprintf("Mission nicht erfüllt: %s", r.event.mission.text))
+				g.addLog("mission", pl.id, "Mission nicht erfüllt: "+r.event.mission.text)
 			}
 		}
 	}
+
 	best := -1
 	for _, pl := range g.players {
 		if pts := g.points(pl); pts > best {
@@ -174,12 +179,14 @@ func (g *Game) gameOver() {
 		}
 	}
 	var names []string
+
 	for _, pl := range g.players {
 		if g.points(pl) == best {
 			g.winners = append(g.winners, pl.id)
 			names = append(names, pl.name)
 		}
 	}
+
 	g.over = true
 	g.newPhase(PhaseGameOver, stageNone, nil, "Saisonende",
 		fmt.Sprintf("Die Saison ist vorbei. Gewonnen hat %s mit %d Medaillenpunkten.", strings.Join(names, " und "), best))

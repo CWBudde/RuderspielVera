@@ -38,7 +38,15 @@ export const STAT_BG: Record<string, string> = {
 };
 
 /** Round coloured stat badge as on the vera card. */
-export function StatBadge({ stat, className, iconClassName }: { stat: Stat; className?: string; iconClassName?: string }) {
+export function StatBadge({
+  stat,
+  className,
+  iconClassName,
+}: {
+  stat: Stat;
+  className?: string;
+  iconClassName?: string;
+}) {
   const Icon = STAT_ICON[stat] ?? Zap;
   return (
     <span
@@ -80,7 +88,14 @@ export function weatherTint(w: Weather | undefined): string {
 /** Crossed sculls — training station glyph. */
 export function OarsIcon({ className }: { className?: string }) {
   return (
-    <svg viewBox="0 0 24 24" className={className} fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round">
+    <svg
+      viewBox="0 0 24 24"
+      className={className}
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={2}
+      strokeLinecap="round"
+    >
       <path d="M5 19 17 5" />
       <path d="M19 19 7 5" />
       <path d="M15.5 4.5c1.2-1.2 3.2-1.4 4-.6.8.8.6 2.8-.6 4l-1.4-2z" fill="currentColor" />
@@ -92,7 +107,14 @@ export function OarsIcon({ className }: { className?: string }) {
 /** Small racing shell with rowers — regatta glyph. */
 export function ShellIcon({ className }: { className?: string }) {
   return (
-    <svg viewBox="0 0 28 16" className={className} fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round">
+    <svg
+      viewBox="0 0 28 16"
+      className={className}
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={1.8}
+      strokeLinecap="round"
+    >
       <path d="M1 11.5c6 1.6 20 1.6 26 0" />
       <circle cx="8" cy="5" r="1.6" fill="currentColor" stroke="none" />
       <circle cx="14" cy="5" r="1.6" fill="currentColor" stroke="none" />
@@ -116,10 +138,24 @@ export function Emblem({ className }: { className?: string }) {
       </g>
       <g fill="var(--sun)">
         {[0, 1, 2, 3].map((i) => (
-          <ellipse key={`l${i}`} cx={8 + i * 1.2} cy={36 - i * 5} rx={1.7} ry={3.4} transform={`rotate(${-35 + i * 10} ${8 + i * 1.2} ${36 - i * 5})`} />
+          <ellipse
+            key={`l${i}`}
+            cx={8 + i * 1.2}
+            cy={36 - i * 5}
+            rx={1.7}
+            ry={3.4}
+            transform={`rotate(${-35 + i * 10} ${8 + i * 1.2} ${36 - i * 5})`}
+          />
         ))}
         {[0, 1, 2, 3].map((i) => (
-          <ellipse key={`r${i}`} cx={40 - i * 1.2} cy={36 - i * 5} rx={1.7} ry={3.4} transform={`rotate(${35 - i * 10} ${40 - i * 1.2} ${36 - i * 5})`} />
+          <ellipse
+            key={`r${i}`}
+            cx={40 - i * 1.2}
+            cy={36 - i * 5}
+            rx={1.7}
+            ry={3.4}
+            transform={`rotate(${35 - i * 10} ${40 - i * 1.2} ${36 - i * 5})`}
+          />
         ))}
       </g>
     </svg>
@@ -159,7 +195,15 @@ export function MedalIcon({ medal, className }: { medal: "gold" | "silber"; clas
       <path d="M7 2h4l2 6H9z" fill="#c2412d" stroke="var(--ink)" strokeWidth={1.2} />
       <path d="M13 2h4l-2 6h-4z" fill="#2b78bb" stroke="var(--ink)" strokeWidth={1.2} />
       <circle cx="12" cy="15" r="6.5" fill={fill} stroke="var(--ink)" strokeWidth={1.6} />
-      <text x="12" y="18" textAnchor="middle" fontSize="8" fontWeight={800} fill="var(--ink)" fontFamily="Barlow Condensed">
+      <text
+        x="12"
+        y="18"
+        textAnchor="middle"
+        fontSize="8"
+        fontWeight={800}
+        fill="var(--ink)"
+        fontFamily="Barlow Condensed"
+      >
         {medal === "gold" ? "1" : "2"}
       </text>
     </svg>

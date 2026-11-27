@@ -13,7 +13,12 @@ export function LakeScene({ className, children }: { className?: string; childre
       {splash ? (
         <img src={splash} alt="" className="absolute inset-0 size-full object-cover" />
       ) : (
-        <svg viewBox="0 0 400 260" preserveAspectRatio="xMidYMax slice" className="absolute inset-0 size-full" aria-hidden>
+        <svg
+          viewBox="0 0 400 260"
+          preserveAspectRatio="xMidYMax slice"
+          className="absolute inset-0 size-full"
+          aria-hidden
+        >
           <defs>
             <linearGradient id="ls-sky" x1="0" y1="0" x2="0" y2="1">
               <stop offset="0" stopColor="#8cc6ec" />
@@ -62,7 +67,12 @@ export function LakeScene({ className, children }: { className?: string; childre
           </g>
           {/* the four */}
           <g className="motion-safe:animate-[glide_14s_linear_infinite]">
-            <path d="M120 214c30 6 110 6 140 0l-4 4c-30 5-102 5-132 0z" fill="#f3c431" stroke="#1b2a41" strokeWidth="1.4" />
+            <path
+              d="M120 214c30 6 110 6 140 0l-4 4c-30 5-102 5-132 0z"
+              fill="#f3c431"
+              stroke="#1b2a41"
+              strokeWidth="1.4"
+            />
             {[0, 1, 2, 3].map((i) => (
               <g key={i} stroke="#1b2a41" strokeWidth="1.3">
                 <path d={`M${150 + i * 26} 214l-16 14M${150 + i * 26} 214l14 -2`} />

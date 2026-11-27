@@ -18,23 +18,30 @@ func rollD(rng *rand.Rand, n int) int { return rng.IntN(n) + 1 }
 // pickWeighted returns an index into weights chosen proportionally; -1 if all weights are <= 0.
 func pickWeighted(rng *rand.Rand, weights []int) int {
 	total := 0
+
 	for _, w := range weights {
 		if w > 0 {
 			total += w
 		}
 	}
+
 	if total == 0 {
 		return -1
 	}
+
 	x := rng.IntN(total)
+
 	for i, w := range weights {
 		if w <= 0 {
 			continue
 		}
+
 		if x < w {
 			return i
 		}
+
 		x -= w
 	}
+
 	return -1
 }

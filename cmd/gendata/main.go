@@ -35,13 +35,19 @@ var archetypes = []archetype{
 
 // Names exactly as in Regelwerk §14.1–14.3, in the order listed there.
 var (
-	kinder = []string{"Pauline", "Mara", "Nella", "Johanna", "Hannah", "Paul", "Johann", "Justus", "Joel",
-		"Ella", "Yasmin", "Malte", "Sophia"}
-	bJunioren = []string{"Vera", "Lotti", "Ida", "Lea", "Anton", "Mailo", "Luka", "Jonas", "Nilo", "Julius",
+	kinder = []string{
+		"Pauline", "Mara", "Nella", "Johanna", "Hannah", "Paul", "Johann", "Justus", "Joel",
+		"Ella", "Yasmin", "Malte", "Sophia",
+	}
+	bJunioren = []string{
+		"Vera", "Lotti", "Ida", "Lea", "Anton", "Mailo", "Luka", "Jonas", "Nilo", "Julius",
 		"Sophia", "Noah", "Elin", "Arun", "Leni", "Catha", "Hannah", "Tobias", "Jacob", "Christoph", "Justus",
-		"Johann", "Jan", "Fabian", "Lenn", "Yukari", "Mia"}
-	aJunioren = []string{"Yara", "Matilda", "Lea", "Annabelle", "Emilie", "Jonathan", "Maxi", "Fabi", "Niclas",
-		"Michel", "Jonte", "Simon", "Tara", "Johanna", "Matilda"}
+		"Johann", "Jan", "Fabian", "Lenn", "Yukari", "Mia",
+	}
+	aJunioren = []string{
+		"Yara", "Matilda", "Lea", "Annabelle", "Emilie", "Jonathan", "Maxi", "Fabi", "Niclas",
+		"Michel", "Jonte", "Simon", "Tara", "Johanna", "Matilda",
+	}
 )
 
 // genders maps every first name to "w" (Mädchen) or "m" (Jungen). Names marked guessed in
@@ -71,6 +77,7 @@ type rower struct {
 func main() {
 	out := flag.String("out", "internal/data/rowers.json", "output file")
 	seed := flag.Uint64("seed", 2026, "generator seed")
+
 	flag.Parse()
 
 	rowers, err := generate(*seed)
@@ -78,26 +85,34 @@ func main() {
 		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)
 	}
-	var b strings.Builder
-	b.WriteString("[\n")
+	var buf strings.Builder
+	buf.WriteString("[\n")
+
 	for i, r := range rowers {
 		line, err := json.Marshal(r)
 		if err != nil {
 			fmt.Fprintln(os.Stderr, err)
 			os.Exit(1)
 		}
-		b.WriteString("  ")
-		b.Write(line)
+
+		buf.WriteString("  ")
+		buf.Write(line)
+
 		if i < len(rowers)-1 {
-			b.WriteString(",")
+			buf.WriteString(",")
 		}
-		b.WriteString("\n")
+
+		buf.WriteString("\n")
 	}
-	b.WriteString("]\n")
-	if err := os.WriteFile(*out, []byte(b.String()), 0o644); err != nil {
+
+	buf.WriteString("]\n")
+
+	err = os.WriteFile(*out, []byte(buf.String()), 0o644) //nolint:gosec // checked-in data file
+	if err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)
 	}
+
 	fmt.Printf("wrote %d rowers to %s\n", len(rowers), *out)
 }
 
@@ -115,58 +130,76 @@ func generate(seed uint64) ([]rower, error) {
 		{"kinder", kinder, 58, 46},
 	}
 	var all []rower
-	for _, g := range groups {
-		if g.top-g.low+1 != len(g.names) {
-			return nil, fmt.Errorf("group %s: %d names for ranks %d..%d", g.age, len(g.names), g.top, g.low)
-		}
-		ranks := make([]int, 0, len(g.names))
-		for r := g.top; r >= g.low; r-- {
-			ranks = append(ranks, r)
-		}
-		// Michel is fixed at 100; everyone else gets a shuffled rank.
-		order := make([]int, len(g.names))
-		for i := range order {
-			order[i] = i
-		}
-		rng.Shuffle(len(order), func(i, j int) { order[i], order[j] = order[j], order[i] })
-		if g.age == "a" {
-			mi := indexOf(g.names, "Michel")
-			for k, idx := range order {
-				if idx == mi {
-					order[0], order[k] = order[k], order[0]
-					break
-				}
-			}
-		}
-		rankOf := make([]int, len(g.names))
-		for k, idx := range order {
-			rankOf[idx] = ranks[k]
+
+	for _, grp := range groups {
+		if grp.top-grp.low+1 != len(grp.names) {
+			return nil, fmt.Errorf("group %s: %d names for ranks %d..%d", grp.age, len(grp.names), grp.top, grp.low)
 		}
 
+		rankOf := shuffledRanks(rng, grp)
 		seen := map[string]int{}
-		for i, name := range g.names {
+
+		for idx, name := range grp.names {
 			gender, ok := genders[name]
 			if !ok {
 				return nil, fmt.Errorf("no gender for %q", name)
 			}
+
 			slug := slugify(name)
 			seen[slug]++
-			id := slug + "-" + g.age
+			id := slug + "-" + grp.age
 			display := name
+
 			if seen[slug] > 1 {
 				id = fmt.Sprintf("%s-%d", id, seen[slug])
 				display = fmt.Sprintf("%s (%d)", name, seen[slug])
 			}
+
 			arch := archetypes[rng.IntN(len(archetypes))]
-			stats := split(rng, rankOf[i], arch)
+			stats := split(rng, rankOf[idx], arch)
 			all = append(all, rower{
-				ID: id, Name: display, Age: g.age, Gender: gender, Archetype: arch.Name,
-				Rank: rankOf[i], Stats: stats, ArtKey: "rower-" + g.age + "-" + gender,
+				ID: id, Name: display, Age: grp.age, Gender: gender, Archetype: arch.Name,
+				Rank: rankOf[idx], Stats: stats, ArtKey: "rower-" + grp.age + "-" + gender,
 			})
 		}
 	}
+
 	sort.SliceStable(all, func(i, j int) bool { return all[i].Rank > all[j].Rank })
+
 	return all, nil
+}
+
+// shuffledRanks assigns the ranks top..low to the group's names in random order. Michel is fixed
+// at the top rank; everyone else gets a shuffled rank.
+func shuffledRanks(rng *rand.Rand, grp group) []int {
+	ranks := make([]int, 0, len(grp.names))
+	for r := grp.top; r >= grp.low; r-- {
+		ranks = append(ranks, r)
+	}
+
+	order := make([]int, len(grp.names))
+	for i := range order {
+		order[i] = i
+	}
+
+	rng.Shuffle(len(order), func(i, j int) { order[i], order[j] = order[j], order[i] })
+
+	if grp.age == "a" {
+		mi := indexOf(grp.names, "Michel")
+		for k, idx := range order {
+			if idx == mi {
+				order[0], order[k] = order[k], order[0]
+				break
+			}
+		}
+	}
+
+	rankOf := make([]int, len(grp.names))
+	for k, idx := range order {
+		rankOf[idx] = ranks[k]
+	}
+
+	return rankOf
 }
 
 // split distributes total over the five stats by the archetype weights with ±15 % jitter per stat,
@@ -175,23 +208,29 @@ func split(rng *rand.Rand, total int, a archetype) map[string]int {
 	const minStat = 5
 	var w [5]float64
 	sum := 0.0
+
 	for i := range w {
 		w[i] = a.Weights[i] * (1 + (rng.Float64()*0.3 - 0.15))
 		sum += w[i]
 	}
+
 	vals := make([]int, 5)
 	fracs := make([]float64, 5)
 	assigned := 0
+
 	for i := range w {
 		exact := float64(total) * w[i] / sum
 		vals[i] = int(math.Floor(exact))
+
 		fracs[i] = exact - float64(vals[i])
 		if vals[i] < minStat {
 			vals[i] = minStat
 			fracs[i] = 0
 		}
+
 		assigned += vals[i]
 	}
+
 	for assigned < total { // hand out the remainder by largest fraction
 		best := 0
 		for i := 1; i < 5; i++ {
@@ -199,10 +238,12 @@ func split(rng *rand.Rand, total int, a archetype) map[string]int {
 				best = i
 			}
 		}
+
 		vals[best]++
 		fracs[best] = -1
 		assigned++
 	}
+
 	for assigned > total { // raising to the minimum overshot: take from the largest stat
 		best := 0
 		for i := 1; i < 5; i++ {
@@ -210,13 +251,16 @@ func split(rng *rand.Rand, total int, a archetype) map[string]int {
 				best = i
 			}
 		}
+
 		vals[best]--
 		assigned--
 	}
+
 	out := map[string]int{}
 	for i, s := range statOrder {
 		out[s] = vals[i]
 	}
+
 	return out
 }
 
@@ -231,5 +275,6 @@ func indexOf(xs []string, s string) int {
 			return i
 		}
 	}
+
 	return -1
 }

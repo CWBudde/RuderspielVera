@@ -13,10 +13,10 @@ Jeder Mitspieler leitet eine eigene Rudermannschaft durch eine vollständige Rud
 Gewinner ist, wer nach der letzten Regatta die meisten Medaillenpunkte gesammelt hat. Nicht allein der Sieg bei der letzten Regatta entscheidet über den Spielsieg.
 
 | Platzierung in einem Rennen | Medaille | Medaillenpunkte |
-|---|---|---:|
-| 1. Platz | Gold | 2 |
-| 2. Platz | Silber | 1 |
-| 3. Platz und schlechter | Keine | 0 |
+| --------------------------- | -------- | --------------: |
+| 1. Platz                    | Gold     |               2 |
+| 2. Platz                    | Silber   |               1 |
+| 3. Platz und schlechter     | Keine    |               0 |
 
 Die Medaillenpunkte werden über die gesamte Saison addiert. Eine Goldmedaille ist somit doppelt so viel wert wie eine Silbermedaille.
 
@@ -47,18 +47,18 @@ Beim Computerspiel übernimmt ein Zufallsgenerator die Rolle des Würfels.
 
 ### 2.1 Arten von Stationen
 
-| Station | Funktion |
-|---|---|
-| Spielvorbereitung | Anfangskarten verteilen |
-| Training | Eigenschaften der eigenen Ruderer verbessern |
-| Event | Personenbezogene Entwicklungskarten vergeben |
-| Ereignis | Allgemeine Überraschungen oder Änderungen des Spielgeschehens |
-| Regatta | Wettkämpfe auf dem Wasser und Medaillenvergabe |
-| Ergo-Cup | Einzelwettkämpfe auf dem Ergometer |
+| Station             | Funktion                                                            |
+| ------------------- | ------------------------------------------------------------------- |
+| Spielvorbereitung   | Anfangskarten verteilen                                             |
+| Training            | Eigenschaften der eigenen Ruderer verbessern                        |
+| Event               | Personenbezogene Entwicklungskarten vergeben                        |
+| Ereignis            | Allgemeine Überraschungen oder Änderungen des Spielgeschehens       |
+| Regatta             | Wettkämpfe auf dem Wasser und Medaillenvergabe                      |
+| Ergo-Cup            | Einzelwettkämpfe auf dem Ergometer                                  |
 | Sonderveranstaltung | Zum Beispiel Motivation durch Basketball oder Winterruder-Fünfkampf |
-| Trainingslager | Erhöhte Zahl an Trainingspunkten |
-| JTFO | Wettkampf mit besonderen Mannschaftskonfigurationen |
-| Endspurtregatta | Saisonabschluss mit besonderen Mixed-Mannschaften |
+| Trainingslager      | Erhöhte Zahl an Trainingspunkten                                    |
+| JTFO                | Wettkampf mit besonderen Mannschaftskonfigurationen                 |
+| Endspurtregatta     | Saisonabschluss mit besonderen Mixed-Mannschaften                   |
 
 Events und Ereignisse sind bewusst unterschiedliche Stationstypen: Events entwickeln einzelne Ruderer dauerhaft oder über längere Zeit weiter. Ereignisse können die äußeren Rahmenbedingungen des Spiels beeinflussen.
 
@@ -66,20 +66,20 @@ Events und Ereignisse sind bewusst unterschiedliche Stationstypen: Events entwic
 
 Die folgende Reihenfolge ist aus dem handschriftlichen Ablauf übernommen. Jede durch einen Pfeil getrennte Station entspricht einer vorgesehenen Phase; die Zeilen dienen lediglich der Übersicht.
 
-| Abschnitt | Stationen in zeitlicher Reihenfolge |
-|---|---|
-| 1 | Spielvorbereitung → Training → Hildesheim |
-| 2 | Event → Training → Ereignis → Mindor-Cup |
-| 3 | Event → WR5 (Winterruder-Fünfkampf) → Training → Ereignis → DRC-Ergo-Cup |
-| 4 | Event → Training → Ereignis → Osnabrücker Ergo-Cup |
-| 5 | Event → Basketballturnier → Training → Ereignis → Hankensbüttel → Regatta Bremen |
-| 6 | Event → Training → Ereignis → Kassel → Kasselregatta |
-| 7 | Event → Training → Ereignis → Verbandsregatta I |
-| 8 | Event → Wanderfahrt → Training → Ereignis → Regatta Schillerschule |
-| 9 | Event → Training → Ereignis → Verbandsregatta II |
-| 10 | Event → Training → Ereignis → JTFO |
-| 11 | Event → Training → Ereignis → RVH-Regatta (Herbstsprintregatta) |
-| 12 | Event → Training → Ereignis → RVB-Endspurtregatta |
+| Abschnitt | Stationen in zeitlicher Reihenfolge                                              |
+| --------- | -------------------------------------------------------------------------------- |
+| 1         | Spielvorbereitung → Training → Hildesheim                                        |
+| 2         | Event → Training → Ereignis → Mindor-Cup                                         |
+| 3         | Event → WR5 (Winterruder-Fünfkampf) → Training → Ereignis → DRC-Ergo-Cup         |
+| 4         | Event → Training → Ereignis → Osnabrücker Ergo-Cup                               |
+| 5         | Event → Basketballturnier → Training → Ereignis → Hankensbüttel → Regatta Bremen |
+| 6         | Event → Training → Ereignis → Kassel → Kasselregatta                             |
+| 7         | Event → Training → Ereignis → Verbandsregatta I                                  |
+| 8         | Event → Wanderfahrt → Training → Ereignis → Regatta Schillerschule               |
+| 9         | Event → Training → Ereignis → Verbandsregatta II                                 |
+| 10        | Event → Training → Ereignis → JTFO                                               |
+| 11        | Event → Training → Ereignis → RVH-Regatta (Herbstsprintregatta)                  |
+| 12        | Event → Training → Ereignis → RVB-Endspurtregatta                                |
 
 Danach erfolgt die abschließende Medaillenwertung.
 
@@ -113,10 +113,10 @@ Die handschriftliche Spielvorbereitung nennt drei Ruderer je Altersgruppe (Kinde
 Die handschriftliche Rechentabelle geht von insgesamt 55 Rudererkarten und einer anfänglichen Verteilung von neun Karten je Mitspieler aus:
 
 | Mitspieler | Anfänglich verteilt (gesamt, Entwurf) | Pro Mitspieler | Verbleibend |
-|---:|---:|---:|---:|
-| 2 | 18 | 9 | 37 |
-| 3 | 27 | 9 | 28 |
-| 4 | 36 | 9 | 19 |
+| ---------: | ------------------------------------: | -------------: | ----------: |
+|          2 |                                    18 |              9 |          37 |
+|          3 |                                    27 |              9 |          28 |
+|          4 |                                    36 |              9 |          19 |
 
 Diese Tabelle dokumentiert den älteren Rechenstand, nicht eine abschließend vereinbarte Verteilungsregel. Bei weniger Mitspielern sollen im Spiel mehr Karten pro Mitspieler zur Verfügung stehen; wie das konkret schon bei der Anfangsverteilung bzw. späteren Verteilung umgesetzt wird, bleibt offen.
 
@@ -156,13 +156,13 @@ Die Karten enthalten außerdem die für die Wettkampfeinteilung relevante Zuordn
 
 Jeder Ruderer besitzt fünf numerische Eigenschaften:
 
-| Eigenschaft | Bedeutung im Spiel |
-|---|---|
-| Kraft | Relevant insbesondere für Ergo-Cups und weitere entsprechend definierte Rennen |
-| Ausdauer | Relevant insbesondere für Langstreckenregatten |
-| Geschwindigkeit | Relevant insbesondere für Sprintregatten |
-| Technik | Relevant insbesondere für reguläre Regatten und JTFO |
-| Motivation | Eigenständiger Leistungswert, relevant bei entsprechend definierten Wettkämpfen |
+| Eigenschaft     | Bedeutung im Spiel                                                              |
+| --------------- | ------------------------------------------------------------------------------- |
+| Kraft           | Relevant insbesondere für Ergo-Cups und weitere entsprechend definierte Rennen  |
+| Ausdauer        | Relevant insbesondere für Langstreckenregatten                                  |
+| Geschwindigkeit | Relevant insbesondere für Sprintregatten                                        |
+| Technik         | Relevant insbesondere für reguläre Regatten und JTFO                            |
+| Motivation      | Eigenständiger Leistungswert, relevant bei entsprechend definierten Wettkämpfen |
 
 Die Eigenschaften können durch Training, Events und Sonderveranstaltungen dauerhaft wachsen. Es gibt keine feste Obergrenze.
 
@@ -175,8 +175,8 @@ Der Richtwert ist die **Summe der fünf anfänglichen Eigenschaften**, kein zus�
 Beispiel einer rein illustrativen Aufteilung von 100 Punkten (keine endgültigen Werte für Michel):
 
 | Kraft | Ausdauer | Geschwindigkeit | Technik | Motivation | Summe |
-|---:|---:|---:|---:|---:|---:|
-| 30 | 25 | 15 | 20 | 10 | 100 |
+| ----: | -------: | --------------: | ------: | ---------: | ----: |
+|    30 |       25 |              15 |      20 |         10 |   100 |
 
 Unterschiedliche Verteilungen erzeugen unterschiedliche Stärken. Eine Karte mit geringerer Gesamtsumme kann in einer einzelnen Disziplin besser sein als eine höher eingestufte Karte.
 
@@ -190,12 +190,12 @@ Eine Rudererkarte kann im Saisonverlauf durch genau eine Eventkarte ergänzt wer
 
 ### 6.1 Kategorien
 
-| Kategorie | Bezeichnung in den Notizen | Besatzung |
-|---|---|---:|
-| Einer | 1x | 1 |
-| Zweier | 2x | 2 |
-| Vierer | 4x | 4 |
-| Achter (nur Endspurtregatta) | 8x | 8 |
+| Kategorie                    | Bezeichnung in den Notizen | Besatzung |
+| ---------------------------- | -------------------------- | --------: |
+| Einer                        | 1x                         |         1 |
+| Zweier                       | 2x                         |         2 |
+| Vierer                       | 4x                         |         4 |
+| Achter (nur Endspurtregatta) | 8x                         |         8 |
 
 Boote müssen entsprechend der jeweiligen Wettkampfregeln eingesetzt werden.
 
@@ -227,12 +227,12 @@ Beispiel aus der Besprechung (noch kein festgelegtes Kartenprofil): Herr Sack k�
 Vor jeder Regatta auf dem Wasser wird ein gemeinsames Wetter für alle Mitspieler bestimmt. Das Wetter bleibt für die gesamte jeweilige Regatta gültig.
 
 | Ergebnis des sechsseitigen Würfels (Zuordnung beispielhaft) | Wetter | Wahrscheinlichkeit |
-|---|---|---:|
-| 1 | Regen | 1/6 |
-| 2 | Hitze | 1/6 |
-| 3 | Wind | 1/6 |
-| 4 | Kälte | 1/6 |
-| 5–6 | Normal | 2/6 |
+| ----------------------------------------------------------- | ------ | -----------------: |
+| 1                                                           | Regen  |                1/6 |
+| 2                                                           | Hitze  |                1/6 |
+| 3                                                           | Wind   |                1/6 |
+| 4                                                           | Kälte  |                1/6 |
+| 5–6                                                         | Normal |                2/6 |
 
 Das Wetter wirkt in der Grundregel ausschließlich über die Spezialfähigkeiten der Trainer. Es gibt keinen pauschalen Leistungsabzug, der alle Mannschaften gleichermaßen trifft. Diese Entscheidung wurde ausdrücklich bestätigt, weil ein gleicher Abzug bei einer rein relativen Wertung die Platzierung nicht ändern würde.
 
@@ -304,11 +304,11 @@ Basiswerte und Trainingszuwächse können getrennt gespeichert werden, dürfen j
 
 ### 10.2 Zufällige Zwischenfälle auf dem Wasser
 
-| Zwischenfall | Wahrscheinlichkeit | Folge |
-|---|---:|---|
-| Kentern | 5 % | Die Mannschaft erreicht das Ziel sehr langsam, gegebenenfalls schwimmend; sie landet auf dem letzten Platz. |
-| Materialschaden / etwas geht kaputt | 10 % | Die Mannschaft kann das Rennen nicht fortsetzen und scheidet aus. |
-| Krebs fangen | 15 % | Abzug von 10 Leistungspunkten. |
+| Zwischenfall                        | Wahrscheinlichkeit | Folge                                                                                                       |
+| ----------------------------------- | -----------------: | ----------------------------------------------------------------------------------------------------------- |
+| Kentern                             |                5 % | Die Mannschaft erreicht das Ziel sehr langsam, gegebenenfalls schwimmend; sie landet auf dem letzten Platz. |
+| Materialschaden / etwas geht kaputt |               10 % | Die Mannschaft kann das Rennen nicht fortsetzen und scheidet aus.                                           |
+| Krebs fangen                        |               15 % | Abzug von 10 Leistungspunkten.                                                                              |
 
 Die Wahrscheinlichkeiten stehen in den handschriftlichen Notizen; die Werte für Kentern und Materialschaden wurden mündlich bestätigt. Der Abzug von 10 Punkten beim Krebsfangen wurde im anschließenden Gespräch vereinbart.
 
@@ -331,14 +331,14 @@ Die folgenden Schritte beschreiben die funktionalen Bestandteile, nicht die endg
 
 ## 11. Wettkampfformate
 
-| Format | Eigenschaften nach jetzigem Stand | Zugelassene Kategorien |
-|---|---|---|
-| Hildesheim | Ausdauer, Motivation | Einer, Zweier; A- und B-Junioren |
-| Ergo-Cup | Kraft, Motivation | Einzelwettkampf, alle Altersgruppen, getrennt nach Jungen und Mädchen |
-| Reguläre Regatta | Geschwindigkeit, Technik; je nach Regatta auch andere Kombinationen | Einer, Zweier, Vierer; Altersgruppen und Geschlecht getrennt gemäß Notizen |
-| JTFO | Geschwindigkeit, Technik (aus Notizen zur Regatta-Gruppe; im Detail noch zu bestätigen) | Spezielle Kombinationen aus Zweiern und Vierern |
-| RVH-Herbstsprintregatta | Noch nicht einzeln definiert | Noch festzulegen |
-| RVB-Endspurtregatta | Geschwindigkeit zählt doppelt; weitere Eigenschaften offen | Alters- und geschlechtsübergreifende Mixed-Mannschaften, insbesondere Vierer und Sonder-Achter |
+| Format                  | Eigenschaften nach jetzigem Stand                                                       | Zugelassene Kategorien                                                                         |
+| ----------------------- | --------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------- |
+| Hildesheim              | Ausdauer, Motivation                                                                    | Einer, Zweier; A- und B-Junioren                                                               |
+| Ergo-Cup                | Kraft, Motivation                                                                       | Einzelwettkampf, alle Altersgruppen, getrennt nach Jungen und Mädchen                          |
+| Reguläre Regatta        | Geschwindigkeit, Technik; je nach Regatta auch andere Kombinationen                     | Einer, Zweier, Vierer; Altersgruppen und Geschlecht getrennt gemäß Notizen                     |
+| JTFO                    | Geschwindigkeit, Technik (aus Notizen zur Regatta-Gruppe; im Detail noch zu bestätigen) | Spezielle Kombinationen aus Zweiern und Vierern                                                |
+| RVH-Herbstsprintregatta | Noch nicht einzeln definiert                                                            | Noch festzulegen                                                                               |
+| RVB-Endspurtregatta     | Geschwindigkeit zählt doppelt; weitere Eigenschaften offen                              | Alters- und geschlechtsübergreifende Mixed-Mannschaften, insbesondere Vierer und Sonder-Achter |
 
 Soweit keine Gewichtung festgelegt ist, werden die Eigenschaften hier nur als relevant aufgeführt. Eine vollständige Matrix mit den Gewichten je Wettkampf ist noch zu erstellen.
 
@@ -372,11 +372,11 @@ Wetter und Zwischenfälle entsprechen grundsätzlich den allgemeinen Wasserregel
 
 JTFO besitzt besondere Mannschaftskonfigurationen. Die handschriftlichen Notizen sehen folgende Varianten vor:
 
-| Variante | Boote | Benötigte Plätze |
-|---|---|---:|
-| A | 2x + 2x + 2x | 6 |
-| B | 2x + 4x + 2x | 8 |
-| C | 2x + 4x + 4x | 10 |
+| Variante | Boote        | Benötigte Plätze |
+| -------- | ------------ | ---------------: |
+| A        | 2x + 2x + 2x |                6 |
+| B        | 2x + 4x + 2x |                8 |
+| C        | 2x + 4x + 4x |               10 |
 
 Je nach Anzahl der Mitspieler und verfügbaren Ruderern kann eine andere Konfiguration sinnvoll oder erforderlich sein. Bei zwei Mitspielern stehen tendenziell mehr Ruderer pro Mitspieler zur Verfügung, wodurch Vierer leichter besetzt werden können.
 
@@ -426,20 +426,20 @@ Beispiele der personenbezogenen Zuordnung: „Mystery Mara“ gilt nur für Mara
 
 Die Liste folgt der handschriftlichen Eventseite. Die Kurznamen sind teilweise redaktionelle Arbeitsbezeichnungen.
 
-| Nr. | Event | Regel bzw. vorgesehene Wirkung |
-|---:|---|---|
-| 1 | Wetter-Event | Der Notiz zufolge erhält jeder ein gutes Wetter; nach der späteren personenbezogenen Vergaberegel soll der Effekt einer konkreten Rudererkarte zugeordnet werden. Wie gutes Wetter individuell wirkt, ist noch offen. |
-| 2 | Wachstum | Eine Eigenschaft des zugeordneten Ruderers wächst bei jedem Training automatisch. Zuwachs und Wahl der Eigenschaft sind offen. |
-| 3 | Phönix / Schwächste Eigenschaft | Die schwächste Eigenschaft des Ruderers erhöht sich um 5 Punkte. |
-| 4 | Tausch-Event | Die Eigenschaftspunkte dieses Ruderers dürfen getauscht bzw. umverteilt werden. Andere Ruderer sind nicht betroffen. Die genaue Tauschregel ist offen. |
-| 5 | Verdopplung | Die beste Eigenschaft des Ruderers wird verdoppelt. |
-| 6 | Kraft-Event | Besondere Aufwertung der Kraft des zugeordneten Ruderers. Umfang offen. |
-| 7 | Ausdauer-Event | Besondere Aufwertung der Ausdauer. Umfang offen. |
-| 8 | Geschwindigkeits-Event | Besondere Aufwertung der Geschwindigkeit. Umfang offen. |
-| 9 | Technik-Event | Besondere Aufwertung der Technik. Umfang offen. |
-| 10 | Motivations-Event | Besondere Aufwertung der Motivation. Umfang offen. |
-| 11 | Seelenzwilling | Eine zusätzliche Rudererkarte mit denselben bisherigen Trainingspunkten wie die zugeordnete Person. |
-| 12 | Geheime Mission / Mystery | Mit der Eventkarte erhält die zugeordnete Person eine geheime Mission, die sie selbst erfüllen muss. |
+| Nr. | Event                           | Regel bzw. vorgesehene Wirkung                                                                                                                                                                                        |
+| --: | ------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+|   1 | Wetter-Event                    | Der Notiz zufolge erhält jeder ein gutes Wetter; nach der späteren personenbezogenen Vergaberegel soll der Effekt einer konkreten Rudererkarte zugeordnet werden. Wie gutes Wetter individuell wirkt, ist noch offen. |
+|   2 | Wachstum                        | Eine Eigenschaft des zugeordneten Ruderers wächst bei jedem Training automatisch. Zuwachs und Wahl der Eigenschaft sind offen.                                                                                        |
+|   3 | Phönix / Schwächste Eigenschaft | Die schwächste Eigenschaft des Ruderers erhöht sich um 5 Punkte.                                                                                                                                                      |
+|   4 | Tausch-Event                    | Die Eigenschaftspunkte dieses Ruderers dürfen getauscht bzw. umverteilt werden. Andere Ruderer sind nicht betroffen. Die genaue Tauschregel ist offen.                                                                |
+|   5 | Verdopplung                     | Die beste Eigenschaft des Ruderers wird verdoppelt.                                                                                                                                                                   |
+|   6 | Kraft-Event                     | Besondere Aufwertung der Kraft des zugeordneten Ruderers. Umfang offen.                                                                                                                                               |
+|   7 | Ausdauer-Event                  | Besondere Aufwertung der Ausdauer. Umfang offen.                                                                                                                                                                      |
+|   8 | Geschwindigkeits-Event          | Besondere Aufwertung der Geschwindigkeit. Umfang offen.                                                                                                                                                               |
+|   9 | Technik-Event                   | Besondere Aufwertung der Technik. Umfang offen.                                                                                                                                                                       |
+|  10 | Motivations-Event               | Besondere Aufwertung der Motivation. Umfang offen.                                                                                                                                                                    |
+|  11 | Seelenzwilling                  | Eine zusätzliche Rudererkarte mit denselben bisherigen Trainingspunkten wie die zugeordnete Person.                                                                                                                   |
+|  12 | Geheime Mission / Mystery       | Mit der Eventkarte erhält die zugeordnete Person eine geheime Mission, die sie selbst erfüllen muss.                                                                                                                  |
 
 Die Notiz enthält zwölf Einträge; frühere Gesprächsbeiträge erwähnten zwischenzeitlich auch 13 Events. Ein dreizehnter ausgewählter Eventtyp ist in der vorliegenden finalen Liste nicht erkennbar.
 
@@ -497,17 +497,17 @@ Insbesondere Friedjof und weitere ähnlich klingende Namen bitte vor dem Kartend
 
 Die Namensliste enthält zwei Gruppen regulärer Boote. Die zweite ist handschriftlich umrandet. Laut Gespräch sind manche Boote besonders hochwertig; die genaue Zuordnung der Gruppen zu Besitz, Qualität und Verfügbarkeit ist noch zu bestätigen.
 
-| Kategorie | Erste Namensgruppe |
-|---|---|
-| Einer | Ice-Man, Manpower, Kalypso, Reinfall |
-| Zweier | Bj-Turbo, Black Sword, Goodspeed |
-| Vierer | Simsalabim, Oshra, Need 4 Speed |
+| Kategorie | Erste Namensgruppe                   |
+| --------- | ------------------------------------ |
+| Einer     | Ice-Man, Manpower, Kalypso, Reinfall |
+| Zweier    | Bj-Turbo, Black Sword, Goodspeed     |
+| Vierer    | Simsalabim, Oshra, Need 4 Speed      |
 
-| Kategorie | Zweite Namensgruppe (umrandet) |
-|---|---|
-| Einer | Zwergenkreuzer, Traumstart, Rennschlumpf (Lesart unsicher), Singlespeed |
-| Zweier | Freiheit, X-Wing, Laufwunder, H zwei O |
-| Vierer | Q, 5 Freunde, Wilhelm |
+| Kategorie | Zweite Namensgruppe (umrandet)                                          |
+| --------- | ----------------------------------------------------------------------- |
+| Einer     | Zwergenkreuzer, Traumstart, Rennschlumpf (Lesart unsicher), Singlespeed |
+| Zweier    | Freiheit, X-Wing, Laufwunder, H zwei O                                  |
+| Vierer    | Q, 5 Freunde, Wilhelm                                                   |
 
 Die regulären Achter Hannover, Kraftwerk und Pointbreak (letzter Name unsicher) sind in den Notizen durchgestrichen und gehören nicht zum normalen Bootsbestand. Der einheitliche Sonder-Achter für die Endspurtregatta erhält gegebenenfalls noch einen Namen.
 
@@ -519,20 +519,20 @@ Die Regeln sollen sowohl für ein klassisches Brettspiel als auch für ein Compu
 
 Für die technische Umsetzung bietet sich folgende Struktur an (Vorschlag, keine zusätzlich beschlossene Spielregel):
 
-| Objekt | Wesentliche Daten |
-|---|---|
-| Spiel | Mitspielerzahl, aktueller Kalenderschritt, Spielstatus |
-| Mitspieler | Eigene Ruderer, Boote, Trainer, Gold- und Silbermedaillen |
-| Ruderer | Eindeutige ID, Name, Altersgruppe, Geschlechtsklasse, fünf Basiswerte, Trainingsänderungen, höchstens eine Eventkarte |
-| Boot | ID, Name, Kategorie, Leistungswert, ggf. Qualitätsgruppe |
-| Trainer | ID, Name, Wettereffekte, weitere festgelegte Spezialfähigkeiten |
-| Eventtyp | Identität, Beschreibung, Auslösebedingung, Wirkung |
-| Eventkarte | Eventtyp und fest zugeordnete Ruderer-ID, ggf. Mission und Fortschritt |
-| Ereignis | Allgemeiner Effekt und ggf. Geltungsdauer |
-| Kalenderstation | Typ, Name, Reihenfolge, zugehörige Regeln |
-| Wettkampf | Alters-/Geschlechtsklassen, Bootsklassen, Eigenschaftsgewichte, Sonderregeln |
-| Rennmeldung | Mitspieler, Besatzung, Boot, gewählter Regattatrainer |
-| Rennergebnis | Leistung, Zwischenfälle, Platzierung, Medaillen, Motivationszuwachs |
+| Objekt          | Wesentliche Daten                                                                                                     |
+| --------------- | --------------------------------------------------------------------------------------------------------------------- |
+| Spiel           | Mitspielerzahl, aktueller Kalenderschritt, Spielstatus                                                                |
+| Mitspieler      | Eigene Ruderer, Boote, Trainer, Gold- und Silbermedaillen                                                             |
+| Ruderer         | Eindeutige ID, Name, Altersgruppe, Geschlechtsklasse, fünf Basiswerte, Trainingsänderungen, höchstens eine Eventkarte |
+| Boot            | ID, Name, Kategorie, Leistungswert, ggf. Qualitätsgruppe                                                              |
+| Trainer         | ID, Name, Wettereffekte, weitere festgelegte Spezialfähigkeiten                                                       |
+| Eventtyp        | Identität, Beschreibung, Auslösebedingung, Wirkung                                                                    |
+| Eventkarte      | Eventtyp und fest zugeordnete Ruderer-ID, ggf. Mission und Fortschritt                                                |
+| Ereignis        | Allgemeiner Effekt und ggf. Geltungsdauer                                                                             |
+| Kalenderstation | Typ, Name, Reihenfolge, zugehörige Regeln                                                                             |
+| Wettkampf       | Alters-/Geschlechtsklassen, Bootsklassen, Eigenschaftsgewichte, Sonderregeln                                          |
+| Rennmeldung     | Mitspieler, Besatzung, Boot, gewählter Regattatrainer                                                                 |
+| Rennergebnis    | Leistung, Zwischenfälle, Platzierung, Medaillen, Motivationszuwachs                                                   |
 
 Wichtig für die Implementierung:
 

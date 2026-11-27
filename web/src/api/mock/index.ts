@@ -1,7 +1,18 @@
 import type { Backend, Session } from "../client";
 import { ApiError } from "../errors";
 import { readStorage, writeStorage } from "@/lib/storage";
-import { MockError, YOU, buildView, catalog, createState, decide, jump, tick, type JumpTarget, type MockState } from "./server";
+import {
+  MockError,
+  YOU,
+  buildView,
+  catalog,
+  createState,
+  decide,
+  jump,
+  tick,
+  type JumpTarget,
+  type MockState,
+} from "./server";
 
 const KEY = "ruderspiel.mock.state";
 let cache: MockState | null = null;

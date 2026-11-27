@@ -1,6 +1,7 @@
 package engine
 
 import (
+	"fmt"
 	"maps"
 	"slices"
 
@@ -10,7 +11,7 @@ import (
 // View returns the game as seen by one player. Other players' pending decisions and secret
 // mission texts are never included.
 func (g *Game) View(playerID string) GameView {
-	v := GameView{
+	gv := GameView{
 		GameID:           g.cfg.GameID,
 		You:              playerID,
 		Current:          g.station,
@@ -20,12 +21,14 @@ func (g *Game) View(playerID string) GameView {
 		Winners:          g.Winners(),
 	}
 	for i, st := range g.d.Calendar {
-		v.Calendar = append(v.Calendar, StationView{
+		gv.Calendar = append(gv.Calendar, StationView{
 			Index: i, Section: st.Section, Type: StationType(st.Type), Name: st.Name, Info: st.Info,
 		})
 	}
+
 	for _, pl := range g.players {
 		_, decided := g.phase.decisions[pl.id]
+
 		ps := PlayerSummary{
 			ID: pl.id, Name: pl.name, IsBot: pl.isBot, Gold: pl.gold, Silver: pl.silver, Points: g.points(pl),
 			Decided:  decided || !g.phase.isRequired(pl.id),
@@ -36,26 +39,33 @@ func (g *Game) View(playerID string) GameView {
 		for _, r := range pl.rowers {
 			ps.Rowers = append(ps.Rowers, rowerView(r, pl.id == playerID))
 		}
+
 		for _, b := range pl.boats {
 			ps.Boats = append(ps.Boats, boatView(b))
 		}
+
 		for _, t := range pl.trainers {
 			ps.Trainers = append(ps.Trainers, trainerView(t.def))
 		}
-		v.Players = append(v.Players, ps)
+
+		gv.Players = append(gv.Players, ps)
 	}
+
 	if n := len(g.results); n > 0 {
 		last := cloneResult(g.results[n-1])
-		v.LastResult = &last
+		gv.LastResult = &last
 	}
-	fillNil(&v)
-	return v
+
+	fillNil(&gv)
+
+	return gv
 }
 
 // CurrentPhase returns what the open phase asks of the given player.
 func (g *Game) CurrentPhase(playerID string) PhaseView {
 	p := g.phase
 	_, decided := p.decisions[playerID]
+
 	pv := PhaseView{
 		ID: p.id, Kind: p.kind, Title: p.title, Prompt: p.prompt,
 		Points: p.points, MaxRowers: p.maxRowers, Count: p.count,
@@ -64,12 +74,15 @@ func (g *Game) CurrentPhase(playerID string) PhaseView {
 	if txt, ok := p.prompts[playerID]; ok {
 		pv.Prompt = txt
 	}
+
 	if p.selection != nil {
 		pv.SelectionEffect = p.selection.Label
 	}
+
 	if p.swap != nil {
 		pv.SwapRowerID = p.swap[playerID]
 	}
+
 	if cs := p.comp; cs != nil {
 		pv.Competition = &CompetitionView{
 			Name: cs.name, Kind: StationType(cs.def.Kind), Weights: maps.Clone(cs.weights),
@@ -77,13 +90,16 @@ func (g *Game) CurrentPhase(playerID string) PhaseView {
 			Notes: append([]string{}, cs.notes...), Context: cs.def.Context, CityBoatMod: cs.cityBoatMod,
 		}
 	}
+
 	if p.kind == PhaseDraft && g.draft != nil {
 		for _, c := range g.draft.offer {
 			pv.DraftOffer = append(pv.DraftOffer, draftCardView(c))
 		}
+
 		pv.DraftOrder = slices.Clone(g.draft.order)
 		pv.DraftTurn = g.draft.turn
 	}
+
 	pv.Stage = stageNames[p.stage]
 	if pl := g.playerByID(playerID); pl != nil {
 		for _, id := range p.newEvents[playerID] {
@@ -92,10 +108,12 @@ func (g *Game) CurrentPhase(playerID string) PhaseView {
 			}
 		}
 	}
+
 	if p.ereignis != nil {
 		e := *p.ereignis
 		pv.Ereignis = &e
 	}
+
 	return pv
 }
 
@@ -110,6 +128,7 @@ func (g *Game) raceViews(cs *compState) []RaceSpec {
 		r := &races[i]
 		r.Ages, r.Genders = slices.Clone(r.Ages), slices.Clone(r.Genders)
 		r.BoatScale = g.d.Rules.BoatScale(r.Seats)
+
 		r.TrainerScale = g.d.Rules.TrainerScale(r.Seats)
 		switch {
 		case r.Class == BoatErgo:
@@ -117,10 +136,12 @@ func (g *Game) raceViews(cs *compState) []RaceSpec {
 		case r.Class == Boat8x || r.LoanBoat:
 			r.FixedBoatValue = g.boatValue(cs, *r, nil)
 		}
+
 		if gs, ok := GuestScore(g.d, cs.def, cs.station, *r); ok && !cs.team() {
 			r.GuestScore = int(gs)
 		}
 	}
+
 	return races
 }
 
@@ -130,12 +151,16 @@ func rowerView(r *rower, owner bool) RowerView {
 		ArtKey: r.artKey, IsTwin: r.isTwin,
 	}
 	if r.event != nil {
-		ev := &EventCardView{Type: r.event.def.Type, Name: r.event.def.Name, Description: r.event.def.Description, RowerID: r.id}
+		ev := &EventCardView{
+			Type: r.event.def.Type, Name: r.event.def.Name, Description: r.event.def.Description, RowerID: r.id,
+		}
 		if ms := r.event.mission; ms != nil && (owner || ms.done || ms.failed) {
 			ev.Mission = &MissionView{Text: ms.text, Reward: ms.def.RewardText, Done: ms.done, Failed: ms.failed}
 		}
+
 		v.Event = ev
 	}
+
 	return v
 }
 
@@ -144,11 +169,14 @@ func boatView(b *boat) BoatView {
 }
 
 func trainerView(t *data.Trainer) TrainerView {
-	v := TrainerView{ID: t.ID, Name: t.Name, Ability: t.Ability, Description: t.Description, ArtKey: t.ArtKey,
-		Effects: []TrainerEffect{}}
+	v := TrainerView{
+		ID: t.ID, Name: t.Name, Ability: t.Ability, Description: t.Description, ArtKey: t.ArtKey,
+		Effects: []TrainerEffect{},
+	}
 	for _, e := range t.Effects {
 		v.Effects = append(v.Effects, TrainerEffect{Weather: Weather(e.Weather), Context: e.Context, Value: e.Value})
 	}
+
 	return v
 }
 
@@ -165,6 +193,7 @@ func draftCardView(c poolCard) DraftCard {
 		tv := trainerView(c.trainer.def)
 		dc.Trainer = &tv
 	}
+
 	return dc
 }
 
@@ -172,22 +201,30 @@ func draftCardView(c poolCard) DraftCard {
 func Catalog() (CatalogView, error) {
 	d, err := data.Load()
 	if err != nil {
-		return CatalogView{}, err
+		return CatalogView{}, fmt.Errorf("rule data: %w", err)
 	}
-	var c CatalogView
+
+	var cv CatalogView
 	for i := range d.Rowers {
-		c.Rowers = append(c.Rowers, rowerView(newRowerFromData(&d.Rowers[i]), false))
+		cv.Rowers = append(cv.Rowers, rowerView(newRowerFromData(&d.Rowers[i]), false))
 	}
+
 	for _, b := range d.Boats {
-		c.Boats = append(c.Boats, BoatView{ID: b.ID, Name: b.Name, Class: BoatClass(b.Class), Value: b.Value,
-			City: b.City, ArtKey: b.ArtKey})
+		cv.Boats = append(cv.Boats, BoatView{
+			ID: b.ID, Name: b.Name, Class: BoatClass(b.Class), Value: b.Value,
+			City: b.City, ArtKey: b.ArtKey,
+		})
 	}
+
 	for i := range d.Trainers {
-		c.Trainers = append(c.Trainers, trainerView(&d.Trainers[i]))
+		cv.Trainers = append(cv.Trainers, trainerView(&d.Trainers[i]))
 	}
+
 	for _, e := range d.Events {
-		c.Events = append(c.Events, EventTypeView{Type: e.Type, Name: e.Name, Description: e.Description})
+		cv.Events = append(cv.Events, EventTypeView{Type: e.Type, Name: e.Name, Description: e.Description})
 	}
-	fillNil(&c)
-	return c, nil
+
+	fillNil(&cv)
+
+	return cv, nil
 }

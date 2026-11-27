@@ -37,9 +37,16 @@ export function MedalTable({ view }: { view: GameView }) {
               <td className="py-2.5 pl-3 num text-2xl leading-none">{rank}.</td>
               <td className="py-2.5">
                 <span className="flex min-w-0 items-center gap-2">
-                  <span className="size-3 shrink-0 rounded-full border border-ink" style={{ background: playerColor(view.players, p.id) }} />
+                  <span
+                    className="size-3 shrink-0 rounded-full border border-ink"
+                    style={{ background: playerColor(view.players, p.id) }}
+                  />
                   <span className="truncate font-bold">{p.name}</span>
-                  {p.isBot ? <Bot className="size-4 shrink-0 text-muted-foreground" aria-label="Computer" /> : <UserRound className="size-4 shrink-0 text-muted-foreground" aria-label="Mensch" />}
+                  {p.isBot ? (
+                    <Bot className="size-4 shrink-0 text-muted-foreground" aria-label="Computer" />
+                  ) : (
+                    <UserRound className="size-4 shrink-0 text-muted-foreground" aria-label="Mensch" />
+                  )}
                 </span>
               </td>
               <td className="py-2.5 text-center num text-xl">{p.gold}</td>
@@ -49,7 +56,9 @@ export function MedalTable({ view }: { view: GameView }) {
           ))}
         </tbody>
       </table>
-      <p className="border-t-2 border-ink/10 px-3 py-2 text-xs text-muted-foreground">Gold zählt 2 Punkte, Silber 1 Punkt.</p>
+      <p className="border-t-2 border-ink/10 px-3 py-2 text-xs text-muted-foreground">
+        Gold zählt 2 Punkte, Silber 1 Punkt.
+      </p>
     </div>
   );
 }
@@ -103,7 +112,9 @@ export function StandingsScreen() {
                 <Icon className="mt-0.5 size-4 shrink-0" />
                 <span className="min-w-0 flex-1">
                   {e.text}
-                  {e.kind !== "station" && station && <span className="ml-1 text-xs text-muted-foreground">({station.name})</span>}
+                  {e.kind !== "station" && station && (
+                    <span className="ml-1 text-xs text-muted-foreground">({station.name})</span>
+                  )}
                 </span>
               </li>
             );

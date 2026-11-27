@@ -27,6 +27,7 @@ func (cs *compState) race(id string) *RaceSpec {
 			return &cs.races[i]
 		}
 	}
+
 	return nil
 }
 
@@ -37,9 +38,11 @@ func raceSpec(r data.Race) RaceSpec {
 	for _, a := range r.Ages {
 		rs.Ages = append(rs.Ages, AgeGroup(a))
 	}
+
 	for _, gd := range r.Genders {
 		rs.Genders = append(rs.Genders, Gender(gd))
 	}
+
 	return rs
 }
 
@@ -52,6 +55,7 @@ var weatherNames = map[Weather]string{
 func (g *Game) openCompetition() {
 	st := g.currentStation()
 	def := g.d.Competitions[st.Competition]
+
 	cs := &compState{
 		def: def, station: g.station, name: st.Name, weights: map[Stat]float64{},
 		krebsPct: g.d.Rules.Incidents.Krebs, notes: slices.Clone(def.Notes),
@@ -59,39 +63,47 @@ func (g *Game) openCompetition() {
 	for _, r := range g.d.RacesFor(def, len(g.players)) {
 		cs.races = append(cs.races, raceSpec(r))
 	}
+
 	for _, s := range AllStats {
 		if w, ok := def.Weights[string(s)]; ok {
 			cs.weights[s] = w
 		}
 	}
+
 	if def.Water {
 		if forced := g.takePending(data.EffForceWeather); len(forced) > 0 {
 			e := forced[len(forced)-1]
 			cs.weather = Weather(e.Weather)
-			cs.notes = append(cs.notes, fmt.Sprintf("%s: Das Wetter steht fest.", e.Name))
+			cs.notes = append(cs.notes, e.Name+": Das Wetter steht fest.")
 		} else {
 			cs.weather = Weather(g.d.Rules.WeatherTable[rollD(g.rng, 6)-1])
 		}
+
 		for _, e := range g.takePending(data.EffKrebsChance) {
 			cs.krebsPct = e.Value
 			cs.notes = append(cs.notes, fmt.Sprintf("%s: Krebs-Wahrscheinlichkeit %d %%.", e.Name, e.Value))
 		}
+
 		for _, e := range g.takePending(data.EffCityBoatMod) {
 			cs.cityBoatMod += e.Value
 			cs.notes = append(cs.notes, fmt.Sprintf("%s: Städtische Boote %+d.", e.Name, e.Value))
 		}
+
 		g.addLog("info", "", fmt.Sprintf("Wetter bei %s: %s.", st.Name, weatherNames[cs.weather]))
 	}
+
 	if def.Kind == string(StationErgoCup) {
 		for _, e := range g.takePending(data.EffErgoKraftWeight) {
 			cs.weights[StatKraft] = float64(e.Value)
 			cs.notes = append(cs.notes, fmt.Sprintf("%s: Kraft zählt %d-fach.", e.Name, e.Value))
 		}
 	}
+
 	prompt := "Wähle einen Trainer und melde deine Mannschaften. Jeder Ruderer und jedes Boot darf nur einmal starten."
 	if cs.weather != "" {
 		prompt = fmt.Sprintf("Wetter: %s. %s", weatherNames[cs.weather], prompt)
 	}
+
 	p := g.newPhase(PhaseRegatta, stageNone, g.allPlayerIDs(), st.Name, prompt)
 	p.comp = cs
 }
@@ -100,81 +112,125 @@ func (g *Game) validateEntries(pl *player, cs *compState, trainerID string, entr
 	if trainerID != "" && pl.trainer(trainerID) == nil {
 		return invalid("Dieser Trainer gehört nicht zu deinem Team.")
 	}
+
 	if len(entries) > 0 && trainerID == "" && len(pl.trainers) > 0 {
 		return invalid("Wähle einen Trainer für diesen Wettkampf.")
 	}
+
 	usedRowers := map[string]bool{}
 	usedBoats := map[string]bool{}
 	usedRaces := map[string]bool{}
-	for _, e := range entries {
-		race := cs.race(e.RaceID)
+
+	for _, en := range entries {
+		race := cs.race(en.RaceID)
 		if race == nil {
-			return invalid("Unbekanntes Rennen %q.", e.RaceID)
+			return invalid("Unbekanntes Rennen %q.", en.RaceID)
 		}
-		if usedRaces[e.RaceID] {
+
+		if usedRaces[en.RaceID] {
 			return invalid("Pro Rennen ist nur eine Meldung erlaubt (%s).", race.Name)
 		}
-		usedRaces[e.RaceID] = true
-		if len(e.RowerIDs) != race.Seats {
-			return invalid("%s braucht genau %d Ruderer (gemeldet: %d).", race.Name, race.Seats, len(e.RowerIDs))
+
+		usedRaces[en.RaceID] = true
+		if len(en.RowerIDs) != race.Seats {
+			return invalid("%s braucht genau %d Ruderer (gemeldet: %d).", race.Name, race.Seats, len(en.RowerIDs))
 		}
-		rowers := make([]*rower, 0, len(e.RowerIDs))
-		for _, id := range e.RowerIDs {
-			r := pl.rower(id)
-			if r == nil {
-				return invalid("Der Ruderer %q gehört nicht zu deinem Team.", id)
-			}
-			if usedRowers[id] {
-				return invalid("%s darf pro Wettkampf nur einmal starten.", r.name)
-			}
-			usedRowers[id] = true
-			if !slices.Contains(race.Ages, r.age) {
-				return invalid("%s ist in %s nicht startberechtigt (Altersklasse).", r.name, race.Name)
-			}
-			if !slices.Contains(race.Genders, r.gender) {
-				return invalid("%s ist in %s nicht startberechtigt (Geschlecht).", r.name, race.Name)
-			}
-			rowers = append(rowers, r)
+
+		err := validateCrew(pl, race, en.RowerIDs, usedRowers)
+		if err != nil {
+			return err
 		}
-		if race.Mixed && !mixedOK(rowers) {
-			return invalid("%s: Mixed-Boote brauchen mindestens ein Mädchen, einen Jungen und zwei Altersgruppen.", race.Name)
-		}
-		switch race.Class {
-		case BoatErgo, Boat8x:
-			if e.BoatID != "" {
-				return invalid("Für %s wird kein eigenes Boot gemeldet.", race.Name)
-			}
-		default:
-			if e.BoatID == "" {
-				if !race.LoanBoat {
-					return invalid("Wähle ein Boot für %s.", race.Name)
-				}
-				continue
-			}
-			b := pl.boat(e.BoatID)
-			if b == nil {
-				return invalid("Das Boot %q gehört nicht zu deinem Team.", e.BoatID)
-			}
-			if b.class != race.Class {
-				return invalid("%s braucht ein Boot der Klasse %s, %s ist ein %s.", race.Name, race.Class, b.name, b.class)
-			}
-			if usedBoats[b.id] {
-				return invalid("Das Boot %s darf pro Wettkampf nur einmal eingesetzt werden.", b.name)
-			}
-			usedBoats[b.id] = true
+
+		err = validateBoat(pl, race, en.BoatID, usedBoats)
+		if err != nil {
+			return err
 		}
 	}
+
+	return nil
+}
+
+// validateCrew checks the rowers of one entry; usedRowers tracks starts across the competition.
+func validateCrew(pl *player, race *RaceSpec, rowerIDs []string, usedRowers map[string]bool) error {
+	rowers := make([]*rower, 0, len(rowerIDs))
+	for _, id := range rowerIDs {
+		rw := pl.rower(id)
+		if rw == nil {
+			return invalid("Der Ruderer %q gehört nicht zu deinem Team.", id)
+		}
+
+		if usedRowers[id] {
+			return invalid("%s darf pro Wettkampf nur einmal starten.", rw.name)
+		}
+
+		usedRowers[id] = true
+
+		if !slices.Contains(race.Ages, rw.age) {
+			return invalid("%s ist in %s nicht startberechtigt (Altersklasse).", rw.name, race.Name)
+		}
+
+		if !slices.Contains(race.Genders, rw.gender) {
+			return invalid("%s ist in %s nicht startberechtigt (Geschlecht).", rw.name, race.Name)
+		}
+
+		rowers = append(rowers, rw)
+	}
+
+	if race.Mixed && !mixedOK(rowers) {
+		return invalid("%s: Mixed-Boote brauchen mindestens ein Mädchen, einen Jungen und zwei Altersgruppen.",
+			race.Name)
+	}
+
+	return nil
+}
+
+// validateBoat checks the boat of one entry; usedBoats tracks boats across the competition.
+func validateBoat(pl *player, race *RaceSpec, boatID string, usedBoats map[string]bool) error {
+	switch race.Class {
+	case BoatErgo, Boat8x:
+		if boatID != "" {
+			return invalid("Für %s wird kein eigenes Boot gemeldet.", race.Name)
+		}
+
+		return nil
+	}
+
+	if boatID == "" {
+		if !race.LoanBoat {
+			return invalid("Wähle ein Boot für %s.", race.Name)
+		}
+
+		return nil
+	}
+
+	b := pl.boat(boatID)
+	if b == nil {
+		return invalid("Das Boot %q gehört nicht zu deinem Team.", boatID)
+	}
+
+	if b.class != race.Class {
+		return invalid("%s braucht ein Boot der Klasse %s, %s ist ein %s.", race.Name, race.Class, b.name, b.class)
+	}
+
+	if usedBoats[b.id] {
+		return invalid("Das Boot %s darf pro Wettkampf nur einmal eingesetzt werden.", b.name)
+	}
+
+	usedBoats[b.id] = true
+
 	return nil
 }
 
 func mixedOK(rs []*rower) bool {
 	girls, boys := false, false
 	ages := map[AgeGroup]bool{}
+
 	for _, r := range rs {
 		girls = girls || r.gender == GenderF
 		boys = boys || r.gender == GenderM
 		ages[r.age] = true
 	}
+
 	return girls && boys && len(ages) >= 2
 }
 
@@ -191,7 +247,98 @@ func (g *Game) buildEntry(pl *player, trainerID string, e Entry) raceEntry {
 	for _, id := range e.RowerIDs {
 		re.rowers = append(re.rowers, pl.rower(id))
 	}
+
 	return re
+}
+
+// raceEntries resolves the entries of all required players for one race, in player order.
+func (g *Game) raceEntries(p *phase, raceID string) []raceEntry {
+	var entries []raceEntry
+
+	for _, pid := range p.required {
+		d := p.decisions[pid]
+		for _, e := range d.Entries {
+			if e.RaceID == raceID {
+				entries = append(entries, g.buildEntry(g.playerByID(pid), d.TrainerID, e))
+			}
+		}
+	}
+
+	return entries
+}
+
+// teamAcc accumulates one player's boats into a team score (JTFO).
+type teamAcc struct {
+	entry EntryResult
+	found bool
+}
+
+// addToTeam adds a ranked race entry to its player's team score.
+func addToTeam(team map[string]*teamAcc, er EntryResult) {
+	acc := team[er.PlayerID]
+	if acc == nil {
+		acc = &teamAcc{entry: EntryResult{PlayerID: er.PlayerID, TrainerID: er.TrainerID}}
+		team[er.PlayerID] = acc
+	}
+
+	acc.found = true
+
+	acc.entry.RowerIDs = append(acc.entry.RowerIDs, er.RowerIDs...)
+	if er.Incident == IncidentKentern || er.Incident == IncidentMaterial {
+		return // this boat contributes nothing to the team score
+	}
+
+	acc.entry.Crew += er.Crew
+	acc.entry.BoatValue += er.BoatValue
+	acc.entry.Trainer += er.Trainer
+	acc.entry.EventBonus += er.EventBonus
+	acc.entry.Penalty += er.Penalty
+	acc.entry.Total += er.Total
+}
+
+// guestTeamEntry sums the guest crews of all races into one team entry, if there are any.
+func (g *Game) guestTeamEntry(cs *compState) (EntryResult, bool) {
+	guest, found := EntryResult{Guest: g.d.Rules.Guests.Name}, false
+
+	for _, race := range cs.races {
+		if ge, ok := g.guestEntry(cs, race); ok {
+			guest.Crew += ge.Crew
+			guest.Total += ge.Total
+			found = true
+		}
+	}
+
+	return guest, found
+}
+
+// scoreRace scores all entries of one race, rolls their incidents (water only), adds the guest
+// crew (not in team events) and ranks the result.
+func (g *Game) scoreRace(p *phase, race RaceSpec) RaceResult {
+	cs := p.comp
+	rr := RaceResult{RaceID: race.ID, Name: race.Name}
+
+	for _, re := range g.raceEntries(p, race.ID) {
+		er := g.scoreEntry(cs, race, re)
+		if cs.def.Water {
+			er.Incident = rollIncident(g.rng, g.d.Rules.Incidents.Kentern, g.d.Rules.Incidents.Material, cs.krebsPct)
+			if er.Incident == IncidentKrebs {
+				er.Penalty = g.d.Rules.KrebsPenalty
+				er.Total -= er.Penalty
+			}
+		}
+
+		rr.Entries = append(rr.Entries, er)
+	}
+
+	if len(rr.Entries) > 0 && !cs.team() {
+		if ge, ok := g.guestEntry(cs, race); ok {
+			rr.Entries = append(rr.Entries, ge)
+		}
+	}
+
+	rankEntries(rr.Entries)
+
+	return rr
 }
 
 // resolveCompetition scores all entries, rolls incidents, ranks, awards medals and Gold motivation.
@@ -199,93 +346,46 @@ func (g *Game) resolveCompetition(p *phase) {
 	cs := p.comp
 	res := CompetitionResult{StationIndex: cs.station, Name: cs.name, Weather: cs.weather}
 	outcomes := map[string]rowerOutcome{}
-	type teamAcc struct {
-		entry EntryResult
-		any   bool
-	}
 	team := map[string]*teamAcc{}
 
 	for _, race := range cs.races {
-		rr := RaceResult{RaceID: race.ID, Name: race.Name}
-		var entries []raceEntry
-		for _, pid := range p.required {
-			d := p.decisions[pid]
-			for _, e := range d.Entries {
-				if e.RaceID == race.ID {
-					entries = append(entries, g.buildEntry(g.playerByID(pid), d.TrainerID, e))
-				}
-			}
-		}
-		for _, re := range entries {
-			er := g.scoreEntry(cs, race, re)
-			if cs.def.Water {
-				er.Incident = rollIncident(g.rng, g.d.Rules.Incidents.Kentern, g.d.Rules.Incidents.Material, cs.krebsPct)
-				if er.Incident == IncidentKrebs {
-					er.Penalty = g.d.Rules.KrebsPenalty
-					er.Total -= er.Penalty
-				}
-			}
-			rr.Entries = append(rr.Entries, er)
-		}
-		if len(rr.Entries) > 0 && !cs.team() {
-			if ge, ok := g.guestEntry(cs, race); ok {
-				rr.Entries = append(rr.Entries, ge)
-			}
-		}
-		rankEntries(rr.Entries)
+		rr := g.scoreRace(p, race)
+
 		if cs.team() {
 			for i := range rr.Entries {
 				rr.Entries[i].Medal = MedalNone
-				er := rr.Entries[i]
-				acc := team[er.PlayerID]
-				if acc == nil {
-					acc = &teamAcc{entry: EntryResult{PlayerID: er.PlayerID, TrainerID: er.TrainerID}}
-					team[er.PlayerID] = acc
-				}
-				acc.any = true
-				acc.entry.RowerIDs = append(acc.entry.RowerIDs, er.RowerIDs...)
-				if er.Incident == IncidentKentern || er.Incident == IncidentMaterial {
-					continue // this boat contributes nothing to the team score
-				}
-				acc.entry.Crew += er.Crew
-				acc.entry.BoatValue += er.BoatValue
-				acc.entry.Trainer += er.Trainer
-				acc.entry.EventBonus += er.EventBonus
-				acc.entry.Penalty += er.Penalty
-				acc.entry.Total += er.Total
+				addToTeam(team, rr.Entries[i])
 			}
 		} else {
 			for _, er := range rr.Entries {
 				g.awardMedal(er, race.Class, outcomes)
 			}
 		}
+
 		res.Races = append(res.Races, rr)
 	}
 
 	if cs.team() {
 		tr := RaceResult{RaceID: "team", Name: "Teamwertung"}
+
 		for _, pid := range p.required {
-			if acc := team[pid]; acc != nil && acc.any {
+			if acc := team[pid]; acc != nil && acc.found {
 				tr.Entries = append(tr.Entries, acc.entry)
 			}
 		}
+
 		if len(tr.Entries) > 0 {
-			guest, any := EntryResult{Guest: g.d.Rules.Guests.Name}, false
-			for _, race := range cs.races {
-				if ge, ok := g.guestEntry(cs, race); ok {
-					guest.Crew += ge.Crew
-					guest.Total += ge.Total
-					any = true
-				}
-			}
-			if any {
+			if guest, ok := g.guestTeamEntry(cs); ok {
 				tr.Entries = append(tr.Entries, guest)
 			}
 		}
+
 		rankEntries(tr.Entries)
+
 		for _, er := range tr.Entries {
 			g.awardMedal(er, "", outcomes)
 		}
+
 		res.Races = append(res.Races, tr)
 	}
 
@@ -301,6 +401,7 @@ func (g *Game) awardMedal(er EntryResult, class BoatClass, outcomes map[string]r
 	if pl == nil {
 		return // guest crew: takes the place, scores nothing
 	}
+
 	switch er.Medal {
 	case MedalGold:
 		pl.gold++
@@ -310,36 +411,45 @@ func (g *Game) awardMedal(er EntryResult, class BoatClass, outcomes map[string]r
 	case MedalSilver:
 		pl.silver++
 	}
+
 	for _, id := range er.RowerIDs {
 		outcomes[id] = rowerOutcome{medal: er.Medal, class: class}
 	}
 }
 
-var medalNames = map[Medal]string{MedalGold: "Gold", MedalSilver: "Silber"}
-var incidentNames = map[IncidentKind]string{
-	IncidentKentern: "gekentert", IncidentMaterial: "Materialschaden", IncidentKrebs: "Krebs gefangen",
-}
+var (
+	medalNames    = map[Medal]string{MedalGold: "Gold", MedalSilver: "Silber"}
+	incidentNames = map[IncidentKind]string{
+		IncidentKentern: "gekentert", IncidentMaterial: "Materialschaden", IncidentKrebs: "Krebs gefangen",
+	}
+)
 
 func (g *Game) logResult(res CompetitionResult) {
 	for _, rr := range res.Races {
 		var parts []string
+
 		for _, er := range rr.Entries {
 			name := er.Guest
 			if pl := g.playerByID(er.PlayerID); pl != nil {
 				name = pl.name
 			}
+
 			s := fmt.Sprintf("%s %d", name, er.Total)
 			if er.Medal != MedalNone {
 				s = medalNames[er.Medal] + ": " + s
 			}
+
 			if er.Incident != IncidentNone {
 				s += " (" + incidentNames[er.Incident] + ")"
 			}
+
 			parts = append(parts, s)
 		}
+
 		if len(parts) == 0 {
 			continue
 		}
+
 		g.addLog("result", "", fmt.Sprintf("%s – %s: %s", res.Name, rr.Name, strings.Join(parts, ", ")))
 	}
 }

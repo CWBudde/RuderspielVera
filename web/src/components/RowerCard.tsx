@@ -22,7 +22,7 @@ export function AgeBadge({ age, short, className }: { age: string; short?: boole
       )}
       title={AGE_LABEL[age]}
     >
-      {short ? AGE_SHORT[age] : AGE_LABEL[age] ?? age}
+      {short ? AGE_SHORT[age] : (AGE_LABEL[age] ?? age)}
     </span>
   );
 }
@@ -98,7 +98,10 @@ export function RowerCard({ rower, className, preview }: RowerCardProps) {
           </div>
         )}
 
-        <ul className="absolute top-[17%] right-1.5 flex w-[56%] flex-col gap-[5%] @[15rem]:top-[19%] @[15rem]:w-[60%]" style={{ height: "52%" }}>
+        <ul
+          className="absolute top-[17%] right-1.5 flex w-[56%] flex-col gap-[5%] @[15rem]:top-[19%] @[15rem]:w-[60%]"
+          style={{ height: "52%" }}
+        >
           {CORE_STATS.map((s) => (
             <li key={s} className="relative flex flex-1 items-center">
               <StatBadge stat={s} className="absolute left-0 z-10 aspect-square h-[118%] w-auto" />
@@ -150,7 +153,9 @@ export function RowerRow({
   highlight?: Stat[];
 }) {
   return (
-    <div className={cn("flex min-h-14 items-center gap-2.5 rounded-xl border-2 border-ink bg-cream p-1.5 pr-2", className)}>
+    <div
+      className={cn("flex min-h-14 items-center gap-2.5 rounded-xl border-2 border-ink bg-cream p-1.5 pr-2", className)}
+    >
       <div className="relative size-11 shrink-0 overflow-hidden rounded-lg border-2 border-ink">
         <Art artKey={rower.artKey} cardId={rower.id} label={rower.name} thumb />
       </div>
@@ -168,7 +173,15 @@ export function RowerRow({
   );
 }
 
-export function MiniStats({ rower, highlight, className }: { rower: RowerView; highlight?: Stat[]; className?: string }) {
+export function MiniStats({
+  rower,
+  highlight,
+  className,
+}: {
+  rower: RowerView;
+  highlight?: Stat[];
+  className?: string;
+}) {
   return (
     <div className={cn("mt-1 grid grid-cols-5 gap-1", className)}>
       {ALL_STATS.map((s) => {

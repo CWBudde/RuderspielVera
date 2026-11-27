@@ -6,7 +6,14 @@ import { PhaseFrame } from "@/components/PhaseFrame";
 import { RowerCard } from "@/components/RowerCard";
 import { StatBadge } from "@/components/icons";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { ALL_STATS, STAT_LABEL } from "@/lib/labels";
 import { cn } from "@/lib/utils";
 
@@ -16,7 +23,8 @@ export function SwapPhase() {
   const [open, setOpen] = useState(true);
   const [pick, setPick] = useState<Stat[]>([]);
 
-  const toggle = (s: Stat) => setPick((p) => (p.includes(s) ? p.filter((x) => x !== s) : p.length < 2 ? [...p, s] : [p[1], s]));
+  const toggle = (s: Stat) =>
+    setPick((p) => (p.includes(s) ? p.filter((x) => x !== s) : p.length < 2 ? [...p, s] : [p[1], s]));
   const preview: Partial<Record<Stat, number>> = {};
   if (rower && pick.length === 2) {
     const [a, b] = pick;
@@ -75,9 +83,7 @@ export function SwapPhase() {
                       <StatBadge stat={s} className="size-8" />
                       <span className="flex-1 font-semibold">{STAT_LABEL[s]}</span>
                       <span className="num text-2xl">{rower.stats[s] ?? 0}</span>
-                      {other && (
-                        <span className="num text-2xl text-[#c2507a]">→ {rower.stats[other] ?? 0}</span>
-                      )}
+                      {other && <span className="num text-2xl text-[#c2507a]">→ {rower.stats[other] ?? 0}</span>}
                     </button>
                   </li>
                 );
@@ -88,10 +94,7 @@ export function SwapPhase() {
             <Button variant="outline" onClick={() => setOpen(false)}>
               Abbrechen
             </Button>
-            <Button
-              disabled={pick.length !== 2 || submitting}
-              onClick={() => submit({ swap: [pick[0], pick[1]] })}
-            >
+            <Button disabled={pick.length !== 2 || submitting} onClick={() => submit({ swap: [pick[0], pick[1]] })}>
               <ArrowLeftRight /> Tauschen
             </Button>
           </DialogFooter>

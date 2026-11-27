@@ -2,6 +2,7 @@ package engine
 
 import (
 	"fmt"
+	"strings"
 
 	"ruderspiel/internal/data"
 )
@@ -9,40 +10,51 @@ import (
 // runEreignisStation draws one global Ereignis. Immediate effects are applied now; the others are
 // stored as pending modifiers until the next matching station consumes them. It returns the card
 // name and the description (with per-player details).
-func (g *Game) runEreignisStation() (name, desc string) {
+func (g *Game) runEreignisStation() (string, string) {
 	weights := make([]int, len(g.d.Ereignisse))
 	for i, e := range g.d.Ereignisse {
 		weights[i] = e.Weight
 	}
-	e := &g.d.Ereignisse[pickWeighted(g.rng, weights)]
-	desc = e.Description
-	switch e.Effect {
+
+	ev := &g.d.Ereignisse[pickWeighted(g.rng, weights)]
+
+	desc := ev.Description
+
+	switch ev.Effect {
 	case data.EffAllMotivation:
 		for _, pl := range g.players {
 			for _, r := range pl.rowers {
-				r.addStat(StatMotivation, e.Value)
+				r.addStat(StatMotivation, ev.Value)
 			}
 		}
 	case data.EffRandomRowerMot:
+		var details strings.Builder
+
 		for _, pl := range g.players {
 			if len(pl.rowers) == 0 {
 				continue
 			}
+
 			r := pl.rowers[g.rng.IntN(len(pl.rowers))]
-			r.addStat(StatMotivation, e.Value)
-			desc += fmt.Sprintf(" %s: %s (%+d Motivation).", pl.name, r.name, e.Value)
+			r.addStat(StatMotivation, ev.Value)
+			fmt.Fprintf(&details, " %s: %s (%+d Motivation).", pl.name, r.name, ev.Value)
 		}
+
+		desc += details.String()
 	case data.EffNone:
 	default:
-		g.pending = append(g.pending, e)
+		g.pending = append(g.pending, ev)
 	}
-	g.addLog("ereignis", "", e.Name+": "+desc)
-	return e.Name, desc
+
+	g.addLog("ereignis", "", ev.Name+": "+desc)
+
+	return ev.Name, desc
 }
 
 // takePending removes and returns all pending Ereignisse with the given effect, oldest first.
 func (g *Game) takePending(effect string) []*data.Ereignis {
 	var taken, kept []*data.Ereignis
+
 	for _, e := range g.pending {
 		if e.Effect == effect {
 			taken = append(taken, e)
@@ -50,7 +62,9 @@ func (g *Game) takePending(effect string) []*data.Ereignis {
 			kept = append(kept, e)
 		}
 	}
+
 	g.pending = kept
+
 	return taken
 }
 
@@ -62,6 +76,7 @@ func (g *Game) consumeTrainingPoints() int {
 		pts = e.Value
 		g.addLog("ereignis", "", fmt.Sprintf("%s wirkt: Dieses Training bringt %d Punkte.", e.Name, e.Value))
 	}
+
 	return pts
 }
 
@@ -71,18 +86,22 @@ func (g *Game) sponsorPicks() int {
 	for _, e := range g.takePending(data.EffSponsorPick) {
 		n += e.Value
 	}
+
 	return n
 }
 
 // activeEreignisse returns German texts of all pending modifiers.
 func (g *Game) activeEreignisse() []string {
 	out := []string{}
+
 	for _, e := range g.pending {
 		if !g.ereignisAhead(e.Effect) {
 			continue // no station left that would consume it
 		}
+
 		out = append(out, fmt.Sprintf("%s: %s", e.Name, e.Description))
 	}
+
 	return out
 }
 
@@ -93,13 +112,16 @@ func (g *Game) ereignisAhead(effect string) bool {
 	if g.over {
 		return false
 	}
+
 	cal := g.d.Calendar
 	for i := g.station + 1; i < len(cal); i++ {
 		st := cal[i]
+
 		var comp *data.Competition
 		if c, ok := g.d.Competitions[st.Competition]; ok {
 			comp = c
 		}
+
 		switch effect {
 		case data.EffTrainingPoints:
 			if StationType(st.Type) == StationTraining {
@@ -122,5 +144,6 @@ func (g *Game) ereignisAhead(effect string) bool {
 			return true
 		}
 	}
+
 	return false
 }

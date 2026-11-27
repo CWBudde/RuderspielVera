@@ -11,13 +11,17 @@ import { cn } from "@/lib/utils";
 
 export function sortRowers(rowers: RowerView[]): RowerView[] {
   return [...rowers].sort(
-    (a, b) => (AGE_ORDER[a.age] ?? 9) - (AGE_ORDER[b.age] ?? 9) || a.gender.localeCompare(b.gender) || a.name.localeCompare(b.name),
+    (a, b) =>
+      (AGE_ORDER[a.age] ?? 9) - (AGE_ORDER[b.age] ?? 9) ||
+      a.gender.localeCompare(b.gender) ||
+      a.name.localeCompare(b.name),
   );
 }
 
 const MODE_KEY = "ruderspiel.teamMode";
 
-export const tabListClass = "h-auto w-full rounded-xl border-2 border-ink bg-cream-2 p-1 group-data-[orientation=horizontal]/tabs:h-auto";
+export const tabListClass =
+  "h-auto w-full rounded-xl border-2 border-ink bg-cream-2 p-1 group-data-[orientation=horizontal]/tabs:h-auto";
 export const tabTriggerClass =
   "min-h-10 rounded-lg font-display text-base font-bold data-[state=active]:bg-navy data-[state=active]:text-white data-[state=active]:shadow-none";
 
@@ -48,7 +52,10 @@ export function TeamScreen() {
               pl.id === playerId ? "bg-cream shadow-[0_2px_0_var(--ink)]" : "bg-white/50 text-ink/70",
             )}
           >
-            <span className="size-3 rounded-full border border-ink" style={{ background: playerColor(view.players, pl.id) }} />
+            <span
+              className="size-3 rounded-full border border-ink"
+              style={{ background: playerColor(view.players, pl.id) }}
+            />
             {pl.id === view.you ? "Dein Team" : pl.name}
           </button>
         ))}
@@ -69,7 +76,11 @@ export function TeamScreen() {
 
         <TabsContent value="rowers" className="mt-2">
           <div className="mb-2 flex justify-end">
-            <div className="inline-flex rounded-xl border-2 border-ink bg-cream p-0.5" role="radiogroup" aria-label="Darstellung">
+            <div
+              className="inline-flex rounded-xl border-2 border-ink bg-cream p-0.5"
+              role="radiogroup"
+              aria-label="Darstellung"
+            >
               {(
                 [
                   ["cards", LayoutGrid, "Karten"],

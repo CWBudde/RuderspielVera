@@ -45,7 +45,7 @@ RuderspielVera/
 
 Key design choices:
 
-- **Simultaneous-decision state machine.** Every calendar station opens a *phase* that needs one
+- **Simultaneous-decision state machine.** Every calendar station opens a _phase_ that needs one
   decision per player (training allocation, 5-rower selection, regatta entries, draft pick, or just
   "weiter"). When all decisions are in, the engine resolves the station and advances. Bots submit
   instantly. This is exactly the multiplayer model, so the PoC already exercises it.
@@ -62,13 +62,13 @@ Key design choices:
 
 ### API (PoC, documented in docs/api.md)
 
-| Method | Path | Purpose |
-|---|---|---|
-| POST | `/api/games` | `{seed?, playerName, bots: 2}` → `{gameId, playerId, token}` |
-| GET | `/api/games/{id}?player=` | `GameView` for that player (bearer token) |
-| POST | `/api/games/{id}/decisions` | `{phaseId, decision}` → new `GameView` (bots act, station resolves) |
-| GET | `/api/games/{id}/log` | full resolution log (races, incidents, events) |
-| GET | `/api/catalog` | static card data (names, art keys) |
+| Method | Path                        | Purpose                                                             |
+| ------ | --------------------------- | ------------------------------------------------------------------- |
+| POST   | `/api/games`                | `{seed?, playerName, bots: 2}` → `{gameId, playerId, token}`        |
+| GET    | `/api/games/{id}?player=`   | `GameView` for that player (bearer token)                           |
+| POST   | `/api/games/{id}/decisions` | `{phaseId, decision}` → new `GameView` (bots act, station resolves) |
+| GET    | `/api/games/{id}/log`       | full resolution log (races, incidents, events)                      |
+| GET    | `/api/catalog`              | static card data (names, art keys)                                  |
 
 Store: in-memory map with JSON snapshot per game under `data/games/` (seed + log), reloaded on start.
 Go stdlib `net/http` ServeMux with method patterns; no framework.
@@ -80,7 +80,7 @@ Go stdlib `net/http` ServeMux with method patterns; no framework.
 All marked as PoC assumptions; numbers live in `internal/data/rules.json`.
 
 **Calendar.** Exactly the 12 sections of Regelwerk §2.2 (52 stations). Hankensbüttel and Kassel =
-*Trainingslager* (30 points, spread over at most 5 rowers, free split). Wanderfahrt = choose 5 rowers:
+_Trainingslager_ (30 points, spread over at most 5 rowers, free split). Wanderfahrt = choose 5 rowers:
 +4 Ausdauer, +3 Motivation each. RVH-Herbstsprint and RVB-Endspurt are separate regattas; game ends
 after RVB.
 
@@ -109,16 +109,16 @@ crew member). Gold: +1 Motivation to **every crew member** immediately. Season t
 
 **Competition weights.**
 
-| Competition | Weights | Races (each player max 1 entry per race) |
-|---|---|---|
-| Hildesheim (long) | Ausdauer 2, Motivation 1 | 1x and 2x for A and B, girls/boys → 8 races |
-| Ergo-Cups ×3 | Kraft 2, Motivation 1 | single, 3 age groups × 2 genders → 6 races; no boat, no incidents, no weather |
-| Bremen, Schillerschule | Geschwindigkeit 1, Technik 1, Motivation 0.5 | 6 races per regatta, chosen from the 18-class matrix (1x/2x/4x × age × gender), fixed list in competitions.json, rotating so every class appears during the season |
-| Kasselregatta | Geschwindigkeit 1, Kraft 1, Motivation 0.5 | 6 races |
-| Verbandsregatta I/II | Technik 1.5, Geschwindigkeit 1, Motivation 0.5 | 6 races each |
-| JTFO | Geschwindigkeit 1, Technik 1 | team competition: 2 players → var. C, 3 → var. B (2x+4x+2x), 4 → var. A; team score = sum of the 3 boats, one medal for the team |
-| RVH-Herbstsprint | Geschwindigkeit 2, Kraft 1 | 1x/2x/4x per gender, ages mixed → 6 races |
-| RVB-Endspurt | Geschwindigkeit 2, Technik 1, Motivation 0.5 | Mixed-4x (≥1 girl, ≥1 boy, ≥2 age groups) and Mixed-8x (same rule, shared identical eight, boat value 0) |
+| Competition            | Weights                                        | Races (each player max 1 entry per race)                                                                                                                           |
+| ---------------------- | ---------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Hildesheim (long)      | Ausdauer 2, Motivation 1                       | 1x and 2x for A and B, girls/boys → 8 races                                                                                                                        |
+| Ergo-Cups ×3           | Kraft 2, Motivation 1                          | single, 3 age groups × 2 genders → 6 races; no boat, no incidents, no weather                                                                                      |
+| Bremen, Schillerschule | Geschwindigkeit 1, Technik 1, Motivation 0.5   | 6 races per regatta, chosen from the 18-class matrix (1x/2x/4x × age × gender), fixed list in competitions.json, rotating so every class appears during the season |
+| Kasselregatta          | Geschwindigkeit 1, Kraft 1, Motivation 0.5     | 6 races                                                                                                                                                            |
+| Verbandsregatta I/II   | Technik 1.5, Geschwindigkeit 1, Motivation 0.5 | 6 races each                                                                                                                                                       |
+| JTFO                   | Geschwindigkeit 1, Technik 1                   | team competition: 2 players → var. C, 3 → var. B (2x+4x+2x), 4 → var. A; team score = sum of the 3 boats, one medal for the team                                   |
+| RVH-Herbstsprint       | Geschwindigkeit 2, Kraft 1                     | 1x/2x/4x per gender, ages mixed → 6 races                                                                                                                          |
+| RVB-Endspurt           | Geschwindigkeit 2, Technik 1, Motivation 0.5   | Mixed-4x (≥1 girl, ≥1 boy, ≥2 age groups) and Mixed-8x (same rule, shared identical eight, boat value 0)                                                           |
 
 A rower may start in **at most one race per regatta** (forces trade-offs with 9+ rowers). Empty races
 award nothing; a race with a single starter gives Gold only if it finishes (capsize/breakage = no medal).
@@ -161,31 +161,38 @@ Two personalities: "Taktiker" and "Bauchgefühl" (more noise).
 ## Phases
 
 ### Phase 0 – Foundation
+
 `git init`, `.gitignore`, `go.mod`, `justfile`, `docs/PLAN.md` (this plan), CLAUDE.md with repo rules
 (German UI / English code, rules-data-driven, never run local codex). Copy and adapt the gfx skill.
 
 ### Phase 1 – Rules data + PoC rule spec
+
 `docs/poc-rules.md`; `internal/data/*.json`; `cmd/gendata` + generated `rowers.json`; loaders with
 validation tests (55 rowers, unique IDs, every stat ≥ 5, sums match ranks, calendar has 52 stations).
 
 ### Phase 2 – Engine
+
 State model, RNG, calendar/phase machine, decisions + validation (clear German error strings for the
 UI), training, selections, camps, events, Ereignisse, regatta resolution (weather, trainer, scoring,
 incidents, ranking with ties, medals, gold motivation), draft, final standings, `ViewFor`. Table-driven
 tests per rule; golden replay test (seed + decisions → identical final state).
 
 ### Phase 3 – Bots + simulator
+
 `internal/bot`; `cmd/sim -games 1000` prints win rate per seat/personality, medal distribution, average
 scores per competition, incident rates. Used to tune rules.json (no seat should exceed ~40 % wins in
 3-bot games; final scores 15–40 points).
 
 ### Phase 4 – API server
+
 Handlers, token per player, in-memory store + JSON snapshot, CORS for vite dev, `embed` of web/dist,
 `tygo` type generation. httptest coverage for the happy path and invalid decisions.
 
 ### Phase 5 – Frontend (mobile-first)
+
 Vite/React/TS, Tailwind, shadcn/ui, TanStack Query for API state. Bottom tab bar on phones (Saison,
 Team, Wettkampf, Wertung), side layout on ≥ md.
+
 - **Start**: name, seed (optional), "Neues Spiel gegen 2 Computer".
 - **Saison**: illustrated Maschsee board; stations as pastel circles in a scrollable path (phone:
   vertical timeline; desktop: board image with station overlay), current station highlighted, figure
@@ -200,9 +207,10 @@ Team, Wettkampf, Wertung), side layout on ≥ md.
   badges) → submit → result screen per race (ranked bars, incident icons, medals) → standings.
 - **Draft**: open offer, pick one.
 - **Wertung**: medal table, season log. Final screen with winner.
-Touch targets ≥ 44 px, no horizontal scroll at 360 px width, works offline-tolerant (retry).
+  Touch targets ≥ 44 px, no horizontal scroll at 360 px width, works offline-tolerant (retry).
 
 ### Phase 6 – Art (gfx-imagegen, background)
+
 Adapt the skill (see below), write `art/style.md` preamble from the two examples (watercolour + fine ink,
 warm daylight, Maschsee Hannover, navy #1f3a5f frames, pastel station colours). PoC asset list (~20
 images): board background without stations (landscape + portrait crop), 6 generic rower portraits
@@ -212,10 +220,12 @@ Wanderfahrt, camp), weather icons (5), gold/silver medals, title splash. Convert
 `web/src/assets/`. The UI must work with placeholder art until images land.
 
 ### Phase 7 – PoC integration and playtest
+
 Full season playable in the browser against 2 bots; Playwright run at 390×844 and 1440×900; fix
 layout/flow issues; README with `just dev`.
 
 ### Later phases (multiplayer and beyond)
+
 8. **Persistence**: PostgreSQL (games, players, decision log; snapshots every N decisions), migrations
    with goose, sqlc queries; replay on load.
 9. **Accounts + lobby**: lightweight accounts (name + magic link or simple password), create/join game
@@ -237,6 +247,7 @@ layout/flow issues; README with `just dev`.
 
 Copy `/mnt/projekte/Code/Historyline-1914-1918-remake/.claude/skills/gfx-imagegen` to
 `.claude/skills/gfx-imagegen` and change:
+
 - `gen.sh`: `remote=` → a dedicated working dir on 192.168.213.20 (`/mnt/Projekte/Code/games/RuderspielVera`,
   created with mkdir; only `art-gen/` written there), local repo detection via `go.mod`/`CLAUDE.md`
   instead of `AGENTS.md`, output under `art/gen/<date>/<group>/` (git-ignored except picks). Keep:

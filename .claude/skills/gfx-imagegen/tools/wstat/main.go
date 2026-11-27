@@ -19,12 +19,14 @@ func lin(c float64) float64 {
 	}
 	return math.Pow((c+0.055)/1.055, 2.4)
 }
+
 func f(t float64) float64 {
 	if t > 216.0/24389 {
 		return math.Cbrt(t)
 	}
 	return (24389.0/27*t + 16) / 116
 }
+
 func lab(r, g, b float64) (float64, float64, float64) {
 	R, G, B := lin(r), lin(g), lin(b)
 	x := (0.4124*R + 0.3576*G + 0.1805*B) / 0.95047
@@ -47,6 +49,7 @@ func (s *acc) add(r, g, b float64) {
 	s.a += A
 	s.bb += B
 }
+
 func (s acc) String() string {
 	if s.n == 0 {
 		return "no opaque pixels"

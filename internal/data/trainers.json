@@ -1,32 +1,124 @@
 [
-  {"id": "frau-linke", "name": "Frau Linke", "gender": "w", "ability": "Regenfest",
-   "description": "Bei Regen +8 pro Ruderplatz. Bei Wind −6 pro Ruderplatz.",
-   "effects": [{"weather": "regen", "value": 8}, {"weather": "wind", "value": -6}], "artKey": "trainer-w"},
-  {"id": "herr-sack", "name": "Herr Sack", "gender": "m", "ability": "Sonnenanbeter",
-   "description": "Bei Hitze +10 pro Ruderplatz. Bei Regen −10 pro Ruderplatz.",
-   "effects": [{"weather": "hitze", "value": 10}, {"weather": "regen", "value": -10}], "artKey": "trainer-m"},
-  {"id": "hannah", "name": "Hannah", "gender": "w", "ability": "Eisbärin",
-   "description": "Bei Kälte +10 pro Ruderplatz. Bei Hitze −6 pro Ruderplatz.",
-   "effects": [{"weather": "kaelte", "value": 10}, {"weather": "hitze", "value": -6}], "artKey": "trainer-w"},
-  {"id": "caro", "name": "Caro", "gender": "w", "ability": "Windflüsterin",
-   "description": "Bei Wind +10 pro Ruderplatz. Bei Kälte −6 pro Ruderplatz.",
-   "effects": [{"weather": "wind", "value": 10}, {"weather": "kaelte", "value": -6}], "artKey": "trainer-w"},
-  {"id": "julian", "name": "Julian", "gender": "m", "ability": "Ergo-Spezialist",
-   "description": "Bei Ergo-Cups +8 pro Start. Bei Hitze −6 pro Ruderplatz.",
-   "effects": [{"context": "ergo", "value": 8}, {"weather": "hitze", "value": -6}], "artKey": "trainer-m"},
-  {"id": "aron", "name": "Aron", "gender": "m", "ability": "Sprintcoach",
-   "description": "Bei Sprintregatten (RVH, RVB) +8 pro Ruderplatz. Bei Wind −6 pro Ruderplatz.",
-   "effects": [{"context": "sprint", "value": 8}, {"weather": "wind", "value": -6}], "artKey": "trainer-m"},
-  {"id": "salim", "name": "Salim", "gender": "m", "ability": "Langstreckenprofi",
-   "description": "Bei Langstreckenregatten (Hildesheim) +10 pro Ruderplatz. Bei Regen −6 pro Ruderplatz.",
-   "effects": [{"context": "langstrecke", "value": 10}, {"weather": "regen", "value": -6}], "artKey": "trainer-m"},
-  {"id": "friedjof", "name": "Friedjof", "gender": "m", "ability": "Gewohnheitstier",
-   "description": "Bei normalem Wetter +8 pro Ruderplatz. Bei Kälte −8 pro Ruderplatz.",
-   "effects": [{"weather": "normal", "value": 8}, {"weather": "kaelte", "value": -8}], "artKey": "trainer-m"},
-  {"id": "josef", "name": "Josef", "gender": "m", "ability": "Nordlicht",
-   "description": "Bei Wind +6 und bei Regen +6 pro Ruderplatz. Bei Hitze −12 pro Ruderplatz.",
-   "effects": [{"weather": "wind", "value": 6}, {"weather": "regen", "value": 6}, {"weather": "hitze", "value": -12}], "artKey": "trainer-m"},
-  {"id": "clara", "name": "Clara", "gender": "w", "ability": "Schönwettertrainerin",
-   "description": "Bei Hitze +6 und bei normalem Wetter +6 pro Ruderplatz. Bei Wind −8 pro Ruderplatz.",
-   "effects": [{"weather": "hitze", "value": 6}, {"weather": "normal", "value": 6}, {"weather": "wind", "value": -8}], "artKey": "trainer-w"}
+  {
+    "id": "frau-linke",
+    "name": "Frau Linke",
+    "gender": "w",
+    "ability": "Regenfest",
+    "description": "Bei Regen +8 pro Ruderplatz. Bei Wind −6 pro Ruderplatz.",
+    "effects": [
+      { "weather": "regen", "value": 8 },
+      { "weather": "wind", "value": -6 }
+    ],
+    "artKey": "trainer-w"
+  },
+  {
+    "id": "herr-sack",
+    "name": "Herr Sack",
+    "gender": "m",
+    "ability": "Sonnenanbeter",
+    "description": "Bei Hitze +10 pro Ruderplatz. Bei Regen −10 pro Ruderplatz.",
+    "effects": [
+      { "weather": "hitze", "value": 10 },
+      { "weather": "regen", "value": -10 }
+    ],
+    "artKey": "trainer-m"
+  },
+  {
+    "id": "hannah",
+    "name": "Hannah",
+    "gender": "w",
+    "ability": "Eisbärin",
+    "description": "Bei Kälte +10 pro Ruderplatz. Bei Hitze −6 pro Ruderplatz.",
+    "effects": [
+      { "weather": "kaelte", "value": 10 },
+      { "weather": "hitze", "value": -6 }
+    ],
+    "artKey": "trainer-w"
+  },
+  {
+    "id": "caro",
+    "name": "Caro",
+    "gender": "w",
+    "ability": "Windflüsterin",
+    "description": "Bei Wind +10 pro Ruderplatz. Bei Kälte −6 pro Ruderplatz.",
+    "effects": [
+      { "weather": "wind", "value": 10 },
+      { "weather": "kaelte", "value": -6 }
+    ],
+    "artKey": "trainer-w"
+  },
+  {
+    "id": "julian",
+    "name": "Julian",
+    "gender": "m",
+    "ability": "Ergo-Spezialist",
+    "description": "Bei Ergo-Cups +8 pro Start. Bei Hitze −6 pro Ruderplatz.",
+    "effects": [
+      { "context": "ergo", "value": 8 },
+      { "weather": "hitze", "value": -6 }
+    ],
+    "artKey": "trainer-m"
+  },
+  {
+    "id": "aron",
+    "name": "Aron",
+    "gender": "m",
+    "ability": "Sprintcoach",
+    "description": "Bei Sprintregatten (RVH, RVB) +8 pro Ruderplatz. Bei Wind −6 pro Ruderplatz.",
+    "effects": [
+      { "context": "sprint", "value": 8 },
+      { "weather": "wind", "value": -6 }
+    ],
+    "artKey": "trainer-m"
+  },
+  {
+    "id": "salim",
+    "name": "Salim",
+    "gender": "m",
+    "ability": "Langstreckenprofi",
+    "description": "Bei Langstreckenregatten (Hildesheim) +10 pro Ruderplatz. Bei Regen −6 pro Ruderplatz.",
+    "effects": [
+      { "context": "langstrecke", "value": 10 },
+      { "weather": "regen", "value": -6 }
+    ],
+    "artKey": "trainer-m"
+  },
+  {
+    "id": "friedjof",
+    "name": "Friedjof",
+    "gender": "m",
+    "ability": "Gewohnheitstier",
+    "description": "Bei normalem Wetter +8 pro Ruderplatz. Bei Kälte −8 pro Ruderplatz.",
+    "effects": [
+      { "weather": "normal", "value": 8 },
+      { "weather": "kaelte", "value": -8 }
+    ],
+    "artKey": "trainer-m"
+  },
+  {
+    "id": "josef",
+    "name": "Josef",
+    "gender": "m",
+    "ability": "Nordlicht",
+    "description": "Bei Wind +6 und bei Regen +6 pro Ruderplatz. Bei Hitze −12 pro Ruderplatz.",
+    "effects": [
+      { "weather": "wind", "value": 6 },
+      { "weather": "regen", "value": 6 },
+      { "weather": "hitze", "value": -12 }
+    ],
+    "artKey": "trainer-m"
+  },
+  {
+    "id": "clara",
+    "name": "Clara",
+    "gender": "w",
+    "ability": "Schönwettertrainerin",
+    "description": "Bei Hitze +6 und bei normalem Wetter +6 pro Ruderplatz. Bei Wind −8 pro Ruderplatz.",
+    "effects": [
+      { "weather": "hitze", "value": 6 },
+      { "weather": "normal", "value": 6 },
+      { "weather": "wind", "value": -8 }
+    ],
+    "artKey": "trainer-w"
+  }
 ]

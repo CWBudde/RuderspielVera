@@ -12,7 +12,12 @@ export default defineConfig(({ command }) => ({
       // Named portraits of real club members (src/assets/art/people/, git-ignored) are a dev-server
       // feature only: every build gets the empty stub, so the photos are never bundled or published.
       ...(command === "build"
-        ? [{ find: "@/components/peopleArt", replacement: path.resolve(import.meta.dirname, "./src/components/peopleArt.stub.ts") }]
+        ? [
+            {
+              find: "@/components/peopleArt",
+              replacement: path.resolve(import.meta.dirname, "./src/components/peopleArt.stub.ts"),
+            },
+          ]
         : []),
       { find: "@", replacement: path.resolve(import.meta.dirname, "./src") },
     ],

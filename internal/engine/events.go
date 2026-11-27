@@ -16,12 +16,14 @@ func (g *Game) runEventStation() (map[string]string, map[string][]string) {
 	n := perStation[min(idx, len(perStation)-1)]
 	lines := map[string][]string{}
 	dealt := map[string][]string{}
-	for k := 0; k < n; k++ {
+
+	for range n {
 		for _, pl := range g.players {
 			eligible := eventEligible(pl)
 			if len(eligible) == 0 {
 				continue
 			}
+
 			r := eligible[g.rng.IntN(len(eligible))]
 			def := g.drawEventType()
 			text := g.applyEvent(pl, r, def)
@@ -31,25 +33,31 @@ func (g *Game) runEventStation() (map[string]string, map[string][]string) {
 			g.addLog("event", pl.id, public)
 		}
 	}
+
 	prompts := map[string]string{}
+
 	for _, pl := range g.players {
 		if len(lines[pl.id]) == 0 {
 			prompts[pl.id] = "Keiner deiner Ruderer kann noch eine Eventkarte erhalten."
 			continue
 		}
+
 		prompts[pl.id] = "Deine Eventkarten: " + strings.Join(lines[pl.id], " ")
 	}
+
 	return prompts, dealt
 }
 
 // eventEligible lists own rowers without an event card (twins never get one).
 func eventEligible(pl *player) []*rower {
 	var out []*rower
+
 	for _, r := range pl.rowers {
 		if r.event == nil && !r.isTwin {
 			out = append(out, r)
 		}
 	}
+
 	return out
 }
 
@@ -61,69 +69,82 @@ func (g *Game) drawEventType() *data.EventType {
 			weights[i] = 0
 		}
 	}
+
 	return &g.d.Events[pickWeighted(g.rng, weights)]
 }
 
 // applyEvent attaches the card to the rower and applies its immediate effect.
-func (g *Game) applyEvent(pl *player, r *rower, def *data.EventType) string {
+func (g *Game) applyEvent(pl *player, rw *rower, def *data.EventType) string {
 	card := &eventCard{def: def}
-	r.event = card
+	rw.event = card
+
 	switch def.Type {
 	case "phoenix":
-		s := g.pickExtreme(r.stats, false)
-		r.addStat(s, def.Value)
-		return fmt.Sprintf("Phönix: %s erhält +%d %s.", r.name, def.Value, statName(s))
+		s := g.pickExtreme(rw.stats, false)
+		rw.addStat(s, def.Value)
+
+		return fmt.Sprintf("Phönix: %s erhält +%d %s.", rw.name, def.Value, statName(s))
 	case "verdopplung":
-		s := g.pickExtreme(r.stats, true)
-		gain := r.stats[s]*def.Value - r.stats[s]
-		r.addStat(s, gain)
-		return fmt.Sprintf("Verdopplung: %s von %s steigt auf %d.", statName(s), r.name, r.stats[s])
+		s := g.pickExtreme(rw.stats, true)
+		gain := rw.stats[s]*def.Value - rw.stats[s]
+		rw.addStat(s, gain)
+
+		return fmt.Sprintf("Verdopplung: %s von %s steigt auf %d.", statName(s), rw.name, rw.stats[s])
 	case "tausch":
-		g.swapQueue[pl.id] = append(g.swapQueue[pl.id], r.id)
-		return fmt.Sprintf("Tausch: Du darfst zwei Eigenschaften von %s tauschen.", r.name)
+		g.swapQueue[pl.id] = append(g.swapQueue[pl.id], rw.id)
+		return fmt.Sprintf("Tausch: Du darfst zwei Eigenschaften von %s tauschen.", rw.name)
 	case "seelenzwilling":
 		twin := &rower{
-			id: r.id + "-zwilling", name: r.name + " (Zwilling)", age: r.age, gender: r.gender,
-			artKey: r.artKey, isTwin: true, stats: Stats{},
+			id: rw.id + "-zwilling", name: rw.name + " (Zwilling)", age: rw.age, gender: rw.gender,
+			artKey: rw.artKey, isTwin: true, stats: Stats{},
 		}
 		for _, s := range AllStats {
-			twin.stats[s] = (r.stats[s]*def.Value + 50) / 100
+			twin.stats[s] = (rw.stats[s]*def.Value + 50) / 100
 		}
+
 		twin.base = twin.stats.clone()
 		pl.rowers = append(pl.rowers, twin)
+
 		return fmt.Sprintf("Seelenzwilling: %s kommt neu ins Team.", twin.name)
 	case "mission":
 		ms := g.possibleMissions()
 		m := ms[g.rng.IntN(len(ms))]
-		card.mission = &missionState{def: m, text: strings.ReplaceAll(m.Text, "{name}", r.name)}
+		card.mission = &missionState{def: m, text: strings.ReplaceAll(m.Text, "{name}", rw.name)}
+
 		return fmt.Sprintf("Geheime Mission: %s (Belohnung: %s)", card.mission.text, m.RewardText)
 	case "wetter", "wachstum":
-		return fmt.Sprintf("%s: %s – %s", def.Name, r.name, def.Description)
+		return fmt.Sprintf("%s: %s – %s", def.Name, rw.name, def.Description)
 	}
+
 	if def.Stat != "" {
 		s := Stat(def.Stat)
-		r.addStat(s, def.Value)
-		return fmt.Sprintf("%s: %s erhält +%d %s.", def.Name, r.name, def.Value, statName(s))
+		rw.addStat(s, def.Value)
+
+		return fmt.Sprintf("%s: %s erhält +%d %s.", def.Name, rw.name, def.Value, statName(s))
 	}
-	return fmt.Sprintf("%s: %s.", def.Name, r.name)
+
+	return fmt.Sprintf("%s: %s.", def.Name, rw.name)
 }
 
 // pickExtreme returns the highest (best) or lowest stat; ties are drawn at random.
 func (g *Game) pickExtreme(s Stats, best bool) Stat {
-	var cands []Stat
+	cands := make([]Stat, 0, len(AllStats))
+
 	for _, st := range AllStats {
 		switch {
 		case len(cands) == 0:
-			cands = []Stat{st}
+			cands = append(cands, st)
 		case s[st] == s[cands[0]]:
 			cands = append(cands, st)
 		case (best && s[st] > s[cands[0]]) || (!best && s[st] < s[cands[0]]):
-			cands = []Stat{st}
+			cands = append(cands[:0], st)
 		}
 	}
+
 	if len(cands) == 1 {
 		return cands[0]
 	}
+
 	return cands[g.rng.IntN(len(cands))]
 }
 
@@ -133,22 +154,28 @@ func (g *Game) openSwapPhase() bool {
 	var required []string
 	swap := map[string]string{}
 	prompts := map[string]string{}
+
 	for _, pl := range g.players {
 		q := g.swapQueue[pl.id]
 		if len(q) == 0 {
 			continue
 		}
+
 		swap[pl.id] = q[0]
 		g.swapQueue[pl.id] = q[1:]
 		required = append(required, pl.id)
-		prompts[pl.id] = fmt.Sprintf("Tausch-Event: Du darfst zwei Eigenschaften von %s miteinander tauschen – oder darauf verzichten.",
+		prompts[pl.id] = fmt.Sprintf(
+			"Tausch-Event: Du darfst zwei Eigenschaften von %s miteinander tauschen – oder darauf verzichten.",
 			pl.rower(q[0]).name)
 	}
+
 	if len(required) == 0 {
 		return false
 	}
+
 	p := g.newPhase(PhaseEventSwap, stageNone, required, "Tausch-Event", "Ein Mitspieler darf Eigenschaften tauschen.")
 	p.swap, p.prompts = swap, prompts
+
 	return true
 }
 
@@ -156,12 +183,15 @@ func validateSwap(sw *[2]Stat) error {
 	if sw == nil {
 		return nil
 	}
+
 	if !validStat(sw[0]) || !validStat(sw[1]) {
 		return invalid("Unbekannte Eigenschaft beim Tausch.")
 	}
+
 	if sw[0] == sw[1] {
 		return invalid("Wähle zwei verschiedene Eigenschaften zum Tauschen.")
 	}
+
 	return nil
 }
 
@@ -171,8 +201,10 @@ func (g *Game) applySwap(pl *player, rowerID string, sw *[2]Stat) {
 		g.addLog("event", pl.id, fmt.Sprintf("%s verzichtet auf den Tausch bei %s.", pl.name, r.name))
 		return
 	}
+
 	r.stats[sw[0]], r.stats[sw[1]] = r.stats[sw[1]], r.stats[sw[0]]
-	g.addLog("event", pl.id, fmt.Sprintf("%s tauscht bei %s %s und %s.", pl.name, r.name, statName(sw[0]), statName(sw[1])))
+	g.addLog("event", pl.id, fmt.Sprintf("%s tauscht bei %s %s und %s.",
+		pl.name, r.name, statName(sw[0]), statName(sw[1])))
 }
 
 // ---------- missions ----------
@@ -180,38 +212,47 @@ func (g *Game) applySwap(pl *player, rowerID string, sw *[2]Stat) {
 // possibleMissions lists missions that can still be fulfilled from the next station on.
 func (g *Game) possibleMissions() []*data.Mission {
 	var out []*data.Mission
+
 	for i := range g.d.Missions {
 		if g.missionPossible(&g.d.Missions[i], 0) {
 			out = append(out, &g.d.Missions[i])
 		}
 	}
+
 	return out
 }
 
 // missionPossible reports whether enough matching competitions remain after the current station.
 // startsSoFar counts starts already achieved for "starts" missions.
 func (g *Game) missionPossible(m *data.Mission, startsSoFar int) bool {
-	c := m.Condition
-	if c.Before != "" && g.competitionIndex(c.Before) <= g.station {
+	cond := m.Condition
+	if cond.Before != "" && g.competitionIndex(cond.Before) <= g.station {
 		return false
 	}
+
 	remaining := 0
+
 	for j := g.station + 1; j < len(g.d.Calendar); j++ {
 		st := &g.d.Calendar[j]
+
 		comp := g.d.Competitions[st.Competition]
 		if comp == nil {
 			continue
 		}
-		if c.Before != "" && comp.ID == c.Before {
+
+		if cond.Before != "" && comp.ID == cond.Before {
 			break
 		}
-		if g.competitionMatches(c, comp) {
+
+		if g.competitionMatches(cond, comp) {
 			remaining++
 		}
 	}
-	if c.Type == "starts" {
-		return startsSoFar+remaining >= c.Count
+
+	if cond.Type == "starts" {
+		return startsSoFar+remaining >= cond.Count
 	}
+
 	return remaining > 0
 }
 
@@ -222,28 +263,35 @@ func (g *Game) competitionIndex(id string) int {
 			return j
 		}
 	}
+
 	return -1
 }
 
-func (g *Game) competitionMatches(c data.MissionCondition, comp *data.Competition) bool {
-	if c.Competition != "" && comp.ID != c.Competition {
+func (g *Game) competitionMatches(cond data.MissionCondition, comp *data.Competition) bool {
+	if cond.Competition != "" && comp.ID != cond.Competition {
 		return false
 	}
-	if c.Kind != "" && comp.Kind != c.Kind {
+
+	if cond.Kind != "" && comp.Kind != cond.Kind {
 		return false
 	}
-	if c.BadWeather && !comp.Water {
+
+	if cond.BadWeather && !comp.Water {
 		return false
 	}
-	if c.Class != "" {
+
+	if cond.Class != "" {
 		found := false
+
 		for _, r := range g.d.RacesFor(comp, len(g.players)) {
-			if r.Class == c.Class && comp.Kind != "jtfo" {
+			if r.Class == cond.Class && comp.Kind != "jtfo" {
 				found = true
 			}
 		}
+
 		return found
 	}
+
 	return true
 }
 
@@ -256,44 +304,52 @@ type rowerOutcome struct {
 // checkMissions updates all open missions after a competition.
 func (g *Game) checkMissions(cs *compState, outcomes map[string]rowerOutcome) {
 	for _, pl := range g.players {
-		for _, r := range pl.rowers {
-			if r.event == nil || r.event.mission == nil {
+		for _, rw := range pl.rowers {
+			if rw.event == nil || rw.event.mission == nil {
 				continue
 			}
-			ms := r.event.mission
+
+			ms := rw.event.mission
 			if ms.done || ms.failed {
 				continue
 			}
-			c := ms.def.Condition
-			if c.Before != "" && c.Before == cs.def.ID {
+
+			cond := ms.def.Condition
+			if cond.Before != "" && cond.Before == cs.def.ID {
 				ms.failed = true
-				g.addLog("mission", pl.id, fmt.Sprintf("Mission gescheitert: %s", ms.text))
+				g.addLog("mission", pl.id, "Mission gescheitert: "+ms.text)
+
 				continue
 			}
-			out, started := outcomes[r.id]
-			switch c.Type {
+
+			out, started := outcomes[rw.id]
+
+			switch cond.Type {
 			case "starts":
 				if started {
 					ms.starts++
 				}
-				ms.done = ms.starts >= c.Count
+
+				ms.done = ms.starts >= cond.Count
 			case "medal":
-				ms.done = started && g.medalMatches(c, cs, out)
+				ms.done = started && g.medalMatches(cond, cs, out)
 			}
+
 			if ms.done {
-				g.rewardMission(pl, r, ms)
+				g.rewardMission(pl, rw, ms)
 				continue
 			}
+
 			if !g.missionPossible(ms.def, ms.starts) {
 				ms.failed = true
-				g.addLog("mission", pl.id, fmt.Sprintf("Mission gescheitert: %s", ms.text))
+				g.addLog("mission", pl.id, "Mission gescheitert: "+ms.text)
 			}
 		}
 	}
 }
 
-func (g *Game) medalMatches(c data.MissionCondition, cs *compState, out rowerOutcome) bool {
-	switch c.Medal {
+func (g *Game) medalMatches(cond data.MissionCondition, cs *compState, out rowerOutcome) bool {
+	switch cond.Medal {
 	case "gold":
 		if out.medal != MedalGold {
 			return false
@@ -303,18 +359,23 @@ func (g *Game) medalMatches(c data.MissionCondition, cs *compState, out rowerOut
 			return false
 		}
 	}
-	if c.Class != "" && string(out.class) != c.Class {
+
+	if cond.Class != "" && string(out.class) != cond.Class {
 		return false
 	}
-	if c.Kind != "" && cs.def.Kind != c.Kind {
+
+	if cond.Kind != "" && cs.def.Kind != cond.Kind {
 		return false
 	}
-	if c.Competition != "" && cs.def.ID != c.Competition {
+
+	if cond.Competition != "" && cs.def.ID != cond.Competition {
 		return false
 	}
-	if c.BadWeather && (cs.weather == "" || cs.weather == WeatherNormal) {
+
+	if cond.BadWeather && (cs.weather == "" || cs.weather == WeatherNormal) {
 		return false
 	}
+
 	return true
 }
 
@@ -326,5 +387,6 @@ func (g *Game) rewardMission(pl *player, r *rower, ms *missionState) {
 	case "points":
 		pl.bonus += ms.def.Reward.Value
 	}
+
 	g.addLog("mission", pl.id, fmt.Sprintf("Mission erfüllt: %s Belohnung: %s.", ms.text, ms.def.RewardText))
 }

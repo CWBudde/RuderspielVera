@@ -40,10 +40,13 @@ func (s *Service) save(e *gameEntry) error {
 	if s.store == nil {
 		return nil
 	}
-	if err := s.store.Save(s.snapshot(e)); err != nil {
+
+	err := s.store.Save(s.snapshot(e))
+	if err != nil {
 		s.log.Error("save failed", "game", e.id, "err", err)
 		return newError(StatusInternal, "Das Spiel konnte nicht gespeichert werden.")
 	}
+
 	return nil
 }
 
@@ -54,8 +57,10 @@ func (s *Service) Export(gameID string) (Snapshot, error) {
 	if e == nil {
 		return Snapshot{}, newError(StatusNotFound, "Dieses Spiel gibt es nicht.")
 	}
+
 	e.mu.Lock()
 	defer e.mu.Unlock()
+
 	return s.snapshot(e), nil
 }
 
@@ -66,23 +71,29 @@ func (s *Service) Import(snap Snapshot) (string, error) {
 	if snap.Version != SnapshotVersion {
 		return "", newError(StatusBadRequest, fmt.Sprintf("Unbekanntes Spielstand-Format (Version %d).", snap.Version))
 	}
+
 	id := snap.Config.GameID
 	if !ValidGameID(id) {
 		return "", newError(StatusBadRequest, "Ungültige Spiel-ID im Spielstand.")
 	}
+
 	g, err := engine.Replay(snap.Config, snap.Decisions)
 	if err != nil {
 		s.log.Error("replay failed", "game", id, "err", err)
 		return "", newError(StatusBadRequest, "Der Spielstand konnte nicht wiederhergestellt werden.")
 	}
+
 	tokens := snap.Tokens
 	if tokens == nil {
 		tokens = map[string]string{}
 	}
+
 	e := newGameEntry(id, g, tokens, snap.CreatedAt)
+
 	s.mu.Lock()
 	s.games[id] = e
 	s.mu.Unlock()
+
 	return id, nil
 }
 
@@ -90,5 +101,6 @@ func (s *Service) Import(snap Snapshot) (string, error) {
 func (s *Service) Count() int {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
+
 	return len(s.games)
 }

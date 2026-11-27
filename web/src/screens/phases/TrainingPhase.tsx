@@ -71,14 +71,25 @@ export function TrainingPhase() {
         <div className="flex items-center gap-2">
           <div className="min-w-0 flex-1 pl-1" aria-live="polite">
             <p className="flex items-baseline gap-1.5">
-              <span className={cn("num text-3xl leading-none", remaining === 0 ? "text-leaf" : "text-ink")}>{remaining}</span>
+              <span className={cn("num text-3xl leading-none", remaining === 0 ? "text-leaf" : "text-ink")}>
+                {remaining}
+              </span>
               <span className="text-sm font-semibold">von {points} Punkten übrig</span>
             </p>
             <div className="mt-1 h-2 overflow-hidden rounded-full border border-ink bg-white">
-              <div className="h-full bg-st-training transition-[width]" style={{ width: `${(used / points) * 100}%` }} />
+              <div
+                className="h-full bg-st-training transition-[width]"
+                style={{ width: `${(used / points) * 100}%` }}
+              />
             </div>
           </div>
-          <Button variant="outline" size="icon" aria-label="Zurücksetzen" onClick={() => setAlloc({})} disabled={used === 0}>
+          <Button
+            variant="outline"
+            size="icon"
+            aria-label="Zurücksetzen"
+            onClick={() => setAlloc({})}
+            disabled={used === 0}
+          >
             <RotateCcw />
           </Button>
           <Button size="lg" onClick={send} disabled={!valid || submitting}>
@@ -135,7 +146,13 @@ function TrainRow({
     stats: Object.fromEntries(ALL_STATS.map((s) => [s, (rower.stats[s] ?? 0) + (alloc[s] ?? 0)])),
   };
   return (
-    <li className={cn("rounded-[14px] border-2 border-ink bg-cream", total > 0 && "ring-4 ring-st-training", locked && "opacity-60")}>
+    <li
+      className={cn(
+        "rounded-[14px] border-2 border-ink bg-cream",
+        total > 0 && "ring-4 ring-st-training",
+        locked && "opacity-60",
+      )}
+    >
       <button
         type="button"
         onClick={onToggle}
@@ -153,7 +170,9 @@ function TrainRow({
           </div>
           <MiniStats rower={preview} className={cn(open && "max-lg:hidden", "lg:hidden")} />
         </div>
-        {total > 0 && <span className="num rounded-full border-2 border-ink bg-st-training px-2 text-lg leading-6">+{total}</span>}
+        {total > 0 && (
+          <span className="num rounded-full border-2 border-ink bg-st-training px-2 text-lg leading-6">+{total}</span>
+        )}
         <ChevronDown className={cn("size-5 shrink-0 transition-transform lg:hidden", open && "rotate-180")} />
       </button>
       <div className={cn("border-t-2 border-ink/10 px-2 pt-1 pb-2", open ? "block" : "hidden", "lg:block")}>

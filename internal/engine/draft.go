@@ -16,11 +16,13 @@ func (d *draftState) offerIndex(id string) int {
 	if d == nil {
 		return -1
 	}
+
 	for i, c := range d.offer {
 		if c.id() == id {
 			return i
 		}
 	}
+
 	return -1
 }
 
@@ -32,66 +34,95 @@ func (g *Game) openDraft() bool {
 	rules := g.d.Rules.Draft
 	section := g.currentStation().Section
 	var eligible []int
+
 	for i, c := range g.pool {
 		if c.trainer != nil && section < rules.TrainersFromSection {
 			continue
 		}
+
 		eligible = append(eligible, i)
 	}
+
 	extra := g.sponsorPicks()
+
 	if len(eligible) == 0 {
 		return false
 	}
 
 	size := min(len(g.players)+rules.ExtraOffer, len(eligible))
-	var offer []poolCard
-	if rules.AtLeastOneBoat {
+	offer := g.drawOffer(eligible, size, rules.AtLeastOneBoat)
+	ps := g.draftOrder()
+
+	order := make([]string, 0, len(ps)+extra)
+	for _, p := range ps {
+		order = append(order, p.id)
+	}
+
+	for range extra {
+		order = append(order, ps[0].id)
+		g.addLog("ereignis", ps[0].id, fmt.Sprintf("Sponsor: %s darf eine zusätzliche Karte wählen.", ps[0].name))
+	}
+
+	g.draft = &draftState{offer: offer, order: order}
+	g.openDraftPick()
+
+	return true
+}
+
+// drawOffer draws size cards from the eligible pool indices, starting with one random boat if
+// atLeastOneBoat is set and a boat is eligible.
+func (g *Game) drawOffer(eligible []int, size int, atLeastOneBoat bool) []poolCard {
+	offer := make([]poolCard, 0, size)
+
+	if atLeastOneBoat {
 		var boats []int
+
 		for _, i := range eligible {
 			if g.pool[i].boat != nil {
 				boats = append(boats, i)
 			}
 		}
+
 		if len(boats) > 0 {
 			pick := boats[g.rng.IntN(len(boats))]
 			offer = append(offer, g.pool[pick])
 			eligible = slices.DeleteFunc(eligible, func(i int) bool { return i == pick })
 		}
 	}
+
 	for len(offer) < size {
 		k := g.rng.IntN(len(eligible))
 		offer = append(offer, g.pool[eligible[k]])
 		eligible = slices.Delete(eligible, k, k+1)
 	}
 
+	return offer
+}
+
+// draftOrder sorts the players for the draft: fewest medal points first (catch-up), then fewer
+// golds, then seat order.
+func (g *Game) draftOrder() []*player {
 	ps := slices.Clone(g.players)
 	slices.SortStableFunc(ps, func(a, b *player) int {
 		if pa, pb := g.points(a), g.points(b); pa != pb {
 			return pa - pb
 		}
+
 		if a.gold != b.gold {
 			return a.gold - b.gold
 		}
+
 		return a.seat - b.seat
 	})
-	order := make([]string, 0, len(ps)+extra)
-	for _, p := range ps {
-		order = append(order, p.id)
-	}
-	for k := 0; k < extra; k++ {
-		order = append(order, ps[0].id)
-		g.addLog("ereignis", ps[0].id, fmt.Sprintf("Sponsor: %s darf eine zusätzliche Karte wählen.", ps[0].name))
-	}
-	g.draft = &draftState{offer: offer, order: order}
-	g.openDraftPick()
-	return true
+
+	return ps
 }
 
 func (g *Game) openDraftPick() {
 	pid := g.draft.order[g.draft.turn]
 	pl := g.playerByID(pid)
 	g.newPhase(PhaseDraft, stageNone, []string{pid}, "Kartenauswahl",
-		fmt.Sprintf("%s wählt eine Karte aus dem offenen Angebot.", pl.name))
+		pl.name+" wählt eine Karte aus dem offenen Angebot.")
 }
 
 func (g *Game) nextDraftPick() bool {
@@ -100,7 +131,9 @@ func (g *Game) nextDraftPick() bool {
 		g.openDraftPick()
 		return true
 	}
+
 	g.draft = nil
+
 	return false
 }
 
@@ -109,6 +142,7 @@ func (g *Game) applyDraftPick(pl *player, cardID string) {
 	c := g.draft.offer[i]
 	g.draft.offer = slices.Delete(g.draft.offer, i, i+1)
 	g.pool = slices.DeleteFunc(g.pool, func(pc poolCard) bool { return pc.id() == cardID })
+
 	switch {
 	case c.rower != nil:
 		pl.rowers = append(pl.rowers, c.rower)
@@ -117,5 +151,6 @@ func (g *Game) applyDraftPick(pl *player, cardID string) {
 	case c.trainer != nil:
 		pl.trainers = append(pl.trainers, c.trainer)
 	}
+
 	g.addLog("draft", pl.id, fmt.Sprintf("%s wählt %s (%s).", pl.name, c.name(), cardKindNames[c.kind()]))
 }

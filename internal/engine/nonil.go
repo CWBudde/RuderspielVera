@@ -19,28 +19,9 @@ func fillNilValue(v reflect.Value) {
 			fillNilValue(v.Elem())
 		}
 	case reflect.Struct:
-		t := v.Type()
-		for i := 0; i < v.NumField(); i++ {
-			f := v.Field(i)
-			if !t.Field(i).IsExported() {
-				continue
-			}
-			omit := strings.Contains(t.Field(i).Tag.Get("json"), ",omitempty")
-			switch {
-			case f.Kind() == reflect.Slice && f.IsNil():
-				if !omit {
-					f.Set(reflect.MakeSlice(f.Type(), 0, 0))
-				}
-			case f.Kind() == reflect.Map && f.IsNil():
-				if !omit {
-					f.Set(reflect.MakeMap(f.Type()))
-				}
-			default:
-				fillNilValue(f)
-			}
-		}
+		fillNilStruct(v)
 	case reflect.Slice, reflect.Array:
-		for i := 0; i < v.Len(); i++ {
+		for i := range v.Len() {
 			fillNilValue(v.Index(i))
 		}
 	case reflect.Map:
@@ -51,6 +32,7 @@ func fillNilValue(v reflect.Value) {
 // cloneResult deep-copies a result so views never alias engine state.
 func cloneResult(r CompetitionResult) CompetitionResult {
 	out := r
+
 	out.Races = make([]RaceResult, len(r.Races))
 	for i, race := range r.Races {
 		race.Entries = make([]EntryResult, len(race.Entries))
@@ -58,7 +40,36 @@ func cloneResult(r CompetitionResult) CompetitionResult {
 			e.RowerIDs = append([]string{}, e.RowerIDs...)
 			race.Entries[j] = e
 		}
+
 		out.Races[i] = race
 	}
+
 	return out
+}
+
+// fillNilStruct replaces nil slices and maps in the exported fields of struct v (unless omitempty)
+// and recurses into the other fields.
+func fillNilStruct(v reflect.Value) {
+	t := v.Type()
+	for i := range v.NumField() {
+		fv := v.Field(i)
+		if !t.Field(i).IsExported() {
+			continue
+		}
+
+		omit := strings.Contains(t.Field(i).Tag.Get("json"), ",omitempty")
+
+		switch {
+		case fv.Kind() == reflect.Slice && fv.IsNil():
+			if !omit {
+				fv.Set(reflect.MakeSlice(fv.Type(), 0, 0))
+			}
+		case fv.Kind() == reflect.Map && fv.IsNil():
+			if !omit {
+				fv.Set(reflect.MakeMap(fv.Type()))
+			}
+		default:
+			fillNilValue(fv)
+		}
+	}
 }

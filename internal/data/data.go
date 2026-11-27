@@ -9,13 +9,14 @@ import (
 	"embed"
 	"encoding/json"
 	"fmt"
+	"strconv"
 	"sync"
 )
 
 //go:embed *.json
 var files embed.FS
 
-// Stat names (keys in stat maps).
+// StatNames are the stat keys used in stat maps.
 var StatNames = []string{"kraft", "ausdauer", "geschwindigkeit", "technik", "motivation"}
 
 // Rower is one starting rower card.
@@ -216,9 +217,11 @@ func scale(perSeat bool, factor, seats int) int {
 	if factor == 0 {
 		factor = 1
 	}
+
 	if perSeat {
 		return factor * seats
 	}
+
 	return factor
 }
 
@@ -250,13 +253,13 @@ type Data struct {
 var (
 	loadOnce sync.Once
 	loaded   *Data
-	loadErr  error
+	errLoad  error
 )
 
 // Load parses and validates the embedded data once and returns the shared, read-only result.
 func Load() (*Data, error) {
-	loadOnce.Do(func() { loaded, loadErr = parse() })
-	return loaded, loadErr
+	loadOnce.Do(func() { loaded, errLoad = parse() })
+	return loaded, errLoad
 }
 
 // MustLoad is Load for tests and tools; it panics on invalid data.
@@ -265,11 +268,13 @@ func MustLoad() *Data {
 	if err != nil {
 		panic(err)
 	}
+
 	return d
 }
 
 func parse() (*Data, error) {
 	d := &Data{}
+
 	targets := []struct {
 		file string
 		v    any
@@ -287,18 +292,24 @@ func parse() (*Data, error) {
 	for _, t := range targets {
 		raw, err := files.ReadFile(t.file)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("read %s: %w", t.file, err)
 		}
-		if err := json.Unmarshal(raw, t.v); err != nil {
+
+		err = json.Unmarshal(raw, t.v)
+		if err != nil {
 			return nil, fmt.Errorf("%s: %w", t.file, err)
 		}
 	}
+
 	for id, c := range d.Competitions {
 		c.ID = id
 	}
-	if err := d.Validate(); err != nil {
+
+	err := d.Validate()
+	if err != nil {
 		return nil, err
 	}
+
 	return d, nil
 }
 
@@ -309,6 +320,7 @@ func (d *Data) Boat(id string) *Boat {
 			return &d.Boats[i]
 		}
 	}
+
 	return nil
 }
 
@@ -319,6 +331,7 @@ func (d *Data) SharedBoat() *Boat {
 			return &d.Boats[i]
 		}
 	}
+
 	return nil
 }
 
@@ -329,6 +342,7 @@ func (d *Data) EventType(t string) *EventType {
 			return &d.Events[i]
 		}
 	}
+
 	return nil
 }
 
@@ -337,5 +351,6 @@ func (d *Data) RacesFor(c *Competition, players int) []Race {
 	if len(c.Variants) == 0 {
 		return c.Races
 	}
-	return c.Variants[d.Rules.JTFOVariants[fmt.Sprint(players)]]
+
+	return c.Variants[d.Rules.JTFOVariants[strconv.Itoa(players)]]
 }

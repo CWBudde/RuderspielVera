@@ -7,6 +7,9 @@ import (
 )
 
 // ErrStalePhase is returned when a decision names a phase that is no longer open (HTTP 409).
+// The message is German UI text and shown verbatim.
+//
+//nolint:revive,staticcheck // error-strings: UI sentence, shown as is
 var ErrStalePhase = errors.New("Diese Entscheidung gehört zu einer bereits abgeschlossenen Phase. Bitte neu laden.")
 
 // ValidationError is an invalid decision; Msg is German and can be shown in the UI (HTTP 400).
@@ -26,37 +29,47 @@ type SubmittedDecision struct {
 
 // Submit validates and records a decision. When the last required decision of the phase arrives,
 // the phase is resolved and the game advances to the next phase.
-func (g *Game) Submit(playerID string, d Decision) error {
+func (g *Game) Submit(playerID string, dec Decision) error {
 	if g.over {
 		return invalid("Das Spiel ist bereits beendet.")
 	}
+
 	pl := g.playerByID(playerID)
 	if pl == nil {
 		return invalid("Unbekannter Spieler.")
 	}
+
 	p := g.phase
-	if d.PhaseID != p.id {
+	if dec.PhaseID != p.id {
 		return ErrStalePhase
 	}
+
 	if !p.isRequired(playerID) {
 		return invalid("Du bist in dieser Phase nicht an der Reihe.")
 	}
+
 	if _, done := p.decisions[playerID]; done {
 		return invalid("Du hast in dieser Phase bereits entschieden.")
 	}
-	if d.Kind != p.kind {
-		return invalid("Falscher Entscheidungstyp: erwartet %q, erhalten %q.", p.kind, d.Kind)
+
+	if dec.Kind != p.kind {
+		return invalid("Falscher Entscheidungstyp: erwartet %q, erhalten %q.", p.kind, dec.Kind)
 	}
-	if err := g.validate(pl, p, d); err != nil {
+
+	err := g.validate(pl, p, dec)
+	if err != nil {
 		return err
 	}
-	d = cloneDecision(d)
-	p.decisions[playerID] = d
-	g.decisions = append(g.decisions, SubmittedDecision{PlayerID: playerID, Decision: d})
+
+	dec = cloneDecision(dec)
+	p.decisions[playerID] = dec
+
+	g.decisions = append(g.decisions, SubmittedDecision{PlayerID: playerID, Decision: dec})
 	if len(p.decisions) == len(p.required) {
 		g.resolve(p)
 		g.afterPhase(p)
 	}
+
 	return nil
 }
 
@@ -76,8 +89,10 @@ func (g *Game) validate(pl *player, p *phase, d Decision) error {
 		if g.draft.offerIndex(d.DraftCardID) < 0 {
 			return invalid("Diese Karte ist nicht im Angebot.")
 		}
+
 		return nil
 	}
+
 	return invalid("In dieser Phase ist keine Entscheidung möglich.")
 }
 
@@ -106,21 +121,25 @@ func (g *Game) resolve(p *phase) {
 }
 
 func cloneDecision(d Decision) Decision {
-	c := d
-	c.Training = slices.Clone(d.Training)
-	c.RowerIDs = slices.Clone(d.RowerIDs)
+	cp := d
+	cp.Training = slices.Clone(d.Training)
+
+	cp.RowerIDs = slices.Clone(d.RowerIDs)
 	if d.Swap != nil {
 		s := *d.Swap
-		c.Swap = &s
+		cp.Swap = &s
 	}
-	c.Entries = make([]Entry, len(d.Entries))
+
+	cp.Entries = make([]Entry, len(d.Entries))
 	for i, e := range d.Entries {
-		c.Entries[i] = Entry{RaceID: e.RaceID, RowerIDs: slices.Clone(e.RowerIDs), BoatID: e.BoatID}
+		cp.Entries[i] = Entry{RaceID: e.RaceID, RowerIDs: slices.Clone(e.RowerIDs), BoatID: e.BoatID}
 	}
+
 	if len(d.Entries) == 0 {
-		c.Entries = nil
+		cp.Entries = nil
 	}
-	return c
+
+	return cp
 }
 
 // Replay rebuilds a game from its config and decision log. Any rejected decision is an error.
@@ -129,11 +148,14 @@ func Replay(cfg Config, log []SubmittedDecision) (*Game, error) {
 	if err != nil {
 		return nil, err
 	}
+
 	for i, sd := range log {
-		if err := g.Submit(sd.PlayerID, sd.Decision); err != nil {
+		err := g.Submit(sd.PlayerID, sd.Decision)
+		if err != nil {
 			return nil, fmt.Errorf("replay decision %d (%s, %s): %w", i, sd.PlayerID, sd.Decision.PhaseID, err)
 		}
 	}
+
 	return g, nil
 }
 
@@ -159,6 +181,7 @@ func (g *Game) Results() []CompetitionResult {
 		out[i] = cloneResult(r)
 		fillNil(&out[i])
 	}
+
 	return out
 }
 
@@ -168,10 +191,12 @@ func (g *Game) PhaseID() string { return g.phase.id }
 // Pending returns the IDs of players whose decision the current phase still needs.
 func (g *Game) Pending() []string {
 	var ids []string
+
 	for _, id := range g.phase.required {
 		if _, ok := g.phase.decisions[id]; !ok {
 			ids = append(ids, id)
 		}
 	}
+
 	return ids
 }

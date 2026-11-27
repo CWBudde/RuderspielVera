@@ -66,16 +66,29 @@ export function EventReveal() {
             Weiter <ArrowRight />
           </Button>
         ) : (
-          <Button size="lg" variant="lake" className="w-full" onClick={() => setRevealed(new Set(mine.map((r) => r.id)))}>
+          <Button
+            size="lg"
+            variant="lake"
+            className="w-full"
+            onClick={() => setRevealed(new Set(mine.map((r) => r.id)))}
+          >
             Alle aufdecken
           </Button>
         )
       }
     >
       {mine.length === 0 ? (
-        <p className="rounded-xl border-2 border-ink bg-cream p-3 text-sm">Diesmal hat keiner deiner Ruderer eine Karte bekommen.</p>
+        <p className="rounded-xl border-2 border-ink bg-cream p-3 text-sm">
+          Diesmal hat keiner deiner Ruderer eine Karte bekommen.
+        </p>
       ) : (
-        <div className={mine.length > 1 ? "grid grid-cols-2 gap-3 sm:flex sm:flex-wrap sm:justify-center sm:gap-4" : "flex justify-center"}>
+        <div
+          className={
+            mine.length > 1
+              ? "grid grid-cols-2 gap-3 sm:flex sm:flex-wrap sm:justify-center sm:gap-4"
+              : "flex justify-center"
+          }
+        >
           {mine.map((r) => (
             <FlipCard
               key={r.id}

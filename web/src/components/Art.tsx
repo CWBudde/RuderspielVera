@@ -109,7 +109,13 @@ function PortraitPlaceholder({ artKey, label, className }: { artKey: string; lab
   const headY = young ? 47 : 43;
   const headR = young ? 13 : 12;
   return (
-    <svg viewBox="0 0 100 100" preserveAspectRatio="xMidYMid slice" className={cn("size-full", className)} role="img" aria-label={label}>
+    <svg
+      viewBox="0 0 100 100"
+      preserveAspectRatio="xMidYMid slice"
+      className={cn("size-full", className)}
+      role="img"
+      aria-label={label}
+    >
       <defs>
         <linearGradient id={`sky${h}`} x1="0" y1="0" x2="0" y2="1">
           <stop offset="0" stopColor="#bfe0f5" />
@@ -121,7 +127,13 @@ function PortraitPlaceholder({ artKey, label, className }: { artKey: string; lab
       <path d="M0 52c10-4 18-2 26-5s14 1 22-2 18 2 26-1 18 1 26-2v12H0z" fill="#6fa257" />
       <path d="M58 46v-6h2v-3c0-2 2-4 4-4s4 2 4 4v3h2v6z" fill="#c9b79a" opacity="0.8" />
       <rect y="56" width="100" height="44" fill="#3d8bc9" />
-      <path d="M0 66h100M0 76h100M0 88h100" stroke="#fff" strokeOpacity="0.18" strokeWidth="1.5" strokeDasharray="10 7" />
+      <path
+        d="M0 66h100M0 76h100M0 88h100"
+        stroke="#fff"
+        strokeOpacity="0.18"
+        strokeWidth="1.5"
+        strokeDasharray="10 7"
+      />
       {/* bust */}
       <path
         d={`M${isTrainer ? 14 : 16} 100c0-20 15-30 34-30s34 10 34 30z`}
@@ -131,12 +143,22 @@ function PortraitPlaceholder({ artKey, label, className }: { artKey: string; lab
       />
       {!isTrainer && <path d="M36 74l14 14 14-14" fill="none" stroke="#fff" strokeWidth="3" strokeOpacity="0.85" />}
       <rect x={45} y={headY + headR - 4} width={10} height={10} fill={skin} />
-      {female && <path d={`M${50 - headR - 3} ${headY}c0 18 4 26 ${headR + 3} 26s${headR + 3}-8 ${headR + 3}-26z`} fill={hair} />}
+      {female && (
+        <path d={`M${50 - headR - 3} ${headY}c0 18 4 26 ${headR + 3} 26s${headR + 3}-8 ${headR + 3}-26z`} fill={hair} />
+      )}
       <circle cx={50} cy={headY} r={headR} fill={skin} stroke="var(--ink)" strokeWidth="1.4" />
       {isTrainer ? (
-        <path d={`M${50 - headR - 1} ${headY - 3}c0-10 6-13 ${headR + 1}-13s${headR + 1} 3 ${headR + 1} 13zM${50 + headR - 2} ${headY - 4}h12`} fill="#e7e2d6" stroke="var(--ink)" strokeWidth="1.4" />
+        <path
+          d={`M${50 - headR - 1} ${headY - 3}c0-10 6-13 ${headR + 1}-13s${headR + 1} 3 ${headR + 1} 13zM${50 + headR - 2} ${headY - 4}h12`}
+          fill="#e7e2d6"
+          stroke="var(--ink)"
+          strokeWidth="1.4"
+        />
       ) : (
-        <path d={`M${50 - headR} ${headY - 1}c0-9 5-${headR} ${headR}-${headR}s${headR} 3 ${headR} ${headR}c-6-4-14-3-${headR * 2} 0z`} fill={hair} />
+        <path
+          d={`M${50 - headR} ${headY - 1}c0-9 5-${headR} ${headR}-${headR}s${headR} 3 ${headR} ${headR}c-6-4-14-3-${headR * 2} 0z`}
+          fill={hair}
+        />
       )}
       {initials && (
         <text

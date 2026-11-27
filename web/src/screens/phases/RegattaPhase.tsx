@@ -10,7 +10,16 @@ import { WeatherIcon, weatherTint, ShellIcon } from "@/components/icons";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { AGE_LABEL, BOAT_CLASS_LABEL, GENDER_PLURAL, STAT_LABEL, weatherLabel } from "@/lib/labels";
-import { boatPart, crewProblems, crewScore, isEligible, needsBoat, rowerScore, trainerBonus, trainerPart } from "@/lib/score";
+import {
+  boatPart,
+  crewProblems,
+  crewScore,
+  isEligible,
+  needsBoat,
+  rowerScore,
+  trainerBonus,
+  trainerPart,
+} from "@/lib/score";
 import { cn } from "@/lib/utils";
 
 type Step = "weather" | "trainer" | "lineup";
@@ -85,7 +94,11 @@ export function RegattaPhase() {
     return (
       <PhaseFrame
         title={comp.name}
-        prompt={hasWeather ? `Wetter heute: ${weatherLabel(comp.weather)}. Welcher Trainer holt am meisten heraus?` : "Welcher Trainer begleitet dein Team?"}
+        prompt={
+          hasWeather
+            ? `Wetter heute: ${weatherLabel(comp.weather)}. Welcher Trainer holt am meisten heraus?`
+            : "Welcher Trainer begleitet dein Team?"
+        }
         headerExtra={
           <>
             {stepper}
@@ -133,7 +146,9 @@ export function RegattaPhase() {
             );
           })}
         </ul>
-        <p className="mt-3 text-sm text-muted-foreground">Trainerwerte gelten pro Ruderplatz: im Einer einfach, im Zweier doppelt, im Vierer vierfach.</p>
+        <p className="mt-3 text-sm text-muted-foreground">
+          Trainerwerte gelten pro Ruderplatz: im Einer einfach, im Zweier doppelt, im Vierer vierfach.
+        </p>
       </PhaseFrame>
     );
   }
@@ -196,7 +211,10 @@ function WeatherReveal({ comp }: { comp: CompetitionView }) {
 // ---------------- lineup ----------------
 
 function raceRule(race: RaceSpec): string {
-  const ages = race.ages?.length === 3 || !race.ages?.length ? "alle Altersklassen" : race.ages.map((a) => AGE_LABEL[a] ?? a).join(", ");
+  const ages =
+    race.ages?.length === 3 || !race.ages?.length
+      ? "alle Altersklassen"
+      : race.ages.map((a) => AGE_LABEL[a] ?? a).join(", ");
   const genders = race.genders?.length === 1 ? GENDER_PLURAL[race.genders[0]] : "Mädchen und Jungen";
   return `${genders}, ${ages}`;
 }
@@ -281,12 +299,19 @@ function LineupBuilder({
           {stepper}
           <div className="mt-3 flex flex-wrap gap-1.5 text-sm">
             {comp.weather && (
-              <span className={cn("inline-flex h-8 items-center gap-1 rounded-full border-2 border-ink px-2.5 font-bold", weatherTint(comp.weather))}>
+              <span
+                className={cn(
+                  "inline-flex h-8 items-center gap-1 rounded-full border-2 border-ink px-2.5 font-bold",
+                  weatherTint(comp.weather),
+                )}
+              >
                 <WeatherIcon weather={comp.weather} className="size-4" /> {weatherLabel(comp.weather)}
               </span>
             )}
             <span className="inline-flex h-8 items-center gap-1 rounded-full border-2 border-ink bg-white px-2.5 font-bold">
-              {trainer ? `${trainer.name}: ${tBonus > 0 ? `+${tBonus} pro Platz` : tBonus === 0 ? "kein Bonus" : `${tBonus} pro Platz`}` : "Kein Trainer"}
+              {trainer
+                ? `${trainer.name}: ${tBonus > 0 ? `+${tBonus} pro Platz` : tBonus === 0 ? "kein Bonus" : `${tBonus} pro Platz`}`
+                : "Kein Trainer"}
             </span>
             <span className="inline-flex h-8 items-center rounded-full border-2 border-ink bg-white px-2.5 font-semibold">
               {weightsText(comp)}
@@ -319,7 +344,13 @@ function LineupBuilder({
     >
       <ul className="grid gap-3 lg:grid-cols-2">
         {status.map(({ race, d, crew, boat, problems, complete: ok, filled }) => {
-          const est = crewScore(crew.filter((r): r is RowerView => !!r), comp.weights) + boatPart(race, boat, comp) + (filled ? trainerPart(race, trainer, comp) : 0);
+          const est =
+            crewScore(
+              crew.filter((r): r is RowerView => !!r),
+              comp.weights,
+            ) +
+            boatPart(race, boat, comp) +
+            (filled ? trainerPart(race, trainer, comp) : 0);
           const boats = you.boats.filter((b) => b.class === race.class).sort((a, b) => b.value - a.value);
           return (
             <li key={race.id} className={cn("rounded-[16px] bg-cream p-3 cut", ok && "bg-[#eef7e6]")}>
@@ -330,7 +361,9 @@ function LineupBuilder({
                     <span className="inline-flex items-center gap-1 rounded-md bg-navy px-1.5 py-0.5 font-bold text-white">
                       <ShellIcon className="h-3 w-5" /> {BOAT_CLASS_LABEL[race.class] ?? race.class}
                     </span>
-                    {race.mixed && <span className="rounded-md bg-st-event px-1.5 py-0.5 font-bold text-ink">Mixed</span>}
+                    {race.mixed && (
+                      <span className="rounded-md bg-st-event px-1.5 py-0.5 font-bold text-ink">Mixed</span>
+                    )}
                     <span>{raceRule(race)}</span>
                   </p>
                 </div>
@@ -338,14 +371,26 @@ function LineupBuilder({
                   <p className="text-[11px] font-semibold text-muted-foreground">geschätzt</p>
                   <p className="num text-3xl leading-none">{filled ? est : "–"}</p>
                   {!!race.guestScore && (
-                    <p className="mt-0.5 text-[11px] font-semibold whitespace-nowrap text-muted-foreground" title="Gastmannschaft">
+                    <p
+                      className="mt-0.5 text-[11px] font-semibold whitespace-nowrap text-muted-foreground"
+                      title="Gastmannschaft"
+                    >
                       Gast {race.guestScore}
                     </p>
                   )}
                 </div>
               </header>
 
-              <div className={cn("mt-2 grid gap-1.5", race.seats >= 4 ? "grid-cols-2 sm:grid-cols-4 lg:grid-cols-2 xl:grid-cols-4" : race.seats === 2 ? "grid-cols-2" : "grid-cols-1")}>
+              <div
+                className={cn(
+                  "mt-2 grid gap-1.5",
+                  race.seats >= 4
+                    ? "grid-cols-2 sm:grid-cols-4 lg:grid-cols-2 xl:grid-cols-4"
+                    : race.seats === 2
+                      ? "grid-cols-2"
+                      : "grid-cols-1",
+                )}
+              >
                 {d.seats.map((id, seat) => {
                   const r = id ? rowerById.get(id) : undefined;
                   return (
@@ -365,7 +410,9 @@ function LineupBuilder({
                             <Art artKey={r.artKey} cardId={r.id} label={r.name} thumb />
                           </span>
                           <span className="min-w-0 flex-1 truncate font-display text-base font-bold">{r.name}</span>
-                          <span className="text-xs font-bold tabular-nums text-muted-foreground">{Math.round(rowerScore(r, comp.weights))}</span>
+                          <span className="text-xs font-bold tabular-nums text-muted-foreground">
+                            {Math.round(rowerScore(r, comp.weights))}
+                          </span>
                         </>
                       ) : (
                         <>
@@ -392,7 +439,11 @@ function LineupBuilder({
                   onChange={(boatId) => setDraft(race.id, { ...d, boatId })}
                 />
               )}
-              {race.class === "8x" && <p className="mt-2 text-xs text-muted-foreground">Gemeinsamer Achter für alle Teams, Bootswert {race.fixedBoatValue ?? 0}.</p>}
+              {race.class === "8x" && (
+                <p className="mt-2 text-xs text-muted-foreground">
+                  Gemeinsamer Achter für alle Teams, Bootswert {race.fixedBoatValue ?? 0}.
+                </p>
+              )}
 
               {(problems.length > 0 || filled > 0) && (
                 <div className="mt-2 flex items-center gap-2">
@@ -422,7 +473,10 @@ function LineupBuilder({
       </ul>
 
       <Sheet open={!!slot} onOpenChange={(o) => !o && setSlot(null)}>
-        <SheetContent side="bottom" className="max-h-[85dvh] gap-2 rounded-t-[22px] border-t-2 border-ink bg-cream pb-[calc(var(--safe-bottom)+0.75rem)] md:mx-auto md:max-w-2xl">
+        <SheetContent
+          side="bottom"
+          className="max-h-[85dvh] gap-2 rounded-t-[22px] border-t-2 border-ink bg-cream pb-[calc(var(--safe-bottom)+0.75rem)] md:mx-auto md:max-w-2xl"
+        >
           {activeRace && slot && (
             <RowerPicker
               race={activeRace}
@@ -439,7 +493,10 @@ function LineupBuilder({
                 seats[slot.seat] = rowerId;
                 // Preselect the best own boat of the class on first placement.
                 const best = you.boats
-                  .filter((b) => b.class === activeRace.class && (!boatUsedIn.has(b.id) || boatUsedIn.get(b.id) === activeRace.id))
+                  .filter(
+                    (b) =>
+                      b.class === activeRace.class && (!boatUsedIn.has(b.id) || boatUsedIn.get(b.id) === activeRace.id),
+                  )
                   .sort((a, b) => b.value - a.value)[0];
                 const beatsLoan = !activeRace.loanBoat || (best?.value ?? 0) > (activeRace.fixedBoatValue ?? 0);
                 const first = !d.seats.some(Boolean);
@@ -500,7 +557,11 @@ function BoatPicker({
             )}
           >
             Leihboot
-            <span className={cn("num rounded-md px-1 text-base leading-tight", !value ? "bg-white/20" : "bg-st-regatta")}>{loanValue}</span>
+            <span
+              className={cn("num rounded-md px-1 text-base leading-tight", !value ? "bg-white/20" : "bg-st-regatta")}
+            >
+              {loanValue}
+            </span>
           </button>
         )}
         {boats.map((b) => {
@@ -525,7 +586,9 @@ function BoatPicker({
                 {b.name}
                 {elsewhere && <span className="text-[11px] font-semibold">startet: {elsewhere}</span>}
               </span>
-              <span className={cn("num rounded-md px-1 text-base leading-tight", on ? "bg-white/20" : "bg-st-regatta")}>{b.value}</span>
+              <span className={cn("num rounded-md px-1 text-base leading-tight", on ? "bg-white/20" : "bg-st-regatta")}>
+                {b.value}
+              </span>
             </button>
           );
         })}
@@ -568,7 +631,8 @@ function RowerPicker({
           {race.name}, Platz {seat + 1}
         </SheetTitle>
         <SheetDescription>
-          Sortiert nach Rennwert für diesen Wettkampf. {ineligible > 0 && `${ineligible} Ruderer sind hier nicht startberechtigt.`}
+          Sortiert nach Rennwert für diesen Wettkampf.{" "}
+          {ineligible > 0 && `${ineligible} Ruderer sind hier nicht startberechtigt.`}
         </SheetDescription>
       </SheetHeader>
       <div className="overflow-y-auto px-4">
@@ -610,7 +674,9 @@ function RowerPicker({
                       <GenderMark gender={r.gender} className="size-5 text-[11px]" />
                     </span>
                     {blocked ? (
-                      <span className="mt-1 block truncate text-xs font-semibold">startet schon: {raceName(other)}</span>
+                      <span className="mt-1 block truncate text-xs font-semibold">
+                        startet schon: {raceName(other)}
+                      </span>
                     ) : inThisRace && !isCurrent ? (
                       <span className="mt-1 block text-xs font-semibold">schon in diesem Boot – wird getauscht</span>
                     ) : (

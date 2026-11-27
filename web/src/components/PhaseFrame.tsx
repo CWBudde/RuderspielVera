@@ -44,7 +44,10 @@ export function PhaseFrame({
         {ereignisse.length > 0 && (
           <ul className="mt-2 flex flex-wrap gap-1.5" aria-label="Aktive Ereignisse">
             {ereignisse.map((t) => (
-              <li key={t} className="inline-flex items-center gap-1 rounded-full border-2 border-ink bg-st-ereignis px-2 py-0.5 text-xs font-bold">
+              <li
+                key={t}
+                className="inline-flex items-center gap-1 rounded-full border-2 border-ink bg-st-ereignis px-2 py-0.5 text-xs font-bold"
+              >
                 <Dice5 className="size-3.5" /> {t}
               </li>
             ))}
@@ -54,7 +57,9 @@ export function PhaseFrame({
       <div className="flex-1">{children}</div>
       {footer && (
         <div className="sticky bottom-[calc(var(--safe-bottom)+4.75rem)] z-20 mt-4 md:bottom-4">
-          <div className="rounded-[18px] border-2 border-ink bg-cream/95 p-2 shadow-[0_3px_0_var(--ink)] backdrop-blur">{footer}</div>
+          <div className="rounded-[18px] border-2 border-ink bg-cream/95 p-2 shadow-[0_3px_0_var(--ink)] backdrop-blur">
+            {footer}
+          </div>
         </div>
       )}
     </div>

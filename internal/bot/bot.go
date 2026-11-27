@@ -34,6 +34,7 @@ func PersonalityFor(seat int) Personality {
 	if seat%2 == 1 {
 		return Taktiker
 	}
+
 	return Bauchgefuehl
 }
 
@@ -41,6 +42,7 @@ func (p Personality) noise() float64 {
 	if p == Taktiker {
 		return 0.02
 	}
+
 	return 0.07
 }
 
@@ -49,26 +51,40 @@ func (p Personality) passes() int {
 	if p == Taktiker {
 		return 8
 	}
+
 	return 1
 }
+
+// Errors returned by Decide.
+var (
+	ErrGameOver      = errors.New("bot: game is over")
+	ErrNotPending    = errors.New("bot: player has nothing to decide")
+	ErrUnknownPlayer = errors.New("bot: unknown player")
+	ErrUnknownPhase  = errors.New("bot: cannot decide phase kind")
+)
 
 // Decide returns a legal decision for the given player in the open phase.
 func Decide(g *engine.Game, playerID string, p Personality, rng *rand.Rand) (engine.Decision, error) {
 	if g.Over() {
-		return engine.Decision{}, errors.New("bot: game is over")
+		return engine.Decision{}, ErrGameOver
 	}
+
 	if !slices.Contains(g.Pending(), playerID) {
-		return engine.Decision{}, fmt.Errorf("bot: player %s has nothing to decide", playerID)
+		return engine.Decision{}, fmt.Errorf("%w: %s", ErrNotPending, playerID)
 	}
+
 	d, err := data.Load()
 	if err != nil {
-		return engine.Decision{}, err
+		return engine.Decision{}, fmt.Errorf("bot: %w", err)
 	}
+
 	b := newBrain(g, playerID, p, rng, d)
 	if b.me == nil {
-		return engine.Decision{}, fmt.Errorf("bot: unknown player %s", playerID)
+		return engine.Decision{}, fmt.Errorf("%w: %s", ErrUnknownPlayer, playerID)
 	}
+
 	pv := b.view.Phase
+
 	dec := engine.Decision{PhaseID: pv.ID, Kind: pv.Kind}
 	switch pv.Kind {
 	case engine.PhaseAck:
@@ -83,8 +99,9 @@ func Decide(g *engine.Game, playerID string, p Personality, rng *rand.Rand) (eng
 	case engine.PhaseDraft:
 		dec.DraftCardID = b.draft(pv.DraftOffer)
 	default:
-		return engine.Decision{}, fmt.Errorf("bot: cannot decide phase kind %q", pv.Kind)
+		return engine.Decision{}, fmt.Errorf("%w %q", ErrUnknownPhase, pv.Kind)
 	}
+
 	return dec, nil
 }
 
@@ -111,11 +128,13 @@ func newBrain(g *engine.Game, pid string, p Personality, rng *rand.Rand, d *data
 			b.opps = append(b.opps, ps)
 		}
 	}
+
 	if b.me != nil {
 		for _, r := range b.me.Rowers {
 			b.noise[r.ID] = rng.NormFloat64() * p.noise()
 		}
 	}
+
 	return b
 }
 
@@ -128,21 +147,27 @@ func teamOf(ps *engine.PlayerSummary) *team {
 // upcoming returns the competitions strictly after the current station (at most n).
 func (b *brain) upcoming(n int, includeCurrent bool) []*compModel {
 	var out []*compModel
+
 	start := b.view.Current + 1
 	if includeCurrent {
 		start = b.view.Current
 	}
+
 	for i := start; i < len(b.d.Calendar) && len(out) < n; i++ {
 		st := b.d.Calendar[i]
 		if st.Competition == "" {
 			continue
 		}
+
 		out = append(out, b.futureComp(i))
 	}
+
 	return out
 }
 
 // lookahead weights for the k-th upcoming competition.
+//
+//nolint:gochecknoglobals // read-only weight table
 var lookahead = []float64{1, 0.6, 0.35, 0.2}
 
 func weighted(stats engine.Stats, w map[engine.Stat]float64) float64 {
@@ -150,6 +175,7 @@ func weighted(stats engine.Stats, w map[engine.Stat]float64) float64 {
 	for st, x := range w {
 		s += x * float64(stats[st])
 	}
+
 	return s
 }
 
@@ -162,13 +188,16 @@ func (b *brain) expMedals(me float64, opps []float64) float64 {
 	gold, silver := float64(b.d.Rules.MedalPoints.Gold), float64(b.d.Rules.MedalPoints.Silver)
 	sm := sigma(me)
 	pg := 1.0
+
 	ps := make([]float64, len(opps))
 	for i, o := range opps {
 		so := sigma(o)
 		ps[i] = phi((me - o) / math.Sqrt(sm*sm+so*so))
 		pg *= ps[i]
 	}
+
 	p2 := 0.0
+
 	for i := range opps {
 		x := 1 - ps[i]
 		for j := range opps {
@@ -176,7 +205,9 @@ func (b *brain) expMedals(me float64, opps []float64) float64 {
 				x *= ps[j]
 			}
 		}
+
 		p2 += x
 	}
+
 	return gold*pg + silver*p2
 }

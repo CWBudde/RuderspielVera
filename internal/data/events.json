@@ -1,26 +1,91 @@
 [
-  {"type": "wetter", "name": "Wetter-Event", "weight": 8, "value": 4,
-   "description": "Bei Wasserregatten mit Regen, Hitze, Wind oder Kälte bekommt das Boot dieser Person +4."},
-  {"type": "wachstum", "name": "Wachstum", "weight": 8, "value": 2,
-   "description": "Bei jedem Training und Trainingslager wächst die beste Eigenschaft dieser Person automatisch um 2."},
-  {"type": "phoenix", "name": "Phönix", "weight": 10, "value": 5,
-   "description": "Die schwächste Eigenschaft dieser Person steigt sofort um 5."},
-  {"type": "tausch", "name": "Tausch", "weight": 8, "value": 0,
-   "description": "Du darfst einmal zwei Eigenschaftswerte dieser Person miteinander tauschen."},
-  {"type": "verdopplung", "name": "Verdopplung", "weight": 5, "value": 2,
-   "description": "Die aktuell beste Eigenschaft dieser Person wird einmalig verdoppelt."},
-  {"type": "kraft", "name": "Kraft-Event", "weight": 10, "stat": "kraft", "value": 8,
-   "description": "Kraft dieser Person +8."},
-  {"type": "ausdauer", "name": "Ausdauer-Event", "weight": 10, "stat": "ausdauer", "value": 8,
-   "description": "Ausdauer dieser Person +8."},
-  {"type": "geschwindigkeit", "name": "Geschwindigkeits-Event", "weight": 10, "stat": "geschwindigkeit", "value": 8,
-   "description": "Geschwindigkeit dieser Person +8."},
-  {"type": "technik", "name": "Technik-Event", "weight": 10, "stat": "technik", "value": 8,
-   "description": "Technik dieser Person +8."},
-  {"type": "motivation", "name": "Motivations-Event", "weight": 10, "stat": "motivation", "value": 8,
-   "description": "Motivation dieser Person +8."},
-  {"type": "seelenzwilling", "name": "Seelenzwilling", "weight": 5, "value": 80,
-   "description": "Eine neue Rudererkarte kommt ins Team: der Zwilling mit 80 % der aktuellen Werte. Der Zwilling kann kein Event erhalten."},
-  {"type": "mission", "name": "Geheime Mission", "weight": 8, "value": 0,
-   "description": "Diese Person erhält eine geheime Mission. Wird sie erfüllt, gibt es eine Belohnung."}
+  {
+    "type": "wetter",
+    "name": "Wetter-Event",
+    "weight": 8,
+    "value": 4,
+    "description": "Bei Wasserregatten mit Regen, Hitze, Wind oder Kälte bekommt das Boot dieser Person +4."
+  },
+  {
+    "type": "wachstum",
+    "name": "Wachstum",
+    "weight": 8,
+    "value": 2,
+    "description": "Bei jedem Training und Trainingslager wächst die beste Eigenschaft dieser Person automatisch um 2."
+  },
+  {
+    "type": "phoenix",
+    "name": "Phönix",
+    "weight": 10,
+    "value": 5,
+    "description": "Die schwächste Eigenschaft dieser Person steigt sofort um 5."
+  },
+  {
+    "type": "tausch",
+    "name": "Tausch",
+    "weight": 8,
+    "value": 0,
+    "description": "Du darfst einmal zwei Eigenschaftswerte dieser Person miteinander tauschen."
+  },
+  {
+    "type": "verdopplung",
+    "name": "Verdopplung",
+    "weight": 5,
+    "value": 2,
+    "description": "Die aktuell beste Eigenschaft dieser Person wird einmalig verdoppelt."
+  },
+  {
+    "type": "kraft",
+    "name": "Kraft-Event",
+    "weight": 10,
+    "stat": "kraft",
+    "value": 8,
+    "description": "Kraft dieser Person +8."
+  },
+  {
+    "type": "ausdauer",
+    "name": "Ausdauer-Event",
+    "weight": 10,
+    "stat": "ausdauer",
+    "value": 8,
+    "description": "Ausdauer dieser Person +8."
+  },
+  {
+    "type": "geschwindigkeit",
+    "name": "Geschwindigkeits-Event",
+    "weight": 10,
+    "stat": "geschwindigkeit",
+    "value": 8,
+    "description": "Geschwindigkeit dieser Person +8."
+  },
+  {
+    "type": "technik",
+    "name": "Technik-Event",
+    "weight": 10,
+    "stat": "technik",
+    "value": 8,
+    "description": "Technik dieser Person +8."
+  },
+  {
+    "type": "motivation",
+    "name": "Motivations-Event",
+    "weight": 10,
+    "stat": "motivation",
+    "value": 8,
+    "description": "Motivation dieser Person +8."
+  },
+  {
+    "type": "seelenzwilling",
+    "name": "Seelenzwilling",
+    "weight": 5,
+    "value": 80,
+    "description": "Eine neue Rudererkarte kommt ins Team: der Zwilling mit 80 % der aktuellen Werte. Der Zwilling kann kein Event erhalten."
+  },
+  {
+    "type": "mission",
+    "name": "Geheime Mission",
+    "weight": 8,
+    "value": 0,
+    "description": "Diese Person erhält eine geheime Mission. Wird sie erfüllt, gibt es eine Belohnung."
+  }
 ]

@@ -45,16 +45,16 @@ func newError(status int, msg string) *Error { return &Error{Status: status, Msg
 
 // AsError maps any error to a *Error (unknown errors become a generic 500).
 func AsError(err error) *Error {
-	var se *Error
-	if errors.As(err, &se) {
+	if se, ok := errors.AsType[*Error](err); ok {
 		return se
 	}
+
 	return newError(StatusInternal, "Interner Fehler.")
 }
 
 // Store persists a game after every change. Save is called with the game lock held.
 type Store interface {
-	Save(Snapshot) error
+	Save(snap Snapshot) error
 }
 
 // Options configures a Service.
@@ -76,6 +76,8 @@ type Service struct {
 }
 
 // Bot display names per bot index (seat 1..3).
+//
+//nolint:gochecknoglobals // read-only name table
 var botNames = []string{"Ruderclub Ihme", "Leine-Ruderer", "RV Maschsee"}
 
 const (
@@ -85,17 +87,23 @@ const (
 	maxBotSteps = 10000
 )
 
+// ErrNoDecider is returned by New when Options.Decider is nil.
+var ErrNoDecider = errors.New("gameservice: Decider is required")
+
 // New creates an empty service.
 func New(opts Options) (*Service, error) {
 	if opts.Decider == nil {
-		return nil, errors.New("gameservice: Decider is required")
+		return nil, ErrNoDecider
 	}
+
 	if opts.Logger == nil {
 		opts.Logger = slog.Default()
 	}
+
 	if opts.Now == nil {
 		opts.Now = func() time.Time { return time.Now().UTC() }
 	}
+
 	return &Service{
 		games:  map[string]*gameEntry{},
 		decide: opts.Decider,
@@ -146,8 +154,11 @@ func (e *gameEntry) botRNG(seat int) *mrand.Rand {
 	if r, ok := e.rngs[seat]; ok {
 		return r
 	}
-	r := mrand.New(mrand.NewPCG(e.game.Config().Seed, 0xB0700+uint64(seat)))
+
+	stream := 0xB0700 + uint64(seat) //nolint:gosec // seat is a small non-negative index
+	r := mrand.New(mrand.NewPCG(e.game.Config().Seed, stream))
 	e.rngs[seat] = r
+
 	return r
 }
 
@@ -158,14 +169,18 @@ func (s *Service) Create(req CreateRequest) (CreateResponse, error) {
 	if req.Bots != nil {
 		bots = *req.Bots
 	}
+
 	if bots < 1 || bots > len(botNames) {
 		return CreateResponse{}, newError(StatusBadRequest, fmt.Sprintf("Es sind 1 bis %d Bots möglich.", len(botNames)))
 	}
+
 	seed := mrand.Uint64()
 	if req.Seed != nil {
 		seed = *req.Seed
 	}
+
 	id := randomHex(8)
+
 	cfg := engine.Config{GameID: id, Seed: seed, Players: []engine.PlayerConfig{
 		{ID: "p1", Name: CleanName(req.PlayerName)},
 	}}
@@ -174,27 +189,36 @@ func (s *Service) Create(req CreateRequest) (CreateResponse, error) {
 			ID: fmt.Sprintf("p%d", i+2), Name: botNames[i], IsBot: true,
 		})
 	}
+
 	g, err := engine.New(cfg)
 	if err != nil {
 		s.log.Error("engine.New failed", "err", err)
 		return CreateResponse{}, newError(StatusInternal, "Das Spiel konnte nicht erstellt werden.")
 	}
+
 	token := randomHex(16)
 	e := newGameEntry(id, g, map[string]string{token: "p1"}, s.now())
 
 	e.mu.Lock()
 	defer e.mu.Unlock()
+
 	botErr := s.runBots(e)
-	if err := s.save(e); err != nil {
+
+	err = s.save(e)
+	if err != nil {
 		return CreateResponse{}, err
 	}
+
 	s.mu.Lock()
 	s.games[id] = e
 	s.mu.Unlock()
+
 	if botErr != nil {
 		return CreateResponse{}, botErr
 	}
+
 	s.log.Info("game created", "game", id, "seed", seed, "bots", bots)
+
 	return CreateResponse{GameID: id, PlayerID: "p1", Token: token, View: g.View("p1")}, nil
 }
 
@@ -204,8 +228,10 @@ func (s *Service) View(gameID, token string) (engine.GameView, error) {
 	if err != nil {
 		return engine.GameView{}, err
 	}
+
 	e.mu.Lock()
 	defer e.mu.Unlock()
+
 	return e.game.View(pid), nil
 }
 
@@ -215,9 +241,12 @@ func (s *Service) Submit(gameID, token string, d engine.Decision) (engine.GameVi
 	if err != nil {
 		return engine.GameView{}, err
 	}
+
 	e.mu.Lock()
 	defer e.mu.Unlock()
-	if err := e.game.Submit(pid, d); err != nil {
+
+	err = e.game.Submit(pid, d)
+	if err != nil {
 		var ve *engine.ValidationError
 		switch {
 		case errors.Is(err, engine.ErrStalePhase):
@@ -229,13 +258,18 @@ func (s *Service) Submit(gameID, token string, d engine.Decision) (engine.GameVi
 			return engine.GameView{}, newError(StatusInternal, "Die Entscheidung konnte nicht verarbeitet werden.")
 		}
 	}
+
 	botErr := s.runBots(e)
-	if err := s.save(e); err != nil {
+
+	err = s.save(e)
+	if err != nil {
 		return engine.GameView{}, err
 	}
+
 	if botErr != nil {
 		return engine.GameView{}, botErr
 	}
+
 	return e.game.View(pid), nil
 }
 
@@ -245,15 +279,19 @@ func (s *Service) Log(gameID, token string) (LogResponse, error) {
 	if err != nil {
 		return LogResponse{}, err
 	}
+
 	e.mu.Lock()
 	defer e.mu.Unlock()
+
 	resp := LogResponse{Log: e.game.Log(), Results: e.game.Results()}
 	if resp.Log == nil {
 		resp.Log = []engine.LogEntry{}
 	}
+
 	if resp.Results == nil {
 		resp.Results = []engine.CompetitionResult{}
 	}
+
 	return resp, nil
 }
 
@@ -264,6 +302,7 @@ func (s *Service) Catalog() (engine.CatalogView, error) {
 		s.log.Error("catalog failed", "err", err)
 		return engine.CatalogView{}, newError(StatusInternal, "Der Kartenkatalog konnte nicht geladen werden.")
 	}
+
 	return c, nil
 }
 
@@ -273,9 +312,17 @@ func (s *Service) WithGame(gameID string, fn func(*engine.Game) error) error {
 	if e == nil {
 		return newError(StatusNotFound, "Dieses Spiel gibt es nicht.")
 	}
+
 	e.mu.Lock()
 	defer e.mu.Unlock()
+
 	return fn(e.game)
+}
+
+// CheckToken reports (as *Error) whether the game exists and token belongs to one of its players.
+func (s *Service) CheckToken(gameID, token string) error {
+	_, _, err := s.authorize(gameID, token)
+	return err
 }
 
 // runBots lets bots decide while the game is running and a pending player is a bot, so the view
@@ -287,39 +334,42 @@ func (s *Service) runBots(e *gameEntry) error {
 			s.log.Error("bots did not hand back control", "game", e.id, "steps", maxBotSteps)
 			return newError(StatusInternal, "Ein Bot konnte nicht entscheiden.")
 		}
+
 		seat := -1
+
 		for _, pid := range e.game.Pending() {
-			if i := slices.IndexFunc(cfg.Players, func(p engine.PlayerConfig) bool { return p.ID == pid }); i >= 0 && cfg.Players[i].IsBot {
+			i := slices.IndexFunc(cfg.Players, func(p engine.PlayerConfig) bool { return p.ID == pid })
+			if i >= 0 && cfg.Players[i].IsBot {
 				seat = i
 				break
 			}
 		}
+
 		if seat < 0 {
 			return nil
 		}
+
 		pid := cfg.Players[seat].ID
+
 		d, err := s.decide(e.game, pid, seat, e.botRNG(seat))
 		if err == nil {
 			err = e.game.Submit(pid, d)
 		}
+
 		if err != nil {
 			s.log.Error("bot failed", "game", e.id, "player", pid, "phase", e.game.PhaseID(), "err", err)
 			return newError(StatusInternal, "Ein Bot konnte nicht entscheiden.")
 		}
 	}
+
 	return nil
 }
 
 func (s *Service) lookup(gameID string) *gameEntry {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
-	return s.games[gameID]
-}
 
-// CheckToken reports (as *Error) whether the game exists and token belongs to one of its players.
-func (s *Service) CheckToken(gameID, token string) error {
-	_, _, err := s.authorize(gameID, token)
-	return err
+	return s.games[gameID]
 }
 
 // authorize resolves the game and the player behind token.
@@ -328,14 +378,17 @@ func (s *Service) authorize(gameID, token string) (*gameEntry, string, error) {
 	if e == nil {
 		return nil, "", newError(StatusNotFound, "Dieses Spiel gibt es nicht.")
 	}
+
 	token = strings.TrimSpace(token)
 	if token == "" {
 		return nil, "", newError(StatusUnauthorized, "Anmeldung fehlt. Bitte starte ein neues Spiel.")
 	}
+
 	pid, ok := e.tokens[token] // immutable after creation, no lock needed
 	if !ok {
 		return nil, "", newError(StatusUnauthorized, "Ungültige Anmeldung für dieses Spiel.")
 	}
+
 	return e, pid, nil
 }
 
@@ -345,18 +398,23 @@ func CleanName(name string) string {
 	if name == "" {
 		return defaultName
 	}
+
 	if utf8.RuneCountInString(name) > maxNameLen {
 		name = strings.TrimSpace(string([]rune(name)[:maxNameLen]))
 	}
+
 	return name
 }
 
 // randomHex returns n random bytes as lowercase hex.
 func randomHex(n int) string {
 	b := make([]byte, n)
-	if _, err := rand.Read(b); err != nil {
+
+	_, err := rand.Read(b)
+	if err != nil {
 		panic(fmt.Sprintf("crypto/rand: %v", err)) // never fails on supported platforms
 	}
+
 	return hex.EncodeToString(b)
 }
 
@@ -365,6 +423,8 @@ func ValidGameID(id string) bool {
 	if id == "" || len(id) > 64 {
 		return false
 	}
+
 	_, err := hex.DecodeString(id)
+
 	return err == nil
 }

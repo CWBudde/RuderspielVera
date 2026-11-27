@@ -42,10 +42,30 @@ export class Rng {
 type StationDef = [StationType, string, string?];
 
 const SECTIONS: StationDef[][] = [
-  [["setup", "Spielvorbereitung"], ["training", "Training"], ["regatta", "Hildesheim"]],
-  [["event", "Event"], ["training", "Training"], ["ereignis", "Ereignis"], ["ergocup", "Mindor-Cup"]],
-  [["event", "Event"], ["selection", "WR5"], ["training", "Training"], ["ereignis", "Ereignis"], ["ergocup", "DRC-Ergo-Cup"]],
-  [["event", "Event"], ["training", "Training"], ["ereignis", "Ereignis"], ["ergocup", "Osnabrücker Ergo-Cup"]],
+  [
+    ["setup", "Spielvorbereitung"],
+    ["training", "Training"],
+    ["regatta", "Hildesheim"],
+  ],
+  [
+    ["event", "Event"],
+    ["training", "Training"],
+    ["ereignis", "Ereignis"],
+    ["ergocup", "Mindor-Cup"],
+  ],
+  [
+    ["event", "Event"],
+    ["selection", "WR5"],
+    ["training", "Training"],
+    ["ereignis", "Ereignis"],
+    ["ergocup", "DRC-Ergo-Cup"],
+  ],
+  [
+    ["event", "Event"],
+    ["training", "Training"],
+    ["ereignis", "Ereignis"],
+    ["ergocup", "Osnabrücker Ergo-Cup"],
+  ],
   [
     ["event", "Event"],
     ["selection", "Basketballturnier"],
@@ -54,8 +74,19 @@ const SECTIONS: StationDef[][] = [
     ["camp", "Hankensbüttel"],
     ["regatta", "Regatta Bremen"],
   ],
-  [["event", "Event"], ["training", "Training"], ["ereignis", "Ereignis"], ["camp", "Kassel"], ["regatta", "Kasselregatta"]],
-  [["event", "Event"], ["training", "Training"], ["ereignis", "Ereignis"], ["regatta", "Verbandsregatta I"]],
+  [
+    ["event", "Event"],
+    ["training", "Training"],
+    ["ereignis", "Ereignis"],
+    ["camp", "Kassel"],
+    ["regatta", "Kasselregatta"],
+  ],
+  [
+    ["event", "Event"],
+    ["training", "Training"],
+    ["ereignis", "Ereignis"],
+    ["regatta", "Verbandsregatta I"],
+  ],
   [
     ["event", "Event"],
     ["selection", "Wanderfahrt"],
@@ -63,10 +94,30 @@ const SECTIONS: StationDef[][] = [
     ["ereignis", "Ereignis"],
     ["regatta", "Regatta Schillerschule"],
   ],
-  [["event", "Event"], ["training", "Training"], ["ereignis", "Ereignis"], ["regatta", "Verbandsregatta II"]],
-  [["event", "Event"], ["training", "Training"], ["ereignis", "Ereignis"], ["jtfo", "JTFO"]],
-  [["event", "Event"], ["training", "Training"], ["ereignis", "Ereignis"], ["regatta", "RVH-Herbstsprint"]],
-  [["event", "Event"], ["training", "Training"], ["ereignis", "Ereignis"], ["regatta", "RVB-Endspurt"]],
+  [
+    ["event", "Event"],
+    ["training", "Training"],
+    ["ereignis", "Ereignis"],
+    ["regatta", "Verbandsregatta II"],
+  ],
+  [
+    ["event", "Event"],
+    ["training", "Training"],
+    ["ereignis", "Ereignis"],
+    ["jtfo", "JTFO"],
+  ],
+  [
+    ["event", "Event"],
+    ["training", "Training"],
+    ["ereignis", "Ereignis"],
+    ["regatta", "RVH-Herbstsprint"],
+  ],
+  [
+    ["event", "Event"],
+    ["training", "Training"],
+    ["ereignis", "Ereignis"],
+    ["regatta", "RVB-Endspurt"],
+  ],
 ];
 
 const INFO: Record<string, string> = {
@@ -97,19 +148,65 @@ export function buildCalendar(): StationView[] {
 
 export const ROWER_NAMES: Record<string, [string, Gender][]> = {
   kinder: [
-    ["Pauline", "w"], ["Mara", "w"], ["Nella", "w"], ["Johanna", "w"], ["Hannah", "w"], ["Paul", "m"],
-    ["Johann", "m"], ["Justus", "m"], ["Joel", "m"], ["Ella", "w"], ["Yasmin", "w"], ["Malte", "m"], ["Sophia", "w"],
+    ["Pauline", "w"],
+    ["Mara", "w"],
+    ["Nella", "w"],
+    ["Johanna", "w"],
+    ["Hannah", "w"],
+    ["Paul", "m"],
+    ["Johann", "m"],
+    ["Justus", "m"],
+    ["Joel", "m"],
+    ["Ella", "w"],
+    ["Yasmin", "w"],
+    ["Malte", "m"],
+    ["Sophia", "w"],
   ],
   b: [
-    ["Vera", "w"], ["Lotti", "w"], ["Ida", "w"], ["Lea", "w"], ["Anton", "m"], ["Mailo", "m"], ["Luka", "m"],
-    ["Jonas", "m"], ["Nilo", "m"], ["Julius", "m"], ["Sophia", "w"], ["Noah", "m"], ["Elin", "w"], ["Arun", "m"],
-    ["Leni", "w"], ["Catha", "w"], ["Hannah", "w"], ["Tobias", "m"], ["Jacob", "m"], ["Christoph", "m"],
-    ["Justus", "m"], ["Johann", "m"], ["Jan", "m"], ["Fabian", "m"], ["Lenn", "m"], ["Yukari", "w"], ["Mia", "w"],
+    ["Vera", "w"],
+    ["Lotti", "w"],
+    ["Ida", "w"],
+    ["Lea", "w"],
+    ["Anton", "m"],
+    ["Mailo", "m"],
+    ["Luka", "m"],
+    ["Jonas", "m"],
+    ["Nilo", "m"],
+    ["Julius", "m"],
+    ["Sophia", "w"],
+    ["Noah", "m"],
+    ["Elin", "w"],
+    ["Arun", "m"],
+    ["Leni", "w"],
+    ["Catha", "w"],
+    ["Hannah", "w"],
+    ["Tobias", "m"],
+    ["Jacob", "m"],
+    ["Christoph", "m"],
+    ["Justus", "m"],
+    ["Johann", "m"],
+    ["Jan", "m"],
+    ["Fabian", "m"],
+    ["Lenn", "m"],
+    ["Yukari", "w"],
+    ["Mia", "w"],
   ],
   a: [
-    ["Yara", "w"], ["Matilda", "w"], ["Lea", "w"], ["Annabelle", "w"], ["Emilie", "w"], ["Jonathan", "m"],
-    ["Maxi", "m"], ["Fabi", "m"], ["Niclas", "m"], ["Michel", "m"], ["Jonte", "m"], ["Simon", "m"], ["Tara", "w"],
-    ["Johanna", "w"], ["Matilda", "w"],
+    ["Yara", "w"],
+    ["Matilda", "w"],
+    ["Lea", "w"],
+    ["Annabelle", "w"],
+    ["Emilie", "w"],
+    ["Jonathan", "m"],
+    ["Maxi", "m"],
+    ["Fabi", "m"],
+    ["Niclas", "m"],
+    ["Michel", "m"],
+    ["Jonte", "m"],
+    ["Simon", "m"],
+    ["Tara", "w"],
+    ["Johanna", "w"],
+    ["Matilda", "w"],
   ],
 };
 
@@ -153,12 +250,27 @@ export function cityBoats(owner: string): BoatView[] {
 }
 
 export const NAMED_BOATS: [string, string, number][] = [
-  ["Ice-Man", "1x", 5], ["Manpower", "1x", 6], ["Kalypso", "1x", 6], ["Reinfall", "1x", 5],
-  ["Bj-Turbo", "2x", 6], ["Black Sword", "2x", 7], ["Goodspeed", "2x", 6],
-  ["Simsalabim", "4x", 6], ["Oshra", "4x", 7], ["Need 4 Speed", "4x", 7],
-  ["Zwergenkreuzer", "1x", 8], ["Traumstart", "1x", 9], ["Rennschlumpf", "1x", 8], ["Singlespeed", "1x", 10],
-  ["Freiheit", "2x", 8], ["X-Wing", "2x", 10], ["Laufwunder", "2x", 9], ["H zwei O", "2x", 9],
-  ["Q", "4x", 10], ["5 Freunde", "4x", 9], ["Wilhelm", "4x", 8],
+  ["Ice-Man", "1x", 5],
+  ["Manpower", "1x", 6],
+  ["Kalypso", "1x", 6],
+  ["Reinfall", "1x", 5],
+  ["Bj-Turbo", "2x", 6],
+  ["Black Sword", "2x", 7],
+  ["Goodspeed", "2x", 6],
+  ["Simsalabim", "4x", 6],
+  ["Oshra", "4x", 7],
+  ["Need 4 Speed", "4x", 7],
+  ["Zwergenkreuzer", "1x", 8],
+  ["Traumstart", "1x", 9],
+  ["Rennschlumpf", "1x", 8],
+  ["Singlespeed", "1x", 10],
+  ["Freiheit", "2x", 8],
+  ["X-Wing", "2x", 10],
+  ["Laufwunder", "2x", 9],
+  ["H zwei O", "2x", 9],
+  ["Q", "4x", 10],
+  ["5 Freunde", "4x", 9],
+  ["Wilhelm", "4x", 8],
 ];
 
 export function namedBoats(): BoatView[] {
@@ -176,71 +288,139 @@ export function namedBoats(): BoatView[] {
 
 export const TRAINERS: TrainerView[] = [
   {
-    id: "tr-sack", name: "Herr Sack", ability: "Sonnenanbeter", artKey: "trainer-m",
+    id: "tr-sack",
+    name: "Herr Sack",
+    ability: "Sonnenanbeter",
+    artKey: "trainer-m",
     description: "Bei Hitze +5 pro Boot, bei Regen −5.",
-    effects: [{ weather: "hitze", value: 5 }, { weather: "regen", value: -5 }],
+    effects: [
+      { weather: "hitze", value: 5 },
+      { weather: "regen", value: -5 },
+    ],
   },
   {
-    id: "tr-linke", name: "Frau Linke", ability: "Regenjacke", artKey: "trainer-w",
+    id: "tr-linke",
+    name: "Frau Linke",
+    ability: "Regenjacke",
+    artKey: "trainer-w",
     description: "Bei Regen +4 pro Boot, bei Wind −3.",
-    effects: [{ weather: "regen", value: 4 }, { weather: "wind", value: -3 }],
+    effects: [
+      { weather: "regen", value: 4 },
+      { weather: "wind", value: -3 },
+    ],
   },
   {
-    id: "tr-caro", name: "Caro", ability: "Rückenwind", artKey: "trainer-w",
+    id: "tr-caro",
+    name: "Caro",
+    ability: "Rückenwind",
+    artKey: "trainer-w",
     description: "Bei Wind +5 pro Boot, bei Kälte −2.",
-    effects: [{ weather: "wind", value: 5 }, { weather: "kaelte", value: -2 }],
+    effects: [
+      { weather: "wind", value: 5 },
+      { weather: "kaelte", value: -2 },
+    ],
   },
   {
-    id: "tr-hannah", name: "Hannah", ability: "Ergo-Expertin", artKey: "trainer-w",
+    id: "tr-hannah",
+    name: "Hannah",
+    ability: "Ergo-Expertin",
+    artKey: "trainer-w",
     description: "+3 pro Ergo-Start.",
     effects: [{ context: "ergo", value: 3 }],
   },
   {
-    id: "tr-julian", name: "Julian", ability: "Sprintcoach", artKey: "trainer-m",
+    id: "tr-julian",
+    name: "Julian",
+    ability: "Sprintcoach",
+    artKey: "trainer-m",
     description: "+2 pro Boot bei Sprintregatten.",
     effects: [{ context: "sprint", value: 2 }],
   },
   {
-    id: "tr-aron", name: "Aron", ability: "Langer Atem", artKey: "trainer-m",
+    id: "tr-aron",
+    name: "Aron",
+    ability: "Langer Atem",
+    artKey: "trainer-m",
     description: "+3 pro Boot auf der Langstrecke.",
     effects: [{ context: "langstrecke", value: 3 }],
   },
   {
-    id: "tr-salim", name: "Salim", ability: "Eisbader", artKey: "trainer-m",
+    id: "tr-salim",
+    name: "Salim",
+    ability: "Eisbader",
+    artKey: "trainer-m",
     description: "Bei Kälte +4 pro Boot, bei Hitze −2.",
-    effects: [{ weather: "kaelte", value: 4 }, { weather: "hitze", value: -2 }],
+    effects: [
+      { weather: "kaelte", value: 4 },
+      { weather: "hitze", value: -2 },
+    ],
   },
   {
-    id: "tr-friedjof", name: "Friedjof", ability: "Ruhige Hand", artKey: "trainer-m",
+    id: "tr-friedjof",
+    name: "Friedjof",
+    ability: "Ruhige Hand",
+    artKey: "trainer-m",
     description: "Bei normalem Wetter +3 pro Boot.",
     effects: [{ weather: "normal", value: 3 }],
   },
   {
-    id: "tr-josef", name: "Josef", ability: "Allwetter", artKey: "trainer-m",
+    id: "tr-josef",
+    name: "Josef",
+    ability: "Allwetter",
+    artKey: "trainer-m",
     description: "Bei Regen +3, bei Hitze +2 pro Boot.",
-    effects: [{ weather: "regen", value: 3 }, { weather: "hitze", value: 2 }],
+    effects: [
+      { weather: "regen", value: 3 },
+      { weather: "hitze", value: 2 },
+    ],
   },
   {
-    id: "tr-clara", name: "Clara", ability: "Windflüsterin", artKey: "trainer-w",
+    id: "tr-clara",
+    name: "Clara",
+    ability: "Windflüsterin",
+    artKey: "trainer-w",
     description: "Bei Wind +3, bei Regen +2 pro Boot.",
-    effects: [{ weather: "wind", value: 3 }, { weather: "regen", value: 2 }],
+    effects: [
+      { weather: "wind", value: 3 },
+      { weather: "regen", value: 2 },
+    ],
   },
 ];
 
 // ---------- events and Ereignisse ----------
 
 export const EVENT_DECK: { type: string; name: string; description: string; weight: number }[] = [
-  { type: "wetter", name: "Wetter-Event", description: "Boot dieses Ruderers +4, wenn das Wetter nicht normal ist.", weight: 2 },
-  { type: "wachstum", name: "Wachstum", description: "Bester Wert +2 bei jedem Training, auch im Trainingslager.", weight: 2 },
+  {
+    type: "wetter",
+    name: "Wetter-Event",
+    description: "Boot dieses Ruderers +4, wenn das Wetter nicht normal ist.",
+    weight: 2,
+  },
+  {
+    type: "wachstum",
+    name: "Wachstum",
+    description: "Bester Wert +2 bei jedem Training, auch im Trainingslager.",
+    weight: 2,
+  },
   { type: "phoenix", name: "Phönix", description: "Schwächster Wert sofort +5.", weight: 2 },
   { type: "tausch", name: "Tausch", description: "Tausche zwei Werte dieses Ruderers.", weight: 2 },
-  { type: "verdopplung", name: "Verdopplung", description: "Der aktuell beste Wert wird einmalig verdoppelt.", weight: 1 },
+  {
+    type: "verdopplung",
+    name: "Verdopplung",
+    description: "Der aktuell beste Wert wird einmalig verdoppelt.",
+    weight: 1,
+  },
   { type: "kraft", name: "Kraft-Event", description: "Kraft +8.", weight: 2 },
   { type: "ausdauer", name: "Ausdauer-Event", description: "Ausdauer +8.", weight: 2 },
   { type: "geschwindigkeit", name: "Geschwindigkeits-Event", description: "Geschwindigkeit +8.", weight: 2 },
   { type: "technik", name: "Technik-Event", description: "Technik +8.", weight: 2 },
   { type: "motivation", name: "Motivations-Event", description: "Motivation +8.", weight: 2 },
-  { type: "zwilling", name: "Seelenzwilling", description: "Ein Zwilling mit 80 % der Werte kommt ins Team.", weight: 1 },
+  {
+    type: "zwilling",
+    name: "Seelenzwilling",
+    description: "Ein Zwilling mit 80 % der Werte kommt ins Team.",
+    weight: 1,
+  },
   { type: "mission", name: "Geheime Mission", description: "Erfülle die Mission bis Saisonende.", weight: 1 },
 ];
 
@@ -252,16 +432,44 @@ export const MISSIONS: { text: string; reward: string }[] = [
 ];
 
 export const EREIGNISSE: { name: string; text: string; active?: string }[] = [
-  { name: "Trainerstreik", text: "Die Trainer streiken: Das nächste Training bringt nur 5 Punkte.", active: "Trainerstreik: nächstes Training nur 5 Punkte" },
-  { name: "Maschsee-Monster", text: "Etwas Großes schwimmt im Maschsee. Bei der nächsten Wasserregatta steigt die Krebsgefahr auf 30 %.", active: "Maschsee-Monster: nächste Wasserregatta Krebs 30 %" },
+  {
+    name: "Trainerstreik",
+    text: "Die Trainer streiken: Das nächste Training bringt nur 5 Punkte.",
+    active: "Trainerstreik: nächstes Training nur 5 Punkte",
+  },
+  {
+    name: "Maschsee-Monster",
+    text: "Etwas Großes schwimmt im Maschsee. Bei der nächsten Wasserregatta steigt die Krebsgefahr auf 30 %.",
+    active: "Maschsee-Monster: nächste Wasserregatta Krebs 30 %",
+  },
   { name: "Grippewelle", text: "Je Team verliert ein zufälliger Ruderer 5 Motivation." },
   { name: "Vereinsfest", text: "Alle Ruderer bekommen +1 Motivation." },
-  { name: "Neue Ergometer", text: "Beim nächsten Ergo-Cup zählt Kraft dreifach.", active: "Neue Ergometer: nächster Ergo-Cup Kraft ×3" },
-  { name: "Sponsor", text: "Das Team auf dem letzten Platz bekommt beim nächsten Draft eine Extrakarte.", active: "Sponsor: Extrakarte für den Letzten im nächsten Draft" },
-  { name: "Hitzewelle", text: "Das Wetter der nächsten Regatta ist sicher Hitze.", active: "Hitzewelle: nächste Regatta Hitze" },
+  {
+    name: "Neue Ergometer",
+    text: "Beim nächsten Ergo-Cup zählt Kraft dreifach.",
+    active: "Neue Ergometer: nächster Ergo-Cup Kraft ×3",
+  },
+  {
+    name: "Sponsor",
+    text: "Das Team auf dem letzten Platz bekommt beim nächsten Draft eine Extrakarte.",
+    active: "Sponsor: Extrakarte für den Letzten im nächsten Draft",
+  },
+  {
+    name: "Hitzewelle",
+    text: "Das Wetter der nächsten Regatta ist sicher Hitze.",
+    active: "Hitzewelle: nächste Regatta Hitze",
+  },
   { name: "Ruhige Woche", text: "Nichts passiert. Durchatmen am Steg." },
-  { name: "Bootshaus-Renovierung", text: "Städtische Boote −1 bei der nächsten Regatta.", active: "Renovierung: städtische Boote −1 bei der nächsten Regatta" },
-  { name: "Doppeltraining", text: "Das nächste Training bringt 15 Punkte.", active: "Doppeltraining: nächstes Training 15 Punkte" },
+  {
+    name: "Bootshaus-Renovierung",
+    text: "Städtische Boote −1 bei der nächsten Regatta.",
+    active: "Renovierung: städtische Boote −1 bei der nächsten Regatta",
+  },
+  {
+    name: "Doppeltraining",
+    text: "Das nächste Training bringt 15 Punkte.",
+    active: "Doppeltraining: nächstes Training 15 Punkte",
+  },
 ];
 
 // ---------- competitions ----------
@@ -270,7 +478,13 @@ function groupName(age: AgeGroup, gender: Gender): string {
   if (age === "kinder") return gender === "w" ? "Mädchen" : "Jungen";
   return `${gender === "w" ? "Juniorinnen" : "Junioren"} ${age.toUpperCase()}`;
 }
-const CLASS_NAME: Record<string, string> = { "1x": "Einer", "2x": "Zweier", "4x": "Vierer", "8x": "Achter", ergo: "Ergo" };
+const CLASS_NAME: Record<string, string> = {
+  "1x": "Einer",
+  "2x": "Zweier",
+  "4x": "Vierer",
+  "8x": "Achter",
+  ergo: "Ergo",
+};
 const SEATS: Record<string, number> = { "1x": 1, "2x": 2, "4x": 4, "8x": 8, ergo: 1 };
 
 function race(id: string, cls: string, ages: AgeGroup[], genders: Gender[], mixed = false, name?: string): RaceSpec {
@@ -281,7 +495,17 @@ function race(id: string, cls: string, ages: AgeGroup[], genders: Gender[], mixe
       : `${genders.length === 1 ? (genders[0] === "w" ? "Frauen" : "Männer") : "Offen"} ${CLASS_NAME[cls]}`);
   const seats = SEATS[cls];
   // Mirrors rules.json: boat value ×2 per seat, trainer effect per seat; the shared eight is worth 0.
-  return { id, name: label, class: cls, ages, genders, mixed, seats, boatScale: cls === "ergo" ? 0 : 2 * seats, trainerScale: seats };
+  return {
+    id,
+    name: label,
+    class: cls,
+    ages,
+    genders,
+    mixed,
+    seats,
+    boatScale: cls === "ergo" ? 0 : 2 * seats,
+    trainerScale: seats,
+  };
 }
 
 const MATRIX: [string, AgeGroup, Gender][] = [];
@@ -298,7 +522,13 @@ export function competitionFor(name: string, kind: StationType, rotation: number
     for (const age of ["kinder", "b", "a"] as AgeGroup[]) {
       for (const g of ["w", "m"] as Gender[]) races.push(race(`ergo-${age}-${g}`, "ergo", [age], [g]));
     }
-    return { ...base, context: "ergo", weights: { kraft: 2, motivation: 1 }, races, notes: ["Kein Boot, kein Wetter, keine Zwischenfälle."] };
+    return {
+      ...base,
+      context: "ergo",
+      weights: { kraft: 2, motivation: 1 },
+      races,
+      notes: ["Kein Boot, kein Wetter, keine Zwischenfälle."],
+    };
   }
   if (kind === "jtfo") {
     return {
@@ -306,9 +536,21 @@ export function competitionFor(name: string, kind: StationType, rotation: number
       teamEvent: true,
       weights: { geschwindigkeit: 1, technik: 1 },
       races: [
-        { ...race("jtfo-2x-1", "2x", ["b", "a"], ["w", "m"], false, "Schulteam Zweier I"), loanBoat: true, fixedBoatValue: 2 },
-        { ...race("jtfo-4x", "4x", ["kinder", "b", "a"], ["w", "m"], false, "Schulteam Vierer"), loanBoat: true, fixedBoatValue: 2 },
-        { ...race("jtfo-2x-2", "2x", ["kinder", "b"], ["w", "m"], false, "Schulteam Zweier II"), loanBoat: true, fixedBoatValue: 2 },
+        {
+          ...race("jtfo-2x-1", "2x", ["b", "a"], ["w", "m"], false, "Schulteam Zweier I"),
+          loanBoat: true,
+          fixedBoatValue: 2,
+        },
+        {
+          ...race("jtfo-4x", "4x", ["kinder", "b", "a"], ["w", "m"], false, "Schulteam Vierer"),
+          loanBoat: true,
+          fixedBoatValue: 2,
+        },
+        {
+          ...race("jtfo-2x-2", "2x", ["kinder", "b"], ["w", "m"], false, "Schulteam Zweier II"),
+          loanBoat: true,
+          fixedBoatValue: 2,
+        },
       ],
       notes: ["Teamwertung: Die drei Boote zählen zusammen, eine Medaille für das ganze Team."],
     };
@@ -320,14 +562,26 @@ export function competitionFor(name: string, kind: StationType, rotation: number
         for (const g of ["w", "m"] as Gender[]) races.push(race(`hi-${cls}-${age}-${g}`, cls, [age], [g]));
       }
     }
-    return { ...base, context: "langstrecke", weights: { ausdauer: 2, motivation: 1 }, races, notes: ["Langstrecke: Ausdauer zählt doppelt."] };
+    return {
+      ...base,
+      context: "langstrecke",
+      weights: { ausdauer: 2, motivation: 1 },
+      races,
+      notes: ["Langstrecke: Ausdauer zählt doppelt."],
+    };
   }
   if (name === "RVH-Herbstsprint") {
     const races: RaceSpec[] = [];
     for (const cls of ["1x", "2x", "4x"]) {
       for (const g of ["w", "m"] as Gender[]) races.push(race(`rvh-${cls}-${g}`, cls, ["kinder", "b", "a"], [g]));
     }
-    return { ...base, context: "sprint", weights: { geschwindigkeit: 2, kraft: 1 }, races, notes: ["Sprint: Altersklassen gemischt."] };
+    return {
+      ...base,
+      context: "sprint",
+      weights: { geschwindigkeit: 2, kraft: 1 },
+      races,
+      notes: ["Sprint: Altersklassen gemischt."],
+    };
   }
   if (name === "RVB-Endspurt") {
     return {

@@ -6,6 +6,7 @@ package api
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"log/slog"
 	"net/http"
 	"strings"
@@ -18,6 +19,8 @@ import (
 type Decider = gameservice.Decider
 
 // SimpleDecider is the minimal always-legal bot (see gameservice.SimpleDecider).
+//
+//nolint:gochecknoglobals // alias of a function value, never reassigned
 var SimpleDecider Decider = gameservice.SimpleDecider
 
 // Options configures a Server.
@@ -35,26 +38,36 @@ type Server struct {
 
 const maxBodySize = 64 << 10
 
+// ErrNoDecider is returned by New when Options.Decider is nil.
+var ErrNoDecider = errors.New("api: Decider is required")
+
 // New creates a server and loads all persisted games from opts.DataDir.
 func New(opts Options) (*Server, error) {
 	if opts.Decider == nil {
-		return nil, errors.New("api: Decider is required")
+		return nil, ErrNoDecider
 	}
+
 	if opts.Logger == nil {
 		opts.Logger = slog.Default()
 	}
+
 	var store gameservice.Store
 	if opts.DataDir != "" {
 		store = fileStore{dir: opts.DataDir}
 	}
+
 	svc, err := gameservice.New(gameservice.Options{Decider: opts.Decider, Store: store, Logger: opts.Logger})
+	if err != nil {
+		return nil, fmt.Errorf("api: %w", err)
+	}
+
+	s := &Server{svc: svc, log: opts.Logger}
+
+	err = s.loadAll(opts.DataDir)
 	if err != nil {
 		return nil, err
 	}
-	s := &Server{svc: svc, log: opts.Logger}
-	if err := s.loadAll(opts.DataDir); err != nil {
-		return nil, err
-	}
+
 	return s, nil
 }
 
@@ -69,12 +82,14 @@ func (s *Server) Handler(static http.Handler) http.Handler {
 	mux.HandleFunc("POST /api/games/{id}/decisions", s.handleDecision)
 	mux.HandleFunc("GET /api/games/{id}/log", s.handleLog)
 	mux.HandleFunc("GET /api/catalog", s.handleCatalog)
-	mux.HandleFunc("/api/", func(w http.ResponseWriter, r *http.Request) {
+	mux.HandleFunc("/api/", func(w http.ResponseWriter, _ *http.Request) {
 		writeError(w, http.StatusNotFound, "Unbekannter Endpunkt.")
 	})
+
 	if static != nil {
 		mux.Handle("/", static)
 	}
+
 	return s.logRequests(cors(recoverPanics(s.log, mux)))
 }
 
@@ -91,6 +106,7 @@ func (s *Server) handleCreate(w http.ResponseWriter, r *http.Request) {
 	if !decodeBody(w, r, &req) {
 		return
 	}
+
 	resp, err := s.svc.Create(req)
 	reply(w, http.StatusCreated, resp, err)
 }
@@ -103,14 +119,17 @@ func (s *Server) handleView(w http.ResponseWriter, r *http.Request) {
 func (s *Server) handleDecision(w http.ResponseWriter, r *http.Request) {
 	id, token := r.PathValue("id"), bearer(r)
 	// Check game and token before reading the body, so a bad token is a 401 even with a bad body.
-	if err := s.svc.CheckToken(id, token); err != nil {
+	err := s.svc.CheckToken(id, token)
+	if err != nil {
 		reply(w, 0, nil, err)
 		return
 	}
+
 	var d engine.Decision
 	if !decodeBody(w, r, &d) {
 		return
 	}
+
 	v, err := s.svc.Submit(id, token, d)
 	reply(w, http.StatusOK, v, err)
 }
@@ -131,6 +150,7 @@ func bearer(r *http.Request) string {
 	if !found {
 		return ""
 	}
+
 	return strings.TrimSpace(token)
 }
 
@@ -141,24 +161,34 @@ func reply(w http.ResponseWriter, ok int, v any, err error) {
 	if err != nil {
 		se := gameservice.AsError(err)
 		writeError(w, se.Status, se.Msg)
+
 		return
 	}
+
 	writeJSON(w, ok, v)
 }
 
 func decodeBody(w http.ResponseWriter, r *http.Request, v any) bool {
 	r.Body = http.MaxBytesReader(w, r.Body, maxBodySize)
-	if err := json.NewDecoder(r.Body).Decode(v); err != nil {
+
+	err := json.NewDecoder(r.Body).Decode(v)
+	if err != nil {
 		writeError(w, http.StatusBadRequest, "Ungültige Anfrage: Die Daten konnten nicht gelesen werden.")
 		return false
 	}
+
 	return true
 }
 
 func writeJSON(w http.ResponseWriter, status int, v any) {
 	w.Header().Set("Content-Type", "application/json; charset=utf-8")
 	w.WriteHeader(status)
-	_ = json.NewEncoder(w).Encode(v)
+
+	err := json.NewEncoder(w).Encode(v)
+	if err != nil {
+		// Headers are already sent; all we can do is note the truncated body.
+		slog.Default().Warn("encode response", "err", err)
+	}
 }
 
 func writeError(w http.ResponseWriter, status int, msg string) {

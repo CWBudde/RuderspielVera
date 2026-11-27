@@ -35,7 +35,9 @@ export function GameOver() {
     <div className="flex flex-col gap-5">
       <LakeScene className="rounded-[22px] border-2 border-ink shadow-[0_3px_0_var(--ink)]">
         <div className="relative flex min-h-[19rem] flex-col items-center justify-center px-4 py-6 text-center">
-          <p className="rounded-full border-2 border-ink bg-cream px-3 py-0.5 font-display text-base font-bold">Saisonende am Maschsee</p>
+          <p className="rounded-full border-2 border-ink bg-cream px-3 py-0.5 font-display text-base font-bold">
+            Saisonende am Maschsee
+          </p>
           <div className="mt-3 flex items-center gap-1 motion-safe:animate-rise">
             <Laurel />
             <div className="min-w-0">

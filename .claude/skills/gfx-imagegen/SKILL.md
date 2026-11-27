@@ -78,12 +78,12 @@ $K/scripts/assemble.sh objects my-edited-entry.txt "" > p.txt
 
 Build once: `$K/tools/build.sh` (each helper has its own `go.mod`; binaries in `bin/`, git-ignored).
 
-| Helper | Use |
-| --- | --- |
-| `bin/wstat in.png [gx gy]` | mean RGB, L\*, σL\*, a\*, b\*, chroma, hue per grid cell (e.g. `2 3`: is the right half of a portrait calm?) |
-| `bin/bbox in.png cols rows` | alpha>128 box, cover and edge contact per sheet cell (icon sheets with alpha) |
-| `bin/comp in.png out.png r g b` | composite RGBA over a flat colour for viewing |
-| `bin/rectcrop in.png out.png x y w h` | cut a rectangle (one icon from a sheet) |
+| Helper                                                       | Use                                                                                                                                                                         |
+| ------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `bin/wstat in.png [gx gy]`                                   | mean RGB, L\*, σL\*, a\*, b\*, chroma, hue per grid cell (e.g. `2 3`: is the right half of a portrait calm?)                                                                |
+| `bin/bbox in.png cols rows`                                  | alpha>128 box, cover and edge contact per sheet cell (icon sheets with alpha)                                                                                               |
+| `bin/comp in.png out.png r g b`                              | composite RGBA over a flat colour for viewing                                                                                                                               |
+| `bin/rectcrop in.png out.png x y w h`                        | cut a rectangle (one icon from a sheet)                                                                                                                                     |
 | `bin/fit [-bits N] [-q Q] in.png out.(png\|jpg) w h [cx cy]` | scale to cover w×h, crop the rest; cx/cy 0..1 place the window (default centre); `-bits` reduces channel precision for smaller PNGs; `.jpg` output writes JPEG at quality Q |
 
 Check the canvas size (`file x.png`) of every try, then **look at it** (Read the PNG) before judging.
@@ -104,9 +104,11 @@ Per group, `art/gen/<date>/<group>/` holds `<id>-prompt.txt`, `<id>.png`, `<id>.
 
 ```markdown
 # Rowers (portraits)
+
 Attachments (all tries): image 1 examples/vera-karte.png (style/backdrop only). Target: PORTRAIT 3:4.
 
 ## rowers-kw01 (exec-0f3b4d41-…)
+
 Entry: rower-kinder-w. Change: first try.
 Size: 1086x1448. Verdict: best | second | reject. <faults>.
 

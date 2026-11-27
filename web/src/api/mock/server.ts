@@ -386,9 +386,7 @@ interface Lineup {
 }
 
 function botLineup(p: PlayerSummary, comp: CompetitionView): Lineup {
-  const trainer = [...p.trainers].sort(
-    (a, b) => trainerBonus(b, comp) - trainerBonus(a, comp),
-  )[0];
+  const trainer = [...p.trainers].sort((a, b) => trainerBonus(b, comp) - trainerBonus(a, comp))[0];
   const used = new Set<string>();
   const entries: Lineup["entries"] = [];
   for (const race of comp.races) {
@@ -425,7 +423,8 @@ function validateLineup(p: PlayerSummary, comp: CompetitionView, d: Decision) {
   for (const e of d.entries ?? []) {
     const race = comp.races.find((r) => r.id === e.raceId);
     if (!race) throw new MockError(400, "Unbekanntes Rennen.");
-    if (e.rowerIds.length !== race.seats) throw new MockError(400, `${race.name}: Bitte alle ${race.seats} Plätze besetzen.`);
+    if (e.rowerIds.length !== race.seats)
+      throw new MockError(400, `${race.name}: Bitte alle ${race.seats} Plätze besetzen.`);
     for (const id of e.rowerIds) {
       const r = p.rowers.find((x) => x.id === id);
       if (!r) throw new MockError(400, "Unbekannter Ruderer.");
@@ -433,7 +432,11 @@ function validateLineup(p: PlayerSummary, comp: CompetitionView, d: Decision) {
       if (!isEligible(r, race)) throw new MockError(400, `${r.name} ist für ${race.name} nicht startberechtigt.`);
       used.add(id);
     }
-    if (needsBoat(race) && !(race.loanBoat && !e.boatId) && !p.boats.some((b) => b.id === e.boatId && b.class === race.class)) {
+    if (
+      needsBoat(race) &&
+      !(race.loanBoat && !e.boatId) &&
+      !p.boats.some((b) => b.id === e.boatId && b.class === race.class)
+    ) {
       throw new MockError(400, `${race.name}: Bitte ein passendes Boot wählen.`);
     }
   }
@@ -478,7 +481,8 @@ function resolveCompetition(s: MockState, yours: Lineup) {
         const crew = e.rowerIds.map((id) => p.rowers.find((r) => r.id === id)).filter((r): r is RowerView => !!r);
         const boat = p.boats.find((b) => b.id === e.boatId);
         const trainer = p.trainers.find((t) => t.id === lu.trainerId);
-        const eventBonus = crew.some((r) => r.event?.type === "wetter") && comp.weather && comp.weather !== "normal" ? 4 : 0;
+        const eventBonus =
+          crew.some((r) => r.event?.type === "wetter") && comp.weather && comp.weather !== "normal" ? 4 : 0;
         let boatValue = boatPart(race, boat, comp);
         if (renovation && boat?.city) boatValue -= race.boatScale;
         const res: EntryResult = {
@@ -509,8 +513,20 @@ function resolveCompetition(s: MockState, yours: Lineup) {
       if (entries.length > 0 && !comp.teamEvent) {
         // Gastmannschaft: fixed-strength crew that takes places but never scores (rules.json guests).
         const wsum = Object.values(comp.weights).reduce((a, w) => a + w, 0);
-        const total = Math.round(race.seats * wsum * (19 + s.current * 0.3)) + (needsBoat(race) ? 5 * race.boatScale : 0);
-        entries.push({ playerId: "", guest: "Gastmannschaft", rowerIds: [], crew: total, boatValue: 0, trainer: 0, eventBonus: 0, penalty: 0, total, place: 0 });
+        const total =
+          Math.round(race.seats * wsum * (19 + s.current * 0.3)) + (needsBoat(race) ? 5 * race.boatScale : 0);
+        entries.push({
+          playerId: "",
+          guest: "Gastmannschaft",
+          rowerIds: [],
+          crew: total,
+          boatValue: 0,
+          trainer: 0,
+          eventBonus: 0,
+          penalty: 0,
+          total,
+          place: 0,
+        });
       }
       return { raceId: race.id, name: race.name, entries: rankEntries(entries) };
     }),
@@ -606,7 +622,11 @@ function takeCard(s: MockState, playerId: string, cardId: string) {
 function botPick(s: MockState, playerId: string) {
   const p = player(s, playerId);
   const score = (c: DraftCard) =>
-    c.rower ? crewScore([c.rower], { kraft: 1, ausdauer: 1, geschwindigkeit: 1, technik: 1 }) / 8 : c.boat ? c.boat.value : 6;
+    c.rower
+      ? crewScore([c.rower], { kraft: 1, ausdauer: 1, geschwindigkeit: 1, technik: 1 }) / 8
+      : c.boat
+        ? c.boat.value
+        : 6;
   const best = [...s.draftOffer].sort((a, b) => score(b) - score(a))[0];
   if (best) takeCard(s, p.id, best.id);
 }
@@ -729,7 +749,11 @@ export function decide(s: MockState, d: Decision) {
         if (r) eff.apply(r);
       }
       withRng(s, (rng) => {
-        for (const p of s.players.filter((x) => x.isBot)) rng.shuffle([...p.rowers]).slice(0, count).forEach(eff.apply);
+        for (const p of s.players.filter((x) => x.isBot))
+          rng
+            .shuffle([...p.rowers])
+            .slice(0, count)
+            .forEach(eff.apply);
       });
       advance(s);
       return;
@@ -761,10 +785,21 @@ function phaseFor(s: MockState): PhaseView {
   const id = `ph-${s.current}-${s.step}-${s.phaseSeq}`;
   const base = { id, waiting: false };
   if (s.step === "gameover") {
-    return { ...base, kind: "gameover", title: "Saisonende", prompt: "Die Saison ist vorbei. Hier ist die Abschlusswertung." };
+    return {
+      ...base,
+      kind: "gameover",
+      title: "Saisonende",
+      prompt: "Die Saison ist vorbei. Hier ist die Abschlusswertung.",
+    };
   }
   if (s.step === "result") {
-    return { ...base, kind: "ack", stage: "result", title: `Ergebnis: ${st.name}`, prompt: "Die Rennen sind gefahren." };
+    return {
+      ...base,
+      kind: "ack",
+      stage: "result",
+      title: `Ergebnis: ${st.name}`,
+      prompt: "Die Rennen sind gefahren.",
+    };
   }
   if (s.step === "draft") {
     const onTurn = s.draftOrder[s.draftTurn];
@@ -826,9 +861,23 @@ function phaseFor(s: MockState): PhaseView {
       };
     }
     case "event":
-      return { ...base, kind: "ack", stage: "event", title: "Event", prompt: "Neue Eventkarten wurden gezogen.", newEvents: s.newEvents };
+      return {
+        ...base,
+        kind: "ack",
+        stage: "event",
+        title: "Event",
+        prompt: "Neue Eventkarten wurden gezogen.",
+        newEvents: s.newEvents,
+      };
     case "ereignis":
-      return { ...base, kind: "ack", stage: "ereignis", title: "Ereignis", prompt: "Ein Ereignis betrifft alle Teams.", ereignis: s.ereignis };
+      return {
+        ...base,
+        kind: "ack",
+        stage: "ereignis",
+        title: "Ereignis",
+        prompt: "Ein Ereignis betrifft alle Teams.",
+        ereignis: s.ereignis,
+      };
     default:
       return {
         ...base,

@@ -54,7 +54,11 @@ export function AckPhase({ onShowTab }: { onShowTab: (t: Tab) => void }) {
               <span className="num text-2xl">{you.trainers.length}</span> Trainer
             </p>
             <p className="mt-2 text-sm text-muted-foreground">
-              Gegner: {view.players.filter((p) => p.id !== you.id).map((p) => p.name).join(" und ")}
+              Gegner:{" "}
+              {view.players
+                .filter((p) => p.id !== you.id)
+                .map((p) => p.name)
+                .join(" und ")}
             </p>
           </div>
         </div>

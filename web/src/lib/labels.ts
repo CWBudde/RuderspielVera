@@ -1,12 +1,4 @@
-import type {
-  AgeGroup,
-  BoatClass,
-  Gender,
-  IncidentKind,
-  Stat,
-  StationType,
-  Weather,
-} from "@/api/types.gen";
+import type { AgeGroup, BoatClass, Gender, IncidentKind, Stat, StationType, Weather } from "@/api/types.gen";
 
 /** Canonical display order (mirrors engine.AllStats). */
 export const ALL_STATS: Stat[] = ["kraft", "ausdauer", "geschwindigkeit", "technik", "motivation"];

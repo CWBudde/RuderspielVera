@@ -7,7 +7,14 @@ import { cn } from "@/lib/utils";
 
 export function CrabIcon({ className }: { className?: string }) {
   return (
-    <svg viewBox="0 0 24 24" className={className} fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round">
+    <svg
+      viewBox="0 0 24 24"
+      className={className}
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={1.8}
+      strokeLinecap="round"
+    >
       <ellipse cx="12" cy="14" rx="6" ry="4" fill="currentColor" fillOpacity="0.2" />
       <path d="M6.5 12 3.5 8.5M17.5 12l3-3.5M3 8.5c-.8-2 1-3.8 2.7-2.6M21 8.5c.8-2-1-3.8-2.7-2.6M7 17l-2.5 2M17 17l2.5 2M9 18l-1 2.5M15 18l1 2.5" />
       <circle cx="10" cy="12.5" r=".8" fill="currentColor" />
@@ -20,7 +27,13 @@ export function IncidentIcon({ incident, className }: { incident?: string; class
   if (!incident) return null;
   const cls = cn("size-4", className);
   const icon =
-    incident === "kentern" ? <Waves className={cls} /> : incident === "material" ? <Wrench className={cls} /> : <CrabIcon className={cls} />;
+    incident === "kentern" ? (
+      <Waves className={cls} />
+    ) : incident === "material" ? (
+      <Wrench className={cls} />
+    ) : (
+      <CrabIcon className={cls} />
+    );
   return (
     <span
       className="inline-flex items-center gap-1 rounded-full border-2 border-ink bg-[#ffe1d6] px-1.5 text-xs font-bold text-[#7a2614]"
@@ -35,7 +48,13 @@ export function IncidentIcon({ incident, className }: { incident?: string; class
 export function WeatherChip({ weather, className }: { weather?: string; className?: string }) {
   if (!weather) return null;
   return (
-    <span className={cn("inline-flex h-8 items-center gap-1.5 rounded-full border-2 border-ink px-2.5 text-sm font-bold", weatherTint(weather), className)}>
+    <span
+      className={cn(
+        "inline-flex h-8 items-center gap-1.5 rounded-full border-2 border-ink px-2.5 text-sm font-bold",
+        weatherTint(weather),
+        className,
+      )}
+    >
       <WeatherIcon weather={weather} className="size-4" />
       {weatherLabel(weather)}
     </span>
@@ -68,14 +87,26 @@ function Breakdown({ e }: { e: EntryResult }) {
         .map(([label, v]) => (
           <div key={label} className="flex items-baseline gap-1 rounded-md bg-white/70 px-1.5 py-0.5 text-xs">
             <dt className="font-semibold text-muted-foreground">{label}</dt>
-            <dd className={cn("font-bold tabular-nums", v < 0 && "text-destructive")}>{v > 0 && label !== "Crew" ? `+${v}` : v}</dd>
+            <dd className={cn("font-bold tabular-nums", v < 0 && "text-destructive")}>
+              {v > 0 && label !== "Crew" ? `+${v}` : v}
+            </dd>
           </div>
         ))}
     </dl>
   );
 }
 
-function RaceCard({ race, players, you, index }: { race: RaceResult; players: PlayerSummary[]; you: string; index: number }) {
+function RaceCard({
+  race,
+  players,
+  you,
+  index,
+}: {
+  race: RaceResult;
+  players: PlayerSummary[];
+  you: string;
+  index: number;
+}) {
   const [open, setOpen] = useState(false);
   const entries = race.entries ?? []; // tolerate null from older engines
   const max = Math.max(1, ...entries.map((e) => e.total));
@@ -104,7 +135,10 @@ function RaceCard({ race, players, you, index }: { race: RaceResult; players: Pl
             const color = e.guest ? "#9aa3ad" : playerColor(players, e.playerId);
             const dnf = e.place === 0;
             return (
-              <li key={`${e.playerId || e.guest}-${i}`} className={cn("rounded-xl p-1.5", e.playerId === you && "bg-white/60")}>
+              <li
+                key={`${e.playerId || e.guest}-${i}`}
+                className={cn("rounded-xl p-1.5", e.playerId === you && "bg-white/60")}
+              >
                 <div className="flex items-center gap-2">
                   <span
                     className={cn(
@@ -117,14 +151,19 @@ function RaceCard({ race, players, you, index }: { race: RaceResult; players: Pl
                   </span>
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-1.5">
-                      <span className="size-2.5 shrink-0 rounded-full border border-ink" style={{ background: color }} />
+                      <span
+                        className="size-2.5 shrink-0 rounded-full border border-ink"
+                        style={{ background: color }}
+                      />
                       <span className="truncate text-sm font-bold">{e.guest ?? p?.name ?? e.playerId}</span>
                       {e.guest && (
                         <span className="shrink-0 rounded-full border border-ink/40 bg-white px-1.5 text-[10px] font-bold tracking-wide text-muted-foreground uppercase">
                           Gast
                         </span>
                       )}
-                      {e.medal && <MedalIcon medal={e.medal === "gold" ? "gold" : "silber"} className="size-5 shrink-0" />}
+                      {e.medal && (
+                        <MedalIcon medal={e.medal === "gold" ? "gold" : "silber"} className="size-5 shrink-0" />
+                      )}
                       <IncidentIcon incident={e.incident} />
                     </div>
                     <div className="mt-1 flex items-center gap-2">
@@ -133,7 +172,9 @@ function RaceCard({ race, players, you, index }: { race: RaceResult; players: Pl
                           className="h-full origin-left rounded-full motion-safe:animate-bar"
                           style={{
                             width: `${dnf ? 0 : Math.max(4, (e.total / max) * 100)}%`,
-                            background: e.guest ? `repeating-linear-gradient(135deg, ${color} 0 6px, #c4cad1 6px 12px)` : color,
+                            background: e.guest
+                              ? `repeating-linear-gradient(135deg, ${color} 0 6px, #c4cad1 6px 12px)`
+                              : color,
                             animationDelay: `${index * 80 + i * 120}ms`,
                           }}
                         />
@@ -160,7 +201,15 @@ function RaceCard({ race, players, you, index }: { race: RaceResult; players: Pl
   );
 }
 
-export function ResultView({ result, players, you }: { result: CompetitionResult; players: PlayerSummary[]; you: string }) {
+export function ResultView({
+  result,
+  players,
+  you,
+}: {
+  result: CompetitionResult;
+  players: PlayerSummary[];
+  you: string;
+}) {
   const races = result.races ?? [];
   const mine = races.flatMap((r) => (r.entries ?? []).filter((e) => e.playerId === you));
   const golds = mine.filter((e) => e.medal === "gold").length;

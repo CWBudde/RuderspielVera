@@ -22,11 +22,26 @@
 #      GEN_WAIT  seconds to wait for a free slot before giving up (default 1800)
 # Takes 1-3 minutes per image. Runnable from any cwd.
 set -eu
-[ $# -ge 2 ] || { echo "usage: gen.sh <id> <prompt.txt> [ref.png ...]" >&2; exit 2; }
-id=$1; prompt=$2; shift 2
-case $id in *-*) ;; *) echo "id must be <group>-<NN>" >&2; exit 2;; esac
-[ -f "$prompt" ] || { echo "no prompt file $prompt" >&2; exit 2; }
-for r in "$@"; do [ -f "$r" ] || { echo "no ref file $r" >&2; exit 2; }; done
+[ $# -ge 2 ] || {
+	echo "usage: gen.sh <id> <prompt.txt> [ref.png ...]" >&2
+	exit 2
+}
+id=$1
+prompt=$2
+shift 2
+case $id in *-*) ;; *)
+	echo "id must be <group>-<NN>" >&2
+	exit 2
+	;;
+esac
+[ -f "$prompt" ] || {
+	echo "no prompt file $prompt" >&2
+	exit 2
+}
+for r in "$@"; do [ -f "$r" ] || {
+	echo "no ref file $r" >&2
+	exit 2
+}; done
 
 # Hard-coded on purpose: the gfx machine, the dedicated Ruderspiel work dir there and its codex binary.
 host=192.168.213.20
@@ -34,14 +49,19 @@ remote=/mnt/Projekte/Code/games/RuderspielVera
 codex='~/.local/bin/codex'
 
 here=$(cd "$(dirname "$0")" && pwd)
-repo=$(cd "$here/../../../.." && pwd)   # .claude/skills/gfx-imagegen/scripts -> repo root
+repo=$(cd "$here/../../../.." && pwd) # .claude/skills/gfx-imagegen/scripts -> repo root
 { [ -f "$repo/CLAUDE.md" ] && [ -f "$repo/go.mod" ]; } || repo=/mnt/projekte/Code/RuderspielVera
 gendir=${GEN_DIR:-$(date +%F)}
-case $gendir in */*|.*|"") echo "GEN_DIR must be a plain folder name such as 2026-11-27" >&2; exit 2;; esac
+case $gendir in */* | .* | "")
+	echo "GEN_DIR must be a plain folder name such as 2026-11-27" >&2
+	exit 2
+	;;
+esac
 group=${id%-*}
 rel=art/gen/$gendir/$group
 local=$repo/$rel
-max=${GEN_MAX:-3}; [ "$max" -le 3 ] || max=3
+max=${GEN_MAX:-3}
+[ "$max" -le 3 ] || max=3
 wait=${GEN_WAIT:-1800}
 force=${GEN_FORCE:-0}
 
@@ -50,43 +70,58 @@ listing=$(ssh $host "ls -1 $remote/$rel 2>/dev/null || true")
 has() { [ -e "$local/$1.png" ] || printf '%s\n' "$listing" | grep -qxF "$1.png"; }
 old_sha=
 if has "$id"; then
-  where=; [ -e "$local/$id.png" ] && where="here"
-  printf '%s\n' "$listing" | grep -qxF "$id.png" && where="${where:+$where and }on $host"
-  if [ "$force" != 1 ]; then
-    alt=
-    for s in b c d e f g h i j k l m n o p q r s t u v w x y z; do has "$id$s" || { alt=$id$s; break; }; done
-    echo "$id.png already exists $where; use a new id such as ${alt:-<id>b}, or GEN_FORCE=1 to run anyway" >&2
-    echo "FAILED $id: $id.png exists $where (try ${alt:-a new id} or GEN_FORCE=1)"
-    exit 1
-  fi
-  old_sha=$(ssh $host "sha256sum $remote/$rel/$id.png 2>/dev/null || true" | cut -d' ' -f1)
-  echo "WARN $id.png exists $where; GEN_FORCE=1: the new image replaces the local one, .20 keeps its file"
+	where=
+	[ -e "$local/$id.png" ] && where="here"
+	printf '%s\n' "$listing" | grep -qxF "$id.png" && where="${where:+$where and }on $host"
+	if [ "$force" != 1 ]; then
+		alt=
+		for s in b c d e f g h i j k l m n o p q r s t u v w x y z; do has "$id$s" || {
+			alt=$id$s
+			break
+		}; done
+		echo "$id.png already exists $where; use a new id such as ${alt:-<id>b}, or GEN_FORCE=1 to run anyway" >&2
+		echo "FAILED $id: $id.png exists $where (try ${alt:-a new id} or GEN_FORCE=1)"
+		exit 1
+	fi
+	old_sha=$(ssh $host "sha256sum $remote/$rel/$id.png 2>/dev/null || true" | cut -d' ' -f1)
+	echo "WARN $id.png exists $where; GEN_FORCE=1: the new image replaces the local one, .20 keeps its file"
 fi
 
 # At most $max Codex runs at once on .20 (other agents share it). Count real codex processes only.
 waited=0
 while :; do
-  n=$(ssh $host "pgrep -c -f '^/home/christian/[.]local/bin/codex exec' || true")
-  [ "${n:-0}" -lt "$max" ] && break
-  [ $waited -ge "$wait" ] && { echo "FAILED $id: $n Codex runs busy on $host for ${waited}s"; exit 1; }
-  sleep 20; waited=$((waited + 20))
+	n=$(ssh $host "pgrep -c -f '^/home/christian/[.]local/bin/codex exec' || true")
+	[ "${n:-0}" -lt "$max" ] && break
+	[ $waited -ge "$wait" ] && {
+		echo "FAILED $id: $n Codex runs busy on $host for ${waited}s"
+		exit 1
+	}
+	sleep 20
+	waited=$((waited + 20))
 done
 free=$(ssh $host "df -Pk $remote | awk 'NR==2{print \$4}'")
-[ "${free:-0}" -gt 2097152 ] || { echo "FAILED $id: under 2 GB free on $host:$remote" >&2; exit 1; }
+[ "${free:-0}" -gt 2097152 ] || {
+	echo "FAILED $id: under 2 GB free on $host:$remote" >&2
+	exit 1
+}
 # Codex writes its transcript and generated images under ~/.codex (the root disk on .20); when that is
 # full, the image tool "loses" its result and Codex reports a missing PNG.
 hfree=$(ssh $host "df -Pk ~/.codex | awk 'NR==2{print \$4}'")
-[ "${hfree:-0}" -gt 1048576 ] || { echo "FAILED $id: under 1 GB free for ~/.codex on $host (root disk full); free space there first" >&2; echo "FAILED $id: ~/.codex disk full on $host"; exit 1; }
+[ "${hfree:-0}" -gt 1048576 ] || {
+	echo "FAILED $id: under 1 GB free for ~/.codex on $host (root disk full); free space there first" >&2
+	echo "FAILED $id: ~/.codex disk full on $host"
+	exit 1
+}
 
 mkdir -p "$local"
-ssh $host "mkdir -p $remote/$rel"   # only under the dedicated work dir
+ssh $host "mkdir -p $remote/$rel" # only under the dedicated work dir
 [ "$(readlink -f "$prompt")" = "$(readlink -f "$local/$id-prompt.txt")" ] || cp "$prompt" "$local/$id-prompt.txt"
 scp -q "$local/$id-prompt.txt" "$host:$remote/$rel/$id-prompt.txt"
 imgs=""
 for r in "$@"; do
-  b=$(basename "$r")
-  scp -q "$r" "$host:$remote/$rel/$b"
-  imgs="$imgs -i $rel/$b"
+	b=$(basename "$r")
+	scp -q "$r" "$host:$remote/$rel/$b"
+	imgs="$imgs -i $rel/$b"
 done
 msg="Use the imagegen skill with the built-in image_gen tool. Generate exactly one image from the prompt in the stdin block, with the attached images as references as the prompt describes. Copy the generated PNG unchanged to $rel/$id.png. Never copy any other PNG: other agents generate images at the same time, so if your own image was not saved, do not search ~/.codex/generated_images for the newest file; say that the image is missing instead. Do not create, edit or delete any other file, do not run other commands, do not commit."
 ssh $host "cd $remote && $codex exec --skip-git-repo-check -C $remote -s workspace-write --json -o $rel/$id-last.txt $imgs \"$msg\" < $rel/$id-prompt.txt > $rel/$id.jsonl 2>&1" || true
@@ -94,9 +129,10 @@ scp -q "$host:$remote/$rel/$id.jsonl" "$local/" 2>/dev/null || true
 scp -q "$host:$remote/$rel/$id-last.txt" "$local/" 2>/dev/null || true
 
 fail() {
-  echo "FAILED $id${1:+: $1}"; tail -c 800 "$local/$id.jsonl" 2>/dev/null || true
-  cat "$local/$id-last.txt" 2>/dev/null || true
-  exit 1
+	echo "FAILED $id${1:+: $1}"
+	tail -c 800 "$local/$id.jsonl" 2>/dev/null || true
+	cat "$local/$id-last.txt" 2>/dev/null || true
+	exit 1
 }
 
 # The run's own image lives in ~/.codex/generated_images/<thread>/exec-<uuid>.png on .20, where
@@ -108,7 +144,8 @@ fail() {
 # the newest PNG of some other (concurrent) run, which has happened.
 thread=$(grep -o '"thread_id":"[0-9a-f-]*"' "$local/$id.jsonl" 2>/dev/null | head -1 | cut -d'"' -f4 || true)
 ex=
-info=$(ssh $host 'sh -s' <<EOF
+info=$(
+	ssh $host 'sh -s' <<EOF
 p=
 if [ -n "$thread" ]; then
   for f in \$(ls -1t \$HOME/.codex/generated_images/$thread/exec-*.png 2>/dev/null); do [ -s "\$f" ] && { p=\$f; break; }; done
@@ -133,23 +170,35 @@ foreign=$(printf '%s\n' "$info" | awk '$1=="FOREIGN"{print $2}')
 
 tmp=$local/.$id.png.part
 if [ -n "$exec_path" ]; then
-  ex=$(basename "$exec_path")
-  if [ -n "$id_sha" ] && [ "$id_sha" != "$exec_sha" ]; then
-    echo "WARN $host:$rel/$id.png differs from $ex (an older try?); using $ex"
-  elif [ -z "$id_sha" ]; then
-    echo "WARN Codex did not copy $id.png on $host; using $ex"
-  fi
-  scp -q "$host:$exec_path" "$tmp" 2>/dev/null || { rm -f "$tmp"; fail "could not fetch $exec_path"; }
-  got=$(sha256sum < "$tmp" | cut -d' ' -f1)
-  [ "$got" = "$exec_sha" ] || { rm -f "$tmp"; fail "fetched $ex has sha $got, expected $exec_sha"; }
+	ex=$(basename "$exec_path")
+	if [ -n "$id_sha" ] && [ "$id_sha" != "$exec_sha" ]; then
+		echo "WARN $host:$rel/$id.png differs from $ex (an older try?); using $ex"
+	elif [ -z "$id_sha" ]; then
+		echo "WARN Codex did not copy $id.png on $host; using $ex"
+	fi
+	scp -q "$host:$exec_path" "$tmp" 2>/dev/null || {
+		rm -f "$tmp"
+		fail "could not fetch $exec_path"
+	}
+	got=$(sha256sum <"$tmp" | cut -d' ' -f1)
+	[ "$got" = "$exec_sha" ] || {
+		rm -f "$tmp"
+		fail "fetched $ex has sha $got, expected $exec_sha"
+	}
 elif [ -n "$id_sha" ]; then
-  [ "$id_sha" != "$old_sha" ] || fail "no exec image found and $host:$rel/$id.png is the old file"
-  [ -z "$foreign" ] || fail "no exec image of thread $thread; $rel/$id.png is a copy of another run's $foreign"
-  echo "WARN exec image ${ex:-of thread $thread} not found on $host; using $rel/$id.png"
-  scp -q "$host:$remote/$rel/$id.png" "$tmp" 2>/dev/null || { rm -f "$tmp"; fail "could not fetch $id.png"; }
+	[ "$id_sha" != "$old_sha" ] || fail "no exec image found and $host:$rel/$id.png is the old file"
+	[ -z "$foreign" ] || fail "no exec image of thread $thread; $rel/$id.png is a copy of another run's $foreign"
+	echo "WARN exec image ${ex:-of thread $thread} not found on $host; using $rel/$id.png"
+	scp -q "$host:$remote/$rel/$id.png" "$tmp" 2>/dev/null || {
+		rm -f "$tmp"
+		fail "could not fetch $id.png"
+	}
 else
-  fail
+	fail
 fi
-[ -s "$tmp" ] || { rm -f "$tmp"; fail "fetched image is empty"; }
+[ -s "$tmp" ] || {
+	rm -f "$tmp"
+	fail "fetched image is empty"
+}
 mv -f "$tmp" "$local/$id.png"
 echo "OK $local/$id.png ${ex:-thread-$thread}"

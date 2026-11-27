@@ -11,310 +11,463 @@ var (
 	validGenders  = []string{"w", "m"}
 	validWeather  = []string{"regen", "hitze", "wind", "kaelte", "normal"}
 	validContexts = []string{"", "ergo", "sprint", "langstrecke"}
-	stationTypes  = []string{"setup", "training", "event", "ereignis", "regatta", "ergocup", "selection", "camp", "jtfo"}
-	seatsByClass  = map[string]int{"1x": 1, "2x": 2, "4x": 4, "8x": 8, "ergo": 1}
+	stationTypes  = []string{
+		"setup", "training", "event", "ereignis", "regatta", kindErgoCup, "selection", "camp", kindJTFO,
+	}
+	competitionKinds = []string{"regatta", kindErgoCup, kindJTFO}
+	seatsByClass     = map[string]int{"1x": 1, "2x": 2, "4x": 4, "8x": 8, classErgo: 1}
+)
+
+const (
+	classErgo   = "ergo"    // boat class of ergometer races
+	kindErgoCup = "ergocup" // competition kind / station type of ergometer cups
+	kindJTFO    = "jtfo"    // competition kind / station type of Jugend trainiert für Olympia
 )
 
 // rankRanges are the rank (stat sum) ranges per age group, Regelwerk §5.3 / PoC decision.
 var rankRanges = map[string][2]int{"a": {86, 100}, "b": {59, 85}, "kinder": {46, 58}}
 
+// problems collects validation findings.
+type problems []error
+
+// dataError is one validation finding.
+type dataError string
+
+func (e dataError) Error() string { return string(e) }
+
+func (p *problems) addf(format string, args ...any) {
+	*p = append(*p, problemf(format, args...))
+}
+
 // Validate checks the internal consistency of the data set and returns all problems found.
 func (d *Data) Validate() error {
-	var errs []error
-	add := func(format string, args ...any) { errs = append(errs, fmt.Errorf(format, args...)) }
+	var p problems
 
-	// Rowers.
+	ids := d.validateRowers(&p)
+	boatIDs := d.validateBoats(&p, ids)
+	d.validateTrainers(&p, ids, boatIDs)
+	d.validateEvents(&p)
+	d.validateMissions(&p)
+	d.validateBalancing(&p)
+	d.validateCalendar(&p)
+	d.validateCompetitions(&p)
+	d.validateRules(&p)
+
+	return errors.Join(p...)
+}
+
+// validateRowers checks the rower cards and returns their IDs.
+func (d *Data) validateRowers(p *problems) map[string]bool {
 	if len(d.Rowers) != 55 {
-		add("rowers: want 55, got %d", len(d.Rowers))
+		p.addf("rowers: want 55, got %d", len(d.Rowers))
 	}
+
 	ids := map[string]bool{}
-	for _, r := range d.Rowers {
-		if r.ID == "" || ids[r.ID] {
-			add("rower %q: empty or duplicate id", r.ID)
+	for _, rw := range d.Rowers {
+		if rw.ID == "" || ids[rw.ID] {
+			p.addf("rower %q: empty or duplicate id", rw.ID)
 		}
-		ids[r.ID] = true
-		if !slices.Contains(validAges, r.Age) || !slices.Contains(validGenders, r.Gender) {
-			add("rower %s: bad age %q or gender %q", r.ID, r.Age, r.Gender)
+
+		ids[rw.ID] = true
+		if !slices.Contains(validAges, rw.Age) || !slices.Contains(validGenders, rw.Gender) {
+			p.addf("rower %s: bad age %q or gender %q", rw.ID, rw.Age, rw.Gender)
 		}
+
 		sum := 0
+
 		for _, s := range StatNames {
-			v, ok := r.Stats[s]
+			v, ok := rw.Stats[s]
 			if !ok || v < 5 {
-				add("rower %s: stat %s missing or < 5 (%d)", r.ID, s, v)
+				p.addf("rower %s: stat %s missing or < 5 (%d)", rw.ID, s, v)
 			}
+
 			sum += v
 		}
-		if len(r.Stats) != len(StatNames) {
-			add("rower %s: unexpected stats %v", r.ID, r.Stats)
+
+		if len(rw.Stats) != len(StatNames) {
+			p.addf("rower %s: unexpected stats %v", rw.ID, rw.Stats)
 		}
-		if sum != r.Rank {
-			add("rower %s: stats sum %d != rank %d", r.ID, sum, r.Rank)
+
+		if sum != rw.Rank {
+			p.addf("rower %s: stats sum %d != rank %d", rw.ID, sum, rw.Rank)
 		}
-		if rr, ok := rankRanges[r.Age]; ok && (r.Rank < rr[0] || r.Rank > rr[1]) {
-			add("rower %s: rank %d outside %v for age %s", r.ID, r.Rank, rr, r.Age)
+
+		if rr, ok := rankRanges[rw.Age]; ok && (rw.Rank < rr[0] || rw.Rank > rr[1]) {
+			p.addf("rower %s: rank %d outside %v for age %s", rw.ID, rw.Rank, rr, rw.Age)
 		}
 	}
 
-	// Boats.
+	return ids
+}
+
+// validateBoats checks the boat cards and returns their IDs.
+func (d *Data) validateBoats(p *problems, ids map[string]bool) map[string]bool {
 	boatIDs := map[string]bool{}
 	shared := 0
+
 	for _, b := range d.Boats {
 		if b.ID == "" || boatIDs[b.ID] || ids[b.ID] {
-			add("boat %q: empty or duplicate id", b.ID)
+			p.addf("boat %q: empty or duplicate id", b.ID)
 		}
+
 		boatIDs[b.ID] = true
-		if _, ok := seatsByClass[b.Class]; !ok || b.Class == "ergo" {
-			add("boat %s: bad class %q", b.ID, b.Class)
+		if _, ok := seatsByClass[b.Class]; !ok || b.Class == classErgo {
+			p.addf("boat %s: bad class %q", b.ID, b.Class)
 		}
+
 		if b.Value < 0 || b.Value > 10 {
-			add("boat %s: value %d outside 0..10", b.ID, b.Value)
+			p.addf("boat %s: value %d outside 0..10", b.ID, b.Value)
 		}
+
 		if b.Shared {
 			shared++
 		}
 	}
+
 	if shared != 1 {
-		add("boats: want exactly one shared eight, got %d", shared)
+		p.addf("boats: want exactly one shared eight, got %d", shared)
 	}
+
 	for _, cls := range []string{"1x", "2x", "4x"} {
 		if !slices.ContainsFunc(d.Boats, func(b Boat) bool { return b.City && b.Class == cls }) {
-			add("boats: no city boat for class %s", cls)
+			p.addf("boats: no city boat for class %s", cls)
 		}
 	}
 
-	// Trainers.
+	return boatIDs
+}
+
+// validateTrainers checks the trainer cards; IDs must not collide with rowers or boats.
+func (d *Data) validateTrainers(p *problems, ids, boatIDs map[string]bool) {
 	if len(d.Trainers) != 10 {
-		add("trainers: want 10, got %d", len(d.Trainers))
+		p.addf("trainers: want 10, got %d", len(d.Trainers))
 	}
+
 	for _, t := range d.Trainers {
 		if t.ID == "" || boatIDs[t.ID] || ids[t.ID] {
-			add("trainer %q: empty or colliding id", t.ID)
+			p.addf("trainer %q: empty or colliding id", t.ID)
 		}
+
 		if len(t.Effects) == 0 {
-			add("trainer %s: no effects", t.ID)
+			p.addf("trainer %s: no effects", t.ID)
 		}
+
 		for _, e := range t.Effects {
 			if e.Weather != "" && !slices.Contains(validWeather, e.Weather) {
-				add("trainer %s: bad weather %q", t.ID, e.Weather)
+				p.addf("trainer %s: bad weather %q", t.ID, e.Weather)
 			}
+
 			if !slices.Contains(validContexts, e.Context) {
-				add("trainer %s: bad context %q", t.ID, e.Context)
+				p.addf("trainer %s: bad context %q", t.ID, e.Context)
 			}
 		}
 	}
+}
 
-	// Events, Ereignisse, missions.
+// validateEvents checks the event cards and the Ereignisse.
+func (d *Data) validateEvents(p *problems) {
 	if len(d.Events) != 12 {
-		add("events: want 12, got %d", len(d.Events))
+		p.addf("events: want 12, got %d", len(d.Events))
 	}
+
 	for _, e := range d.Events {
 		if e.Weight <= 0 {
-			add("event %s: weight must be > 0", e.Type)
+			p.addf("event %s: weight must be > 0", e.Type)
 		}
+
 		if e.Stat != "" && !slices.Contains(StatNames, e.Stat) {
-			add("event %s: bad stat %q", e.Type, e.Stat)
+			p.addf("event %s: bad stat %q", e.Type, e.Stat)
 		}
 	}
+
 	for _, t := range []string{"wetter", "wachstum", "phoenix", "tausch", "verdopplung", "seelenzwilling", "mission"} {
 		if d.EventType(t) == nil {
-			add("events: missing type %s", t)
+			p.addf("events: missing type %s", t)
 		}
 	}
+
 	if len(d.Ereignisse) == 0 {
-		add("ereignisse: empty")
+		p.addf("ereignisse: empty")
 	}
+
 	for _, e := range d.Ereignisse {
 		if e.Weight <= 0 || !ereignisEffects[e.Effect] {
-			add("ereignis %s: bad weight or effect %q", e.ID, e.Effect)
+			p.addf("ereignis %s: bad weight or effect %q", e.ID, e.Effect)
 		}
+
 		if e.Effect == EffForceWeather && !slices.Contains(validWeather, e.Weather) {
-			add("ereignis %s: bad weather %q", e.ID, e.Weather)
+			p.addf("ereignis %s: bad weather %q", e.ID, e.Weather)
 		}
 	}
+}
+
+// validateMissions checks the mission cards.
+func (d *Data) validateMissions(p *problems) {
 	if len(d.Missions) == 0 {
-		add("missions: empty")
+		p.addf("missions: empty")
 	}
-	for _, m := range d.Missions {
-		c := m.Condition
+
+	for _, ms := range d.Missions {
+		c := ms.Condition
 		if c.Type != "medal" && c.Type != "starts" {
-			add("mission %s: bad condition type %q", m.ID, c.Type)
+			p.addf("mission %s: bad condition type %q", ms.ID, c.Type)
 		}
+
 		if c.Type == "medal" && c.Medal != "gold" && c.Medal != "any" {
-			add("mission %s: bad medal %q", m.ID, c.Medal)
+			p.addf("mission %s: bad medal %q", ms.ID, c.Medal)
 		}
+
 		if c.Type == "starts" && c.Count <= 0 {
-			add("mission %s: starts count must be > 0", m.ID)
+			p.addf("mission %s: starts count must be > 0", ms.ID)
 		}
+
 		for _, cid := range []string{c.Competition, c.Before} {
 			if cid != "" && d.Competitions[cid] == nil {
-				add("mission %s: unknown competition %q", m.ID, cid)
+				p.addf("mission %s: unknown competition %q", ms.ID, cid)
 			}
 		}
-		if m.Reward.Type != "stat" && m.Reward.Type != "points" {
-			add("mission %s: bad reward type %q", m.ID, m.Reward.Type)
+
+		if ms.Reward.Type != "stat" && ms.Reward.Type != "points" {
+			p.addf("mission %s: bad reward type %q", ms.ID, ms.Reward.Type)
 		}
 	}
+}
 
-	// Balancing rules.
+// validateBalancing checks the balancing rules (factors, guest crews).
+func (d *Data) validateBalancing(p *problems) {
 	if d.Rules.BoatValueFactor < 0 || d.Rules.TrainerFactor < 0 {
-		add("rules: boatValueFactor and trainerFactor must be >= 0")
+		p.addf("rules: boatValueFactor and trainerFactor must be >= 0")
 	}
+
 	if gs := d.Rules.Guests; gs.Enabled {
 		if gs.Name == "" {
-			add("rules: guests need a name")
+			p.addf("rules: guests need a name")
 		}
+
 		for _, a := range validAges {
 			if gs.StatLevel[a] <= 0 {
-				add("rules: guests statLevel for %s must be > 0", a)
+				p.addf("rules: guests statLevel for %s must be > 0", a)
 			}
 		}
+
 		if gs.GrowthPerStation < 0 || gs.BoatValue < 0 {
-			add("rules: guests growthPerStation and boatValue must be >= 0")
+			p.addf("rules: guests growthPerStation and boatValue must be >= 0")
 		}
 	}
+}
 
-	// Calendar and competitions.
+// validateCalendar checks the station sequence.
+func (d *Data) validateCalendar(p *problems) {
 	if len(d.Calendar) != 52 {
-		add("calendar: want 52 stations, got %d", len(d.Calendar))
+		p.addf("calendar: want 52 stations, got %d", len(d.Calendar))
 	}
+
 	stIDs := map[string]bool{}
 	events, prevSection := 0, 1
-	for i, s := range d.Calendar {
-		if stIDs[s.ID] {
-			add("station %s: duplicate id", s.ID)
+
+	for si, st := range d.Calendar {
+		if stIDs[st.ID] {
+			p.addf("station %s: duplicate id", st.ID)
 		}
-		stIDs[s.ID] = true
-		if !slices.Contains(stationTypes, s.Type) {
-			add("station %s: bad type %q", s.ID, s.Type)
+
+		stIDs[st.ID] = true
+		if !slices.Contains(stationTypes, st.Type) {
+			p.addf("station %s: bad type %q", st.ID, st.Type)
 		}
-		if s.Section < prevSection || s.Section > 12 {
-			add("station %s: section %d out of order", s.ID, s.Section)
+
+		if st.Section < prevSection || st.Section > 12 {
+			p.addf("station %s: section %d out of order", st.ID, st.Section)
 		}
-		prevSection = s.Section
-		switch s.Type {
-		case "regatta", "ergocup", "jtfo":
-			c := d.Competitions[s.Competition]
-			if c == nil {
-				add("station %s: no competition entry %q", s.ID, s.Competition)
-			} else if c.Kind != s.Type {
-				add("station %s: competition kind %q != station type %q", s.ID, c.Kind, s.Type)
-			}
-		case "selection":
-			sel, ok := d.Rules.Selections[s.Selection]
-			if !ok || sel.Count <= 0 || len(sel.Effect) == 0 {
-				add("station %s: bad selection %q", s.ID, s.Selection)
-			}
-		case "event":
+
+		prevSection = st.Section
+		if st.Type == "event" {
 			events++
 		}
-		if i == 0 && s.Type != "setup" {
-			add("calendar must start with setup")
+
+		d.checkStationRefs(p, st)
+
+		if si == 0 && st.Type != "setup" {
+			p.addf("calendar must start with setup")
 		}
 	}
+
 	if len(d.Calendar) == 0 {
-		add("calendar: empty")
-	} else if last := d.Calendar[len(d.Calendar)-1]; last.Type != "regatta" && last.Type != "ergocup" && last.Type != "jtfo" {
-		add("calendar must end with a competition")
+		p.addf("calendar: empty")
+	} else if last := d.Calendar[len(d.Calendar)-1]; !slices.Contains(competitionKinds, last.Type) {
+		p.addf("calendar must end with a competition")
 	}
+
 	if len(d.Rules.EventCardsPerStation) != events {
-		add("rules: eventCardsPerStation has %d entries for %d event stations", len(d.Rules.EventCardsPerStation), events)
+		p.addf("rules: eventCardsPerStation has %d entries for %d event stations",
+			len(d.Rules.EventCardsPerStation), events)
 	}
+}
 
-	for id, c := range d.Competitions {
-		if len(c.Weights) == 0 {
-			add("competition %s: no weights", id)
+// checkStationRefs checks that a station's competition or selection exists and fits.
+func (d *Data) checkStationRefs(p *problems, s Station) {
+	switch {
+	case slices.Contains(competitionKinds, s.Type):
+		c := d.Competitions[s.Competition]
+		if c == nil {
+			p.addf("station %s: no competition entry %q", s.ID, s.Competition)
+		} else if c.Kind != s.Type {
+			p.addf("station %s: competition kind %q != station type %q", s.ID, c.Kind, s.Type)
 		}
-		for s := range c.Weights {
+	case s.Type == "selection":
+		sel, ok := d.Rules.Selections[s.Selection]
+		if !ok || sel.Count <= 0 || len(sel.Effect) == 0 {
+			p.addf("station %s: bad selection %q", s.ID, s.Selection)
+		}
+	}
+}
+
+// validateCompetitions checks every competition and its races.
+func (d *Data) validateCompetitions(p *problems) {
+	for id, comp := range d.Competitions {
+		if len(comp.Weights) == 0 {
+			p.addf("competition %s: no weights", id)
+		}
+
+		for s := range comp.Weights {
 			if !slices.Contains(StatNames, s) {
-				add("competition %s: bad weight stat %q", id, s)
+				p.addf("competition %s: bad weight stat %q", id, s)
 			}
 		}
-		if !slices.Contains(validContexts, c.Context) {
-			add("competition %s: bad context %q", id, c.Context)
+
+		if !slices.Contains(validContexts, comp.Context) {
+			p.addf("competition %s: bad context %q", id, comp.Context)
 		}
-		raceSets := [][]Race{c.Races}
-		if len(c.Variants) > 0 {
-			raceSets = nil
-			for _, n := range []string{"2", "3", "4"} {
-				v, ok := c.Variants[d.Rules.JTFOVariants[n]]
-				if !ok {
-					add("competition %s: no variant for %s players", id, n)
-				}
-				raceSets = append(raceSets, v)
-			}
+
+		for _, races := range d.raceSets(p, id, comp) {
+			d.checkRaces(p, id, comp, races)
 		}
-		for _, races := range raceSets {
-			if len(races) == 0 {
-				add("competition %s: no races", id)
-			}
-			raceIDs := map[string]bool{}
-			for _, r := range races {
-				if raceIDs[r.ID] {
-					add("competition %s: duplicate race %s", id, r.ID)
-				}
-				raceIDs[r.ID] = true
-				if err := d.checkRace(c, r); err != nil {
-					add("competition %s race %s: %v", id, r.ID, err)
-				}
-			}
+	}
+}
+
+// raceSets returns the race lists of a competition: its races, or one variant per player count.
+func (d *Data) raceSets(p *problems, id string, c *Competition) [][]Race {
+	if len(c.Variants) == 0 {
+		return [][]Race{c.Races}
+	}
+
+	raceSets := make([][]Race, 0, 3)
+
+	for _, n := range []string{"2", "3", "4"} {
+		v, ok := c.Variants[d.Rules.JTFOVariants[n]]
+		if !ok {
+			p.addf("competition %s: no variant for %s players", id, n)
+		}
+
+		raceSets = append(raceSets, v)
+	}
+
+	return raceSets
+}
+
+// checkRaces checks one race list of competition id.
+func (d *Data) checkRaces(p *problems, id string, c *Competition, races []Race) {
+	if len(races) == 0 {
+		p.addf("competition %s: no races", id)
+	}
+
+	raceIDs := map[string]bool{}
+	for _, r := range races {
+		if raceIDs[r.ID] {
+			p.addf("competition %s: duplicate race %s", id, r.ID)
+		}
+
+		raceIDs[r.ID] = true
+
+		err := d.checkRace(c, r)
+		if err != nil {
+			p.addf("competition %s race %s: %v", id, r.ID, err)
+		}
+	}
+}
+
+// validateRules checks the remaining rule numbers.
+func (d *Data) validateRules(p *problems) {
+	rules := d.Rules
+	if rules.TrainingPoints <= 0 || rules.Camp.Points <= 0 || rules.Camp.MaxRowers <= 0 {
+		p.addf("rules: training/camp points must be > 0")
+	}
+
+	if rules.Incidents.Kentern+rules.Incidents.Material+rules.Incidents.Krebs > 100 {
+		p.addf("rules: incident probabilities exceed 100 %%")
+	}
+
+	if len(rules.WeatherTable) != 6 {
+		p.addf("rules: weatherTable needs 6 faces")
+	}
+
+	for _, w := range rules.WeatherTable {
+		if !slices.Contains(validWeather, w) {
+			p.addf("rules: bad weather %q", w)
 		}
 	}
 
-	// Rules sanity.
-	r := d.Rules
-	if r.TrainingPoints <= 0 || r.Camp.Points <= 0 || r.Camp.MaxRowers <= 0 {
-		add("rules: training/camp points must be > 0")
+	if rules.Deal.RowersPerAgeGroup <= 0 || rules.Deal.Trainers <= 0 {
+		p.addf("rules: bad deal sizes")
 	}
-	if r.Incidents.Kentern+r.Incidents.Material+r.Incidents.Krebs > 100 {
-		add("rules: incident probabilities exceed 100 %%")
-	}
-	if len(r.WeatherTable) != 6 {
-		add("rules: weatherTable needs 6 faces")
-	}
-	for _, w := range r.WeatherTable {
-		if !slices.Contains(validWeather, w) {
-			add("rules: bad weather %q", w)
-		}
-	}
-	if r.Deal.RowersPerAgeGroup <= 0 || r.Deal.Trainers <= 0 {
-		add("rules: bad deal sizes")
-	}
-	return errors.Join(errs...)
 }
 
 // checkRace validates a race spec and that it is fillable from the full rower set.
 func (d *Data) checkRace(c *Competition, r Race) error {
-	seats, ok := seatsByClass[r.Class]
+	err := checkRaceSpec(c, r)
+	if err != nil {
+		return err
+	}
+
+	return d.checkRaceFillable(r)
+}
+
+// checkRaceSpec validates class, seats, age groups and genders of a race.
+func checkRaceSpec(c *Competition, race Race) error {
+	seats, ok := seatsByClass[race.Class]
 	if !ok {
-		return fmt.Errorf("bad class %q", r.Class)
+		return problemf("bad class %q", race.Class)
 	}
-	if r.Seats != seats {
-		return fmt.Errorf("seats %d != %d for class %s", r.Seats, seats, r.Class)
+
+	if race.Seats != seats {
+		return problemf("seats %d != %d for class %s", race.Seats, seats, race.Class)
 	}
-	if (r.Class == "ergo") != (c.Kind == "ergocup") {
-		return fmt.Errorf("ergo class only in ergo cups")
+
+	if (race.Class == classErgo) != (c.Kind == kindErgoCup) {
+		return dataError("ergo class only in ergo cups")
 	}
-	if len(r.Ages) == 0 || len(r.Genders) == 0 {
-		return fmt.Errorf("no ages or genders")
+
+	if len(race.Ages) == 0 || len(race.Genders) == 0 {
+		return dataError("no ages or genders")
 	}
-	for _, a := range r.Ages {
+
+	for _, a := range race.Ages {
 		if !slices.Contains(validAges, a) {
-			return fmt.Errorf("bad age %q", a)
+			return problemf("bad age %q", a)
 		}
 	}
-	for _, g := range r.Genders {
+
+	for _, g := range race.Genders {
 		if !slices.Contains(validGenders, g) {
-			return fmt.Errorf("bad gender %q", g)
+			return problemf("bad gender %q", g)
 		}
 	}
-	if r.Mixed && (len(r.Genders) < 2 || len(r.Ages) < 2) {
-		return fmt.Errorf("mixed race needs two genders and two ages")
+
+	if race.Mixed && (len(race.Genders) < 2 || len(race.Ages) < 2) {
+		return dataError("mixed race needs two genders and two ages")
 	}
+
+	return nil
+}
+
+// checkRaceFillable checks that the full rower set has enough eligible rowers for the race.
+func (d *Data) checkRaceFillable(race Race) error {
 	eligible, girls, boys := 0, 0, 0
 	ages := map[string]bool{}
+
 	for _, rw := range d.Rowers {
-		if slices.Contains(r.Ages, rw.Age) && slices.Contains(r.Genders, rw.Gender) {
+		if slices.Contains(race.Ages, rw.Age) && slices.Contains(race.Genders, rw.Gender) {
 			eligible++
+
 			ages[rw.Age] = true
 			if rw.Gender == "w" {
 				girls++
@@ -323,11 +476,19 @@ func (d *Data) checkRace(c *Competition, r Race) error {
 			}
 		}
 	}
-	if eligible < r.Seats {
-		return fmt.Errorf("not fillable: %d eligible rowers for %d seats", eligible, r.Seats)
+
+	if eligible < race.Seats {
+		return problemf("not fillable: %d eligible rowers for %d seats", eligible, race.Seats)
 	}
-	if r.Mixed && (girls == 0 || boys == 0 || len(ages) < 2) {
-		return fmt.Errorf("mixed race not fillable")
+
+	if race.Mixed && (girls == 0 || boys == 0 || len(ages) < 2) {
+		return dataError("mixed race not fillable")
 	}
+
 	return nil
+}
+
+// problemf formats a single validation finding.
+func problemf(format string, args ...any) error {
+	return dataError(fmt.Sprintf(format, args...))
 }

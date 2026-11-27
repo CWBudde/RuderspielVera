@@ -79,7 +79,11 @@ export function DraftPhase() {
       {offer.length === 0 ? (
         <p className="rounded-xl border-2 border-ink bg-cream p-3 text-sm">Die Auslage ist leer.</p>
       ) : (
-        <ul className="grid grid-cols-1 gap-4 min-[380px]:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4" role="radiogroup" aria-label="Auslage">
+        <ul
+          className="grid grid-cols-1 gap-4 min-[380px]:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
+          role="radiogroup"
+          aria-label="Auslage"
+        >
           {offer.map((c) => {
             const on = c.id === pick;
             return (
@@ -90,9 +94,15 @@ export function DraftPhase() {
                   aria-checked={on}
                   disabled={waiting}
                   onClick={() => setPick(on ? undefined : c.id)}
-                  className={cn("relative block w-full text-left transition-transform", on && "-translate-y-1", waiting && "opacity-70")}
+                  className={cn(
+                    "relative block w-full text-left transition-transform",
+                    on && "-translate-y-1",
+                    waiting && "opacity-70",
+                  )}
                 >
-                  <span className="mb-1 inline-block rounded-full border-2 border-ink bg-white px-2 text-xs font-bold">{KIND_LABEL[c.kind] ?? c.kind}</span>
+                  <span className="mb-1 inline-block rounded-full border-2 border-ink bg-white px-2 text-xs font-bold">
+                    {KIND_LABEL[c.kind] ?? c.kind}
+                  </span>
                   <div className={cn("rounded-[20px]", on && "ring-4 ring-lake ring-offset-2 ring-offset-water")}>
                     {c.rower && <RowerCard rower={c.rower} />}
                     {c.boat && <BoatCard boat={c.boat} />}

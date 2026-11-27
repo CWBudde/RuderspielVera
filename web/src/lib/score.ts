@@ -1,11 +1,4 @@
-import type {
-  CompetitionView,
-  BoatView,
-  RaceSpec,
-  RowerView,
-  Stat,
-  TrainerView,
-} from "@/api/types.gen";
+import type { CompetitionView, BoatView, RaceSpec, RowerView, Stat, TrainerView } from "@/api/types.gen";
 
 /**
  * Client-side estimates of the engine's race scoring (docs/PLAN.md "Race scoring"):

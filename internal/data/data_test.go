@@ -6,62 +6,81 @@ import (
 )
 
 func TestLoad(t *testing.T) {
+	t.Parallel()
+
 	d, err := Load()
 	if err != nil {
 		t.Fatalf("Load: %v", err)
 	}
+
 	if len(d.Rowers) != 55 {
 		t.Errorf("rowers = %d, want 55", len(d.Rowers))
 	}
+
 	if len(d.Calendar) != 52 {
 		t.Errorf("stations = %d, want 52", len(d.Calendar))
 	}
+
 	if len(d.Trainers) != 10 {
 		t.Errorf("trainers = %d, want 10", len(d.Trainers))
 	}
+
 	if len(d.Events) != 12 {
 		t.Errorf("event types = %d, want 12", len(d.Events))
 	}
 }
 
 func TestRowers(t *testing.T) {
+	t.Parallel()
+
 	d := MustLoad()
 	ids := map[string]bool{}
 	perAge := map[string]int{}
-	for _, r := range d.Rowers {
-		if ids[r.ID] {
-			t.Errorf("duplicate id %s", r.ID)
+
+	for _, rw := range d.Rowers {
+		if ids[rw.ID] {
+			t.Errorf("duplicate id %s", rw.ID)
 		}
-		ids[r.ID] = true
-		perAge[r.Age]++
+
+		ids[rw.ID] = true
+		perAge[rw.Age]++
 		sum := 0
+
 		for _, s := range StatNames {
-			if r.Stats[s] < 5 {
-				t.Errorf("%s: %s = %d < 5", r.ID, s, r.Stats[s])
+			if rw.Stats[s] < 5 {
+				t.Errorf("%s: %s = %d < 5", rw.ID, s, rw.Stats[s])
 			}
-			sum += r.Stats[s]
+
+			sum += rw.Stats[s]
 		}
-		if sum != r.Rank {
-			t.Errorf("%s: sum %d != rank %d", r.ID, sum, r.Rank)
+
+		if sum != rw.Rank {
+			t.Errorf("%s: sum %d != rank %d", rw.ID, sum, rw.Rank)
 		}
-		if want := "rower-" + r.Age + "-" + r.Gender; r.ArtKey != want {
-			t.Errorf("%s: artKey %q, want %q", r.ID, r.ArtKey, want)
+
+		if want := "rower-" + rw.Age + "-" + rw.Gender; rw.ArtKey != want {
+			t.Errorf("%s: artKey %q, want %q", rw.ID, rw.ArtKey, want)
 		}
 	}
+
 	if perAge["kinder"] != 13 || perAge["b"] != 27 || perAge["a"] != 15 {
 		t.Errorf("age split = %v, want kinder 13, b 27, a 15", perAge)
 	}
+
 	for _, id := range []string{"michel-a", "matilda-a", "matilda-a-2", "lea-b", "lea-a", "johanna-kinder", "johanna-a"} {
 		if !ids[id] {
 			t.Errorf("missing id %s", id)
 		}
 	}
+
 	if d.Rowers[0].ID != "michel-a" || d.Rowers[0].Rank != 100 {
 		t.Errorf("Michel must be rank 100, top is %s (%d)", d.Rowers[0].ID, d.Rowers[0].Rank)
 	}
 }
 
 func TestCompetitionStations(t *testing.T) {
+	t.Parallel()
+
 	d := MustLoad()
 	for _, s := range d.Calendar {
 		switch s.Type {
@@ -70,6 +89,7 @@ func TestCompetitionStations(t *testing.T) {
 			if c == nil {
 				t.Fatalf("station %s has no competition", s.ID)
 			}
+
 			for _, n := range []int{2, 3, 4} {
 				if len(d.RacesFor(c, n)) == 0 {
 					t.Errorf("%s: no races for %d players", s.ID, n)
@@ -81,14 +101,18 @@ func TestCompetitionStations(t *testing.T) {
 	c := *d.Competitions["bremen"]
 	r := c.Races[0]
 	r.Ages = []string{"kinder"}
-	r.Class, r.Seats = "8x", 8
 	r.Genders = []string{"m"}
-	if err := d.checkRace(&c, r); err == nil || !strings.Contains(err.Error(), "not fillable") {
+	r.Class, r.Seats = "8x", 8
+
+	err := d.checkRace(&c, r)
+	if err == nil || !strings.Contains(err.Error(), "not fillable") {
 		t.Errorf("expected not fillable, got %v", err)
 	}
 }
 
 func TestStationTypes(t *testing.T) {
+	t.Parallel()
+
 	d := MustLoad()
 	want := map[string]string{
 		"s5-hankensbuettel": "camp", "s6-kassel-camp": "camp", "s3-wr5": "selection",
@@ -98,15 +122,18 @@ func TestStationTypes(t *testing.T) {
 	}
 	got := map[string]string{}
 	count := map[string]int{}
+
 	for _, s := range d.Calendar {
 		got[s.ID] = s.Type
 		count[s.Type]++
 	}
+
 	for id, typ := range want {
 		if got[id] != typ {
 			t.Errorf("%s: type %q, want %q", id, got[id], typ)
 		}
 	}
+
 	if count["event"] != 11 || count["ereignis"] != 11 || count["training"] != 12 {
 		t.Errorf("counts = %v", count)
 	}

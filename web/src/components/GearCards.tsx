@@ -10,7 +10,9 @@ export function BoatCard({ boat, className }: { boat: BoatView; className?: stri
   return (
     <article className={cn("@container overflow-hidden rounded-[16px] bg-cream cut", className)}>
       <header className="flex items-stretch justify-between gap-2">
-        <h3 className="min-w-0 px-3 pt-2 pb-1 num text-lg leading-tight text-ink @[14rem]:truncate @[14rem]:text-[22px]">{boat.name}</h3>
+        <h3 className="min-w-0 px-3 pt-2 pb-1 num text-lg leading-tight text-ink @[14rem]:truncate @[14rem]:text-[22px]">
+          {boat.name}
+        </h3>
         <span className="flex shrink-0 items-center gap-1.5 self-start rounded-bl-[14px] bg-navy px-2 py-1.5 text-xs font-bold text-white @[14rem]:self-stretch @[14rem]:px-3 @[14rem]:text-sm">
           <ShellIcon className="hidden h-3.5 w-6 @[14rem]:block" />
           {BOAT_CLASS_LABEL[boat.class] ?? boat.class}
@@ -58,7 +60,9 @@ export function TrainerCard({
     <article className={cn("overflow-hidden rounded-[16px] bg-cream cut", className)}>
       <header className="flex items-stretch justify-between gap-2">
         <h3 className="min-w-0 truncate px-3 pt-2 pb-1 num text-[22px] leading-tight">{trainer.name}</h3>
-        <span className="flex shrink-0 items-center rounded-bl-[14px] bg-navy px-3 text-sm font-bold text-white">Trainer</span>
+        <span className="flex shrink-0 items-center rounded-bl-[14px] bg-navy px-3 text-sm font-bold text-white">
+          Trainer
+        </span>
       </header>
       <div className="flex gap-2.5 px-2 pb-2">
         <div className="size-20 shrink-0 overflow-hidden rounded-[10px] border-2 border-ink">
@@ -75,7 +79,11 @@ export function TrainerCard({
                   active ? "border-ink bg-white" : "border-transparent bg-cream-2",
                 )}
               >
-                {e.weather ? <WeatherIcon weather={e.weather} className="size-4 shrink-0" /> : <Star className="size-4 shrink-0" />}
+                {e.weather ? (
+                  <WeatherIcon weather={e.weather} className="size-4 shrink-0" />
+                ) : (
+                  <Star className="size-4 shrink-0" />
+                )}
                 <span className="truncate">{effectText(e)}</span>
               </li>
             );

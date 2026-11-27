@@ -12,30 +12,37 @@ import (
 func (g *Game) scoreEntry(cs *compState, race RaceSpec, re raceEntry) EntryResult {
 	er := EntryResult{PlayerID: re.pl.id}
 	crew := 0.0
+
 	for _, r := range re.rowers {
 		er.RowerIDs = append(er.RowerIDs, r.id)
 		for _, s := range AllStats {
 			crew += cs.weights[s] * float64(r.stats[s])
 		}
+
 		if r.event != nil && r.event.def.Type == "wetter" && cs.def.Water &&
 			cs.weather != "" && cs.weather != WeatherNormal {
 			er.EventBonus += r.event.def.Value
 		}
 	}
+
 	er.Crew = int(math.Round(crew))
+
 	er.BoatValue = g.boatValue(cs, race, re.boat) * g.d.Rules.BoatScale(race.Seats)
 	if re.boat != nil {
 		er.BoatID = re.boat.id
 	}
+
 	if re.trainer != nil {
 		er.TrainerID = re.trainer.def.ID
 		er.Trainer = trainerEffect(re.trainer, cs) * g.d.Rules.TrainerScale(race.Seats)
 	}
+
 	er.Total = er.Crew + er.BoatValue + er.Trainer + er.EventBonus
+
 	return er
 }
 
-func (g *Game) boatValue(cs *compState, race RaceSpec, b *boat) int {
+func (g *Game) boatValue(cs *compState, race RaceSpec, bt *boat) int {
 	switch {
 	case race.Class == BoatErgo:
 		return 0
@@ -43,17 +50,21 @@ func (g *Game) boatValue(cs *compState, race RaceSpec, b *boat) int {
 		if sb := g.d.SharedBoat(); sb != nil {
 			return sb.Value
 		}
+
 		return 0
-	case b == nil:
+	case bt == nil:
 		if race.LoanBoat {
 			return g.d.Rules.LoanBoatValue
 		}
+
 		return 0
 	}
-	v := b.value
-	if b.city {
+
+	v := bt.value
+	if bt.city {
 		v += cs.cityBoatMod
 	}
+
 	return max(v, 0)
 }
 
@@ -61,15 +72,19 @@ func (g *Game) boatValue(cs *compState, race RaceSpec, b *boat) int {
 // It applies once per boat / ergo entry.
 func trainerEffect(t *trainer, cs *compState) int {
 	total := 0
+
 	for _, e := range t.def.Effects {
 		if e.Weather != "" && Weather(e.Weather) != cs.weather {
 			continue
 		}
+
 		if e.Context != "" && e.Context != cs.def.Context {
 			continue
 		}
+
 		total += e.Value
 	}
+
 	return total
 }
 
@@ -78,6 +93,7 @@ func trainerEffect(t *trainer, cs *compState) int {
 // crews share the place after all finishers and get no medal. Material damage = DNF (place 0).
 func rankEntries(es []EntryResult) {
 	var finishers, capsized, dnf []EntryResult
+
 	for _, e := range es {
 		switch e.Incident {
 		case IncidentKentern:
@@ -88,13 +104,16 @@ func rankEntries(es []EntryResult) {
 			finishers = append(finishers, e)
 		}
 	}
+
 	slices.SortStableFunc(finishers, func(a, b EntryResult) int { return b.Total - a.Total })
+
 	for i := range finishers {
 		if i > 0 && finishers[i].Total == finishers[i-1].Total {
 			finishers[i].Place = finishers[i-1].Place
 		} else {
 			finishers[i].Place = i + 1
 		}
+
 		switch finishers[i].Place {
 		case 1:
 			finishers[i].Medal = MedalGold
@@ -104,14 +123,17 @@ func rankEntries(es []EntryResult) {
 			finishers[i].Medal = MedalNone
 		}
 	}
+
 	for i := range capsized {
 		capsized[i].Place = len(finishers) + 1
 		capsized[i].Medal = MedalNone
 	}
+
 	for i := range dnf {
 		dnf[i].Place = 0
 		dnf[i].Medal = MedalNone
 	}
+
 	out := append(append(finishers, capsized...), dnf...)
 	copy(es, out)
 }
@@ -124,28 +146,35 @@ func EstimateEntry(g *Game, playerID, raceID string, rowerIDs []string, boatID, 
 	if g.phase == nil || g.phase.comp == nil {
 		return 0
 	}
+
 	cs := g.phase.comp
 	pl := g.playerByID(playerID)
+
 	race := cs.race(raceID)
 	if pl == nil || race == nil {
 		return 0
 	}
+
 	re := raceEntry{pl: pl, trainer: pl.trainer(trainerID)}
 	if boatID != "" {
 		if re.boat = pl.boat(boatID); re.boat == nil {
 			return 0
 		}
 	}
+
 	if trainerID != "" && re.trainer == nil {
 		return 0
 	}
+
 	for _, id := range rowerIDs {
 		r := pl.rower(id)
 		if r == nil {
 			return 0
 		}
+
 		re.rowers = append(re.rowers, r)
 	}
+
 	return g.scoreEntry(cs, *race, re).Total
 }
 
@@ -156,24 +185,29 @@ var ageRank = map[AgeGroup]int{AgeKinder: 0, AgeB: 1, AgeA: 2}
 // rules have no guest crews. A guest rower has every stat at the level of the race's oldest
 // allowed age group plus season growth; its boat is valued like a player boat. The score is
 // deterministic, so bots and the UI can compute it in advance.
-func GuestScore(d *data.Data, c *data.Competition, station int, race RaceSpec) (float64, bool) {
+func GuestScore(d *data.Data, comp *data.Competition, station int, race RaceSpec) (float64, bool) {
 	gc := d.Rules.Guests
 	if !gc.Enabled || len(race.Ages) == 0 {
 		return 0, false
 	}
+
 	oldest := race.Ages[0]
 	for _, a := range race.Ages {
 		if ageRank[a] > ageRank[oldest] {
 			oldest = a
 		}
 	}
-	level := gc.StatLevel[string(oldest)] + gc.GrowthPerStation*float64(station) + c.GuestOffset
+
+	level := gc.StatLevel[string(oldest)] + gc.GrowthPerStation*float64(station) + comp.GuestOffset
+
 	wsum := 0.0
 	for _, st := range data.StatNames {
-		wsum += c.Weights[st]
+		wsum += comp.Weights[st]
 	}
+
 	crew := math.Round(float64(race.Seats) * wsum * level)
 	boat := 0
+
 	switch race.Class {
 	case BoatErgo:
 	case Boat8x:
@@ -183,6 +217,7 @@ func GuestScore(d *data.Data, c *data.Competition, station int, race RaceSpec) (
 	default:
 		boat = gc.BoatValue
 	}
+
 	return crew + float64(boat*d.Rules.BoatScale(race.Seats)), true
 }
 
@@ -192,5 +227,6 @@ func (g *Game) guestEntry(cs *compState, race RaceSpec) (EntryResult, bool) {
 	if !ok {
 		return EntryResult{}, false
 	}
+
 	return EntryResult{Guest: g.d.Rules.Guests.Name, Crew: int(total), Total: int(total)}, true
 }

@@ -10,40 +10,46 @@ import (
 // touches the game's RNG.
 func autoDecision(g *Game, pid string, rng *rand.Rand) Decision {
 	pv := g.CurrentPhase(pid)
-	d := Decision{PhaseID: pv.ID, Kind: pv.Kind}
+	dec := Decision{PhaseID: pv.ID, Kind: pv.Kind}
 	pl := g.playerByID(pid)
+
 	switch pv.Kind {
 	case PhaseTraining:
 		n := pv.MaxRowers
 		if n == 0 {
 			n = 3
 		}
+
 		ids := shuffledRowerIDs(pl, rng)[:min(n, len(pl.rowers))]
 		alloc := map[[2]string]int{}
 		var keys [][2]string
-		for i := 0; i < pv.Points; i++ {
+
+		for range pv.Points {
 			k := [2]string{ids[rng.IntN(len(ids))], string(AllStats[rng.IntN(len(AllStats))])}
 			if alloc[k] == 0 {
 				keys = append(keys, k)
 			}
+
 			alloc[k]++
 		}
+
 		for _, k := range keys {
-			d.Training = append(d.Training, TrainingAlloc{RowerID: k[0], Stat: Stat(k[1]), Points: alloc[k]})
+			dec.Training = append(dec.Training, TrainingAlloc{RowerID: k[0], Stat: Stat(k[1]), Points: alloc[k]})
 		}
 	case PhaseSelection:
 		ids := shuffledRowerIDs(pl, rng)
-		d.RowerIDs = ids[:min(pv.Count, len(ids))]
+		dec.RowerIDs = ids[:min(pv.Count, len(ids))]
 	case PhaseEventSwap:
 		if rng.IntN(2) == 0 {
-			d.Swap = &[2]Stat{StatKraft, StatTechnik}
+			dec.Swap = &[2]Stat{StatKraft, StatTechnik}
 		}
 	case PhaseRegatta:
-		d.TrainerID, d.Entries = autoEntries(g, pl, pv.Competition, rng)
+		dec.TrainerID, dec.Entries = autoEntries(g, pl, pv.Competition, rng)
 	case PhaseDraft:
-		d.DraftCardID = pv.DraftOffer[rng.IntN(len(pv.DraftOffer))].ID
+		dec.DraftCardID = pv.DraftOffer[rng.IntN(len(pv.DraftOffer))].ID
 	}
-	return d
+
+	return dec
 }
 
 func shuffledRowerIDs(pl *player, rng *rand.Rand) []string {
@@ -51,23 +57,28 @@ func shuffledRowerIDs(pl *player, rng *rand.Rand) []string {
 	for i, r := range pl.rowers {
 		ids[i] = r.id
 	}
+
 	rng.Shuffle(len(ids), func(i, j int) { ids[i], ids[j] = ids[j], ids[i] })
+
 	return ids
 }
 
 // autoEntries greedily fills races with the best eligible unused rowers and the best free boat.
 func autoEntries(g *Game, pl *player, cv *CompetitionView, rng *rand.Rand) (string, []Entry) {
 	cs := g.phase.comp
+
 	var best *trainer
 	for _, t := range pl.trainers {
 		if best == nil || trainerEffect(t, cs) > trainerEffect(best, cs) {
 			best = t
 		}
 	}
+
 	trainerID := ""
 	if best != nil {
 		trainerID = best.def.ID
 	}
+
 	usedR := map[string]bool{}
 	usedB := map[string]bool{}
 	var entries []Entry
@@ -76,21 +87,26 @@ func autoEntries(g *Game, pl *player, cv *CompetitionView, rng *rand.Rand) (stri
 		for _, st := range AllStats {
 			s += cv.Weights[st] * float64(r.stats[st])
 		}
+
 		return s
 	}
+
 	for _, race := range cv.Races {
 		if rng.IntN(10) == 0 {
 			continue // sometimes skip a race
 		}
 		var cands []*rower
+
 		for _, r := range pl.rowers {
 			if !usedR[r.id] && slices.Contains(race.Ages, r.age) && slices.Contains(race.Genders, r.gender) {
 				cands = append(cands, r)
 			}
 		}
+
 		if len(cands) < race.Seats {
 			continue
 		}
+
 		slices.SortStableFunc(cands, func(a, b *rower) int {
 			switch {
 			case score(a) > score(b):
@@ -98,8 +114,10 @@ func autoEntries(g *Game, pl *player, cv *CompetitionView, rng *rand.Rand) (stri
 			case score(a) < score(b):
 				return 1
 			}
+
 			return 0
 		})
+
 		crew := cands[:race.Seats]
 		if race.Mixed {
 			crew = mixedCrew(cands, race.Seats)
@@ -107,7 +125,9 @@ func autoEntries(g *Game, pl *player, cv *CompetitionView, rng *rand.Rand) (stri
 				continue
 			}
 		}
+
 		boatID := ""
+
 		if race.Class != BoatErgo && race.Class != Boat8x {
 			var bb *boat
 			for _, b := range pl.boats {
@@ -115,21 +135,27 @@ func autoEntries(g *Game, pl *player, cv *CompetitionView, rng *rand.Rand) (stri
 					bb = b
 				}
 			}
+
 			if bb == nil && !race.LoanBoat {
 				continue
 			}
+
 			if bb != nil {
 				boatID = bb.id
 				usedB[bb.id] = true
 			}
 		}
+
 		e := Entry{RaceID: race.ID, BoatID: boatID}
+
 		for _, r := range crew {
 			usedR[r.id] = true
 			e.RowerIDs = append(e.RowerIDs, r.id)
 		}
+
 		entries = append(entries, e)
 	}
+
 	return trainerID, entries
 }
 
@@ -140,12 +166,14 @@ func mixedCrew(cands []*rower, seats int) []*rower {
 			if a.gender == b.gender {
 				continue
 			}
+
 			crew := []*rower{a, b}
 			for _, c := range cands {
 				if len(crew) < seats && c != a && c != b {
 					crew = append(crew, c)
 				}
 			}
+
 			if len(crew) == seats && !mixedOK(crew) && seats > 2 {
 				for _, c := range cands {
 					if c.age != a.age && !slices.Contains(crew, c) {
@@ -154,11 +182,13 @@ func mixedCrew(cands []*rower, seats int) []*rower {
 					}
 				}
 			}
+
 			if len(crew) == seats && mixedOK(crew) {
 				return crew
 			}
 		}
 	}
+
 	return nil
 }
 
@@ -169,16 +199,20 @@ func threePlayers(seed uint64) Config {
 }
 
 // playToEnd lets the auto player decide for every seat until game over.
-func playToEnd(t testing.TB, g *Game, seed uint64) {
-	t.Helper()
+func playToEnd(tb testing.TB, g *Game, seed uint64) {
+	tb.Helper()
+
 	rng := rand.New(rand.NewPCG(seed, 77))
+
 	for steps := 0; !g.Over(); steps++ {
 		if steps > 5000 {
-			t.Fatalf("seed %d: no game over after %d phases (phase %s)", seed, steps, g.PhaseID())
+			tb.Fatalf("seed %d: no game over after %d phases (phase %s)", seed, steps, g.PhaseID())
 		}
+
 		for _, pid := range g.Pending() {
-			if err := g.Submit(pid, autoDecision(g, pid, rng)); err != nil {
-				t.Fatalf("seed %d: phase %s, player %s: %v", seed, g.PhaseID(), pid, err)
+			err := g.Submit(pid, autoDecision(g, pid, rng))
+			if err != nil {
+				tb.Fatalf("seed %d: phase %s, player %s: %v", seed, g.PhaseID(), pid, err)
 			}
 		}
 	}

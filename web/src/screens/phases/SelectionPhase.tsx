@@ -34,7 +34,11 @@ export function SelectionPhase() {
             <span className={cn("num text-3xl leading-none", full ? "text-leaf" : "")}>{picked.length}</span>
             <span className="text-sm font-semibold"> von {count} gewählt</span>
           </p>
-          <Button size="lg" onClick={() => submit({ rowerIds: picked })} disabled={picked.length !== count || submitting}>
+          <Button
+            size="lg"
+            onClick={() => submit({ rowerIds: picked })}
+            disabled={picked.length !== count || submitting}
+          >
             <Send /> Bestätigen
           </Button>
         </div>

@@ -65,7 +65,8 @@ export function SeasonScreen() {
   const status = (i: number): Status => (i < view.current ? "done" : i === view.current ? "current" : "future");
   const results = useMemo(() => {
     const all = [...(log.data?.results ?? [])];
-    if (view.lastResult && !all.some((r) => r.stationIndex === view.lastResult?.stationIndex)) all.push(view.lastResult);
+    if (view.lastResult && !all.some((r) => r.stationIndex === view.lastResult?.stationIndex))
+      all.push(view.lastResult);
     return all;
   }, [log.data, view.lastResult]);
   const selectedResult = selected ? results.find((r) => r.stationIndex === selected.index) : undefined;
@@ -109,8 +110,17 @@ export function SeasonScreen() {
                     className="relative flex items-center gap-3 py-1.5"
                     style={{ paddingLeft: `calc(50% - 7.5rem + ${offset}px)` }}
                   >
-                    <span aria-hidden className="absolute top-0 bottom-0 left-[calc(50%-7.5rem+1.75rem)] border-l-[3px] border-dotted border-ink/30" style={{ transform: `translateX(${offset}px)` }} />
-                    <StationDot st={st} status={s} size={s === "current" ? "lg" : "md"} onClick={() => setSelected(st)} />
+                    <span
+                      aria-hidden
+                      className="absolute top-0 bottom-0 left-[calc(50%-7.5rem+1.75rem)] border-l-[3px] border-dotted border-ink/30"
+                      style={{ transform: `translateX(${offset}px)` }}
+                    />
+                    <StationDot
+                      st={st}
+                      status={s}
+                      size={s === "current" ? "lg" : "md"}
+                      onClick={() => setSelected(st)}
+                    />
                     <button
                       type="button"
                       onClick={() => setSelected(st)}
@@ -118,7 +128,11 @@ export function SeasonScreen() {
                     >
                       <span className="block truncate font-display text-lg leading-tight font-bold">{st.name}</span>
                       <span className="block truncate text-xs text-muted-foreground">
-                        {s === "current" ? "Hier seid ihr gerade" : result ? "Ergebnis ansehen" : st.info || STATION_LABEL[st.type]}
+                        {s === "current"
+                          ? "Hier seid ihr gerade"
+                          : result
+                            ? "Ergebnis ansehen"
+                            : st.info || STATION_LABEL[st.type]}
                       </span>
                     </button>
                     {s === "current" && <BoatFigure className="h-7 w-14 shrink-0" />}
@@ -134,7 +148,10 @@ export function SeasonScreen() {
       <Board status={status} onSelect={setSelected} />
 
       <Sheet open={!!selected} onOpenChange={(o) => !o && setSelected(null)}>
-        <SheetContent side="bottom" className="max-h-[88dvh] overflow-y-auto rounded-t-[22px] border-t-2 border-ink bg-water pb-[calc(var(--safe-bottom)+1rem)] md:mx-auto md:max-w-3xl">
+        <SheetContent
+          side="bottom"
+          className="max-h-[88dvh] overflow-y-auto rounded-t-[22px] border-t-2 border-ink bg-water pb-[calc(var(--safe-bottom)+1rem)] md:mx-auto md:max-w-3xl"
+        >
           {selected && (
             <>
               <SheetHeader className="pr-14">
@@ -238,7 +255,10 @@ function Board({ status, onSelect }: { status: (i: number) => Status; onSelect: 
           <div className="absolute inset-[17%_15%] rounded-[45%] border-2 border-ink bg-[linear-gradient(180deg,#3f8fcf,#1f5f99)]" />
         )}
         <div className="absolute inset-x-0 top-[44%] text-center text-white">
-          <p className="font-display text-[4cqw] leading-none font-bold italic" style={{ textShadow: "0 2px 0 var(--ink)", WebkitTextStroke: "1px var(--ink)" }}>
+          <p
+            className="font-display text-[4cqw] leading-none font-bold italic"
+            style={{ textShadow: "0 2px 0 var(--ink)", WebkitTextStroke: "1px var(--ink)" }}
+          >
             Maschsee Hannover
           </p>
           {current && (
@@ -253,7 +273,12 @@ function Board({ status, onSelect }: { status: (i: number) => Status; onSelect: 
         {view.calendar.map((st) => {
           const p = pos(st.index);
           return (
-            <div key={st.index} className="absolute -translate-x-1/2 -translate-y-1/2" style={{ left: `${p.x}%`, top: `${p.y}%` }} title={st.name}>
+            <div
+              key={st.index}
+              className="absolute -translate-x-1/2 -translate-y-1/2"
+              style={{ left: `${p.x}%`, top: `${p.y}%` }}
+              title={st.name}
+            >
               <StationDot st={st} status={status(st.index)} size="board" onClick={() => onSelect(st)} />
             </div>
           );

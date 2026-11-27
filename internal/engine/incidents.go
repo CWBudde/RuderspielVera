@@ -14,5 +14,6 @@ func rollIncident(rng *rand.Rand, kentern, material, krebs int) IncidentKind {
 	case roll <= kentern+material+krebs:
 		return IncidentKrebs
 	}
+
 	return IncidentNone
 }

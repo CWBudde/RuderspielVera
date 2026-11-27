@@ -5,7 +5,9 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { Button } from "@/components/ui/button";
 import { Emblem, MedalIcon, StationIcon } from "@/components/icons";
 // Mock-mode tool: loaded only when a mock game is open (keeps the mock out of the main bundle).
-const DevPhaseSwitcher = lazy(() => import("@/components/DevPhaseSwitcher").then((m) => ({ default: m.DevPhaseSwitcher })));
+const DevPhaseSwitcher = lazy(() =>
+  import("@/components/DevPhaseSwitcher").then((m) => ({ default: m.DevPhaseSwitcher })),
+);
 import { stationColor } from "@/lib/labels";
 import { cn } from "@/lib/utils";
 import { SeasonScreen } from "@/screens/SeasonScreen";
@@ -72,7 +74,11 @@ export function AppShell() {
           <p className="truncate text-sm font-semibold text-white/80">{you.name}</p>
           <MedalTally gold={you.gold} silver={you.silver} points={you.points} light />
         </div>
-        <Button variant="ghost" className="justify-start text-white/80 hover:bg-white/10 hover:text-white" onClick={() => setMenu(true)}>
+        <Button
+          variant="ghost"
+          className="justify-start text-white/80 hover:bg-white/10 hover:text-white"
+          onClick={() => setMenu(true)}
+        >
           <Menu /> Menü
         </Button>
       </aside>
@@ -198,7 +204,10 @@ export function MedalTally({
   compact?: boolean;
 }) {
   return (
-    <div className={cn("flex items-center gap-2", light ? "text-white" : "text-ink")} aria-label={`${gold} Gold, ${silver} Silber, ${points} Punkte`}>
+    <div
+      className={cn("flex items-center gap-2", light ? "text-white" : "text-ink")}
+      aria-label={`${gold} Gold, ${silver} Silber, ${points} Punkte`}
+    >
       <span className="flex items-center gap-0.5">
         <MedalIcon medal="gold" className="size-6" />
         <span className="num text-xl leading-none">{gold}</span>
@@ -207,7 +216,13 @@ export function MedalTally({
         <MedalIcon medal="silber" className="size-6" />
         <span className="num text-xl leading-none">{silver}</span>
       </span>
-      <span className={cn("rounded-lg px-1.5 py-0.5 text-center", light ? "bg-white/15" : "bg-ink/10", compact && "hidden min-[400px]:block")}>
+      <span
+        className={cn(
+          "rounded-lg px-1.5 py-0.5 text-center",
+          light ? "bg-white/15" : "bg-ink/10",
+          compact && "hidden min-[400px]:block",
+        )}
+      >
         <span className="num text-xl leading-none">{points}</span>
         <span className="ml-0.5 text-[11px] font-bold">Pkt</span>
       </span>

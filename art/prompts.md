@@ -1,9 +1,9 @@
 # Ruderspiel prompt entries
 
 One entry per asset. The ID is the art key (`web/src/assets/art/<artKey>.png`). `assemble.sh <kind>
-<ID> "<attachment line>"` takes the first ```text block after the line starting `**<ID> `. The kind
+<ID> "<attachment line>"` takes the first ```text block after the line starting `\*\*<ID> `. The kind
 (section of `art/style.md`) is given in brackets. All people are generic, fictional characters, except
-the `person` template, which is only used with a photo from `reference-rowers/`.
+the `person`template, which is only used with a photo from`reference-rowers/`.
 
 Default attachments: `examples/vera-karte.png` as "style and backdrop reference only; invent a
 completely different, fictional person, do not copy the face, hair or the card layout, text or stat

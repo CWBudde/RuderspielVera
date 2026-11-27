@@ -5,13 +5,13 @@ into `web/src/api/types.gen.ts` (`just gen-types`). All UI-facing strings in vie
 
 ## Endpoints
 
-| Method | Path | Body | Response |
-|---|---|---|---|
-| POST | `/api/games` | `{"playerName": "Vera", "seed": 123 (optional), "bots": 2}` | `{"gameId", "playerId", "token", "view": GameView}` |
-| GET | `/api/games/{id}` | header `Authorization: Bearer <token>` | `GameView` for the token's player |
-| POST | `/api/games/{id}/decisions` | `Decision` (bearer token) | `GameView` after bots acted and stations resolved as far as possible |
-| GET | `/api/games/{id}/log` | bearer token | `{"log": LogEntry[], "results": CompetitionResult[]}` |
-| GET | `/api/catalog` | – | `CatalogView` (`{"rowers", "boats", "trainers", "events": EventTypeView[]}`, from `engine.Catalog()`) |
+| Method | Path                        | Body                                                        | Response                                                                                              |
+| ------ | --------------------------- | ----------------------------------------------------------- | ----------------------------------------------------------------------------------------------------- |
+| POST   | `/api/games`                | `{"playerName": "Vera", "seed": 123 (optional), "bots": 2}` | `{"gameId", "playerId", "token", "view": GameView}`                                                   |
+| GET    | `/api/games/{id}`           | header `Authorization: Bearer <token>`                      | `GameView` for the token's player                                                                     |
+| POST   | `/api/games/{id}/decisions` | `Decision` (bearer token)                                   | `GameView` after bots acted and stations resolved as far as possible                                  |
+| GET    | `/api/games/{id}/log`       | bearer token                                                | `{"log": LogEntry[], "results": CompetitionResult[]}`                                                 |
+| GET    | `/api/catalog`              | –                                                           | `CatalogView` (`{"rowers", "boats", "trainers", "events": EventTypeView[]}`, from `engine.Catalog()`) |
 
 Errors: HTTP 4xx with `{"error": "<German message for the UI>"}`. A decision with a stale
 `phaseId` returns 409.

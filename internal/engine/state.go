@@ -1,7 +1,9 @@
 package engine
 
 import (
+	"errors"
 	"fmt"
+	"maps"
 	"math/rand/v2"
 	"slices"
 
@@ -131,35 +133,49 @@ type Game struct {
 	draft         *draftState
 }
 
+// Config errors returned by New.
+var (
+	ErrPlayerCount = errors.New("2 bis 4 Spieler erforderlich")
+	ErrBadPlayerID = errors.New("leere oder doppelte Spieler-ID")
+)
+
 // New deals the cards and opens the first phase.
 func New(cfg Config) (*Game, error) {
 	d, err := data.Load()
 	if err != nil {
 		return nil, fmt.Errorf("rule data: %w", err)
 	}
+
 	if n := len(cfg.Players); n < 2 || n > 4 {
-		return nil, fmt.Errorf("2 bis 4 Spieler erforderlich, nicht %d", n)
+		return nil, fmt.Errorf("%w, nicht %d", ErrPlayerCount, n)
 	}
+
 	g := &Game{
 		cfg:       cfg,
 		d:         d,
 		rng:       newRNG(cfg.Seed),
 		swapQueue: map[string][]string{},
 	}
+
 	seen := map[string]bool{}
 	for i, pc := range cfg.Players {
 		if pc.ID == "" || seen[pc.ID] {
-			return nil, fmt.Errorf("Spieler-ID %q leer oder doppelt", pc.ID)
+			return nil, fmt.Errorf("%w: %q", ErrBadPlayerID, pc.ID)
 		}
+
 		seen[pc.ID] = true
+
 		name := pc.Name
 		if name == "" {
 			name = pc.ID
 		}
+
 		g.players = append(g.players, &player{id: pc.ID, name: name, isBot: pc.IsBot, seat: i})
 	}
+
 	g.deal()
 	g.enterStation(0)
+
 	return g, nil
 }
 
@@ -168,6 +184,7 @@ func newRowerFromData(r *data.Rower) *rower {
 	for _, s := range AllStats {
 		base[s] = r.Stats[string(s)]
 	}
+
 	return &rower{
 		id: r.ID, name: r.Name, age: AgeGroup(r.Age), gender: Gender(r.Gender), artKey: r.ArtKey,
 		base: base, stats: base.clone(),
@@ -176,9 +193,8 @@ func newRowerFromData(r *data.Rower) *rower {
 
 func (s Stats) clone() Stats {
 	c := Stats{}
-	for k, v := range s {
-		c[k] = v
-	}
+	maps.Copy(c, s)
+
 	return c
 }
 
@@ -189,52 +205,83 @@ var ageOrder = []AgeGroup{AgeKinder, AgeB, AgeA}
 func (g *Game) deal() {
 	rules := g.d.Rules.Deal
 	byAge := map[AgeGroup][]*rower{}
+
 	for i := range g.d.Rowers {
 		r := newRowerFromData(&g.d.Rowers[i])
 		byAge[r.age] = append(byAge[r.age], r)
 	}
+
 	for _, age := range ageOrder {
-		list := slices.Clone(byAge[age])
-		shuffle(g.rng, list)
-		taken := make([]bool, len(list))
-		count := map[string]int{}
-		take := func(p *player, gender Gender) {
-			if count[p.id] >= rules.RowersPerAgeGroup {
+		g.dealAgeGroup(slices.Clone(byAge[age]), rules.RowersPerAgeGroup, rules.MinPerGender)
+	}
+
+	for _, p := range g.players {
+		sortRowers(p.rowers)
+	}
+
+	g.poolUndealtRowers(byAge)
+	g.dealTrainers(rules.Trainers)
+	g.dealBoats()
+
+	g.addLog("station", "", fmt.Sprintf(
+		"Spielvorbereitung: Jeder Spieler erhält %d Ruderer, städtische Boote und %d Trainer.",
+		len(g.players[0].rowers), rules.Trainers))
+}
+
+// dealAgeGroup shuffles one age group and deals perPlayer rowers to each player, first
+// minPerGender girls and boys per player in turn, then whoever is left.
+func (g *Game) dealAgeGroup(list []*rower, perPlayer, minPerGender int) {
+	shuffle(g.rng, list)
+
+	taken := make([]bool, len(list))
+	count := map[string]int{}
+
+	take := func(p *player, gender Gender) {
+		if count[p.id] >= perPlayer {
+			return
+		}
+
+		for i, r := range list {
+			if !taken[i] && (gender == "" || r.gender == gender) {
+				taken[i] = true
+				count[p.id]++
+				p.rowers = append(p.rowers, r)
+
 				return
-			}
-			for i, r := range list {
-				if !taken[i] && (gender == "" || r.gender == gender) {
-					taken[i] = true
-					count[p.id]++
-					p.rowers = append(p.rowers, r)
-					return
-				}
-			}
-		}
-		for k := 0; k < rules.MinPerGender; k++ {
-			for _, gender := range []Gender{GenderF, GenderM} {
-				for _, p := range g.players {
-					take(p, gender)
-				}
-			}
-		}
-		for _, p := range g.players {
-			for count[p.id] < rules.RowersPerAgeGroup && count[p.id] < len(list) {
-				before := count[p.id]
-				take(p, "")
-				if count[p.id] == before {
-					break
-				}
 			}
 		}
 	}
-	owned := map[string]bool{}
+
+	for range minPerGender {
+		for _, gender := range []Gender{GenderF, GenderM} {
+			for _, p := range g.players {
+				take(p, gender)
+			}
+		}
+	}
+
 	for _, p := range g.players {
-		sortRowers(p.rowers)
+		for count[p.id] < perPlayer && count[p.id] < len(list) {
+			before := count[p.id]
+			take(p, "")
+
+			if count[p.id] == before {
+				break
+			}
+		}
+	}
+}
+
+// poolUndealtRowers puts every rower nobody was dealt into the draft pool, in catalog order.
+func (g *Game) poolUndealtRowers(byAge map[AgeGroup][]*rower) {
+	owned := map[string]bool{}
+
+	for _, p := range g.players {
 		for _, r := range p.rowers {
 			owned[r.id] = true
 		}
 	}
+
 	for i := range g.d.Rowers {
 		if id := g.d.Rowers[i].ID; !owned[id] {
 			for _, r := range byAge[AgeGroup(g.d.Rowers[i].Age)] {
@@ -244,15 +291,20 @@ func (g *Game) deal() {
 			}
 		}
 	}
+}
 
+// dealTrainers deals perPlayer random trainers to each player; the rest go to the draft pool.
+func (g *Game) dealTrainers(perPlayer int) {
 	trainers := make([]*trainer, len(g.d.Trainers))
 	for i := range g.d.Trainers {
 		trainers[i] = &trainer{def: &g.d.Trainers[i]}
 	}
+
 	shuffle(g.rng, trainers)
+
 	next := 0
 	for _, p := range g.players {
-		for k := 0; k < rules.Trainers && next < len(trainers); k++ {
+		for k := 0; k < perPlayer && next < len(trainers); k++ {
 			p.trainers = append(p.trainers, trainers[next])
 			next++
 		}
@@ -263,32 +315,40 @@ func (g *Game) deal() {
 			g.pool = append(g.pool, poolCard{trainer: &trainer{def: &g.d.Trainers[i]}})
 		}
 	}
+}
 
+// dealBoats gives every player a copy of each city boat and puts the other boats (except the
+// shared eight) into the draft pool.
+func (g *Game) dealBoats() {
 	for i := range g.d.Boats {
 		b := &g.d.Boats[i]
 		switch {
 		case b.City:
 			for _, p := range g.players {
-				p.boats = append(p.boats, &boat{id: b.ID + "-" + p.id, name: b.Name, class: BoatClass(b.Class),
-					value: b.Value, city: true, artKey: b.ArtKey})
+				p.boats = append(p.boats, &boat{
+					id: b.ID + "-" + p.id, name: b.Name, class: BoatClass(b.Class),
+					value: b.Value, city: true, artKey: b.ArtKey,
+				})
 			}
 		case b.Shared:
 		default:
-			g.pool = append(g.pool, poolCard{boat: &boat{id: b.ID, name: b.Name, class: BoatClass(b.Class),
-				value: b.Value, artKey: b.ArtKey}})
+			g.pool = append(g.pool, poolCard{boat: &boat{
+				id: b.ID, name: b.Name, class: BoatClass(b.Class),
+				value: b.Value, artKey: b.ArtKey,
+			}})
 		}
 	}
-	g.addLog("station", "", fmt.Sprintf("Spielvorbereitung: Jeder Spieler erhält %d Ruderer, städtische Boote und %d Trainer.",
-		len(g.players[0].rowers), rules.Trainers))
 }
 
 // sortRowers orders a roster A, B, Kinder and then by starting strength.
 func sortRowers(rs []*rower) {
 	rank := map[AgeGroup]int{AgeA: 0, AgeB: 1, AgeKinder: 2}
+
 	slices.SortStableFunc(rs, func(a, b *rower) int {
 		if rank[a.age] != rank[b.age] {
 			return rank[a.age] - rank[b.age]
 		}
+
 		return b.base.sum() - a.base.sum()
 	})
 }
@@ -298,6 +358,7 @@ func (s Stats) sum() int {
 	for _, v := range s {
 		t += v
 	}
+
 	return t
 }
 
@@ -309,6 +370,7 @@ func (s Stats) bestStat() Stat {
 			best = st
 		}
 	}
+
 	return best
 }
 
@@ -318,6 +380,7 @@ func (g *Game) playerByID(id string) *player {
 			return p
 		}
 	}
+
 	return nil
 }
 
@@ -327,6 +390,7 @@ func (p *player) rower(id string) *rower {
 			return r
 		}
 	}
+
 	return nil
 }
 
@@ -336,6 +400,7 @@ func (p *player) boat(id string) *boat {
 			return b
 		}
 	}
+
 	return nil
 }
 
@@ -345,6 +410,7 @@ func (p *player) trainer(id string) *trainer {
 			return t
 		}
 	}
+
 	return nil
 }
 

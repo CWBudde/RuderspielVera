@@ -30,15 +30,39 @@ enable = ['gomodguard_v2', 'wsl_v5']
 [linters.settings.tagliatelle.case.rules]
 json = 'camel'
 
+# Short names are the codebase convention: two-letter domain abbreviations
+# (pl = player, pv = phase view, cr = crew, cs = competition state, ...) are
+# allowed everywhere, and single letters are fine within ~15 lines.
 [linters.settings.varnamelen]
+min-name-length = 2
+max-distance = 15
 ignore-names = ['ok', 'id', 'mw', 'rt', 'db', 'tx']
-ignore-decls = ['w http.ResponseWriter', 'r *http.Request', 'g *Game']
+# Core domain values keep their one-letter names throughout the codebase.
+ignore-decls = [
+  'w http.ResponseWriter',
+  'r *http.Request',
+  'g *Game',
+  'g *engine.Game',
+  'd *Data',
+  'd *data.Data',
+  'p *phase',
+  'p *problems',
+  'b *brain',
+  'c *compModel',
+  'e *gameEntry',
+  's *Service',
+]
 
 [linters.settings.wsl_v5]
 allow-first-in-block = true
 allow-whole-block = false
 branch-max-lines = 2
 disable = ['decl']
+
+# Engine and bot functions mirror rule sections; up to 15 branches keeps one
+# rule in one place instead of scattering it over helpers.
+[linters.settings.cyclop]
+max-complexity = 15
 
 [linters.exclusions]
 generated = 'lax'
@@ -63,11 +87,39 @@ path = 'cmd/.*\.go'
 linters = ['err113', 'wrapcheck']
 path = 'cmd/.*\.go'
 
+# CLI tools under tools/ get the same treatment as cmd/.
+[[linters.exclusions.rules]]
+linters = ['err113', 'wrapcheck']
+path = 'tools/.*\.go'
+
+# Command-line programs report to stdout on purpose.
+[[linters.exclusions.rules]]
+linters = ['forbidigo']
+path = '(cmd|tools)/.*\.go'
+
+# cmd/gendata holds name lists; repeated first names are data, not constants.
+[[linters.exclusions.rules]]
+linters = ['goconst']
+path = 'cmd/gendata/.*\.go'
+
+# Tests are white-box on purpose (they drive unexported engine state), test
+# tables repeat fixture IDs, and scenario tests are long linear scripts whose
+# assertions inflate complexity metrics.
+[[linters.exclusions.rules]]
+linters = ['testpackage', 'goconst', 'cyclop', 'gocognit', 'gocyclo', 'funlen']
+path = '_test\.go'
+
 # Static game data (stat names, effect tables, embedded JSON cache) is
 # package-level by design.
 [[linters.exclusions.rules]]
 linters = ['gochecknoglobals']
 path = 'internal/data/.*\.go'
+
+# Read-only engine lookup tables (display names, age orderings, stat order).
+[[linters.exclusions.rules]]
+linters = ['gochecknoglobals']
+path = 'internal/engine/.*\.go'
+text = '^(AllStats|\w+Names|ageOrder|ageRank) is a global variable'
 
 [severity]
 default = 'warn'
@@ -78,6 +130,11 @@ severity = 'info'
 
 [formatters]
 enable = ['gci', 'gofumpt', 'goimports']
+
+# Without module-path, gofumpt treats the dot-less module name `ruderspiel`
+# as a standard-library import and fights gci's separate prefix section.
+[formatters.settings.gofumpt]
+module-path = 'ruderspiel'
 
 [formatters.settings.gci]
 sections = ['standard', 'default', 'prefix(ruderspiel)']
