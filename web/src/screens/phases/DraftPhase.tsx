@@ -100,16 +100,18 @@ export function DraftPhase() {
                     waiting && "opacity-70",
                   )}
                 >
-                  <span className="mb-1 inline-block rounded-full border-2 border-ink bg-white px-2 text-xs font-bold">
+                  <span className="mb-3 inline-block rounded-full border-2 border-ink bg-white px-2 text-xs font-bold">
                     {KIND_LABEL[c.kind] ?? c.kind}
                   </span>
-                  <div className={cn("rounded-[20px]", on && "ring-4 ring-lake ring-offset-2 ring-offset-water")}>
+                  <div
+                    className={cn(on && "[&>article]:outline-4 [&>article]:outline-offset-4 [&>article]:outline-lake")}
+                  >
                     {c.rower && <RowerCard rower={c.rower} />}
                     {c.boat && <BoatCard boat={c.boat} />}
                     {c.trainer && <TrainerCard trainer={c.trainer} />}
                   </div>
                   {on && (
-                    <span className="absolute top-5 -right-1 grid size-8 place-items-center rounded-full border-2 border-ink bg-lake text-white">
+                    <span className="absolute top-0 right-0 grid size-7 place-items-center rounded-full border-2 border-ink bg-lake text-white">
                       <Check className="size-5" strokeWidth={3} />
                     </span>
                   )}

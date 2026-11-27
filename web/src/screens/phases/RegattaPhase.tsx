@@ -134,10 +134,10 @@ export function RegattaPhase() {
                     trainer={t}
                     weather={comp.weather ?? "normal"}
                     todayBonus={trainerBonus(t, comp)}
-                    className={cn(on && "ring-4 ring-lake")}
+                    className={cn(on && "outline-4 outline-offset-4 outline-lake")}
                   />
                   {on && (
-                    <span className="absolute -top-2 -left-2 grid size-8 place-items-center rounded-full border-2 border-ink bg-lake text-white">
+                    <span className="absolute -top-3 -left-3 grid size-8 place-items-center rounded-full border-2 border-ink bg-lake text-white">
                       <Check className="size-5" strokeWidth={3} />
                     </span>
                   )}
