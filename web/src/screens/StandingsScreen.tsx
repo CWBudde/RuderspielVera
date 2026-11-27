@@ -4,6 +4,8 @@ import { useGame, useGameLog } from "@/hooks/game";
 import { MedalIcon } from "@/components/icons";
 import { playerColor } from "@/lib/labels";
 import { cn } from "@/lib/utils";
+import { t, tm } from "@/i18n";
+import { stationName } from "@/i18n/data";
 
 export function rankedPlayers(view: GameView) {
   const sorted = [...view.players].sort((a, b) => b.points - a.points || b.gold - a.gold);
@@ -18,17 +20,17 @@ export function MedalTable({ view }: { view: GameView }) {
       <table className="w-full text-left">
         <thead className="bg-navy text-white">
           <tr className="font-display text-sm font-bold">
-            <th className="py-2 pl-3">Platz</th>
-            <th className="py-2">Team</th>
+            <th className="py-2 pl-3">{t("standings.rank")}</th>
+            <th className="py-2">{t("standings.team")}</th>
             <th className="py-2 text-center">
               <MedalIcon medal="gold" className="mx-auto size-5" />
-              <span className="sr-only">Gold</span>
+              <span className="sr-only">{t("common.gold")}</span>
             </th>
             <th className="py-2 text-center">
               <MedalIcon medal="silber" className="mx-auto size-5" />
-              <span className="sr-only">Silber</span>
+              <span className="sr-only">{t("common.silver")}</span>
             </th>
-            <th className="py-2 pr-3 text-right">Punkte</th>
+            <th className="py-2 pr-3 text-right">{t("common.points")}</th>
           </tr>
         </thead>
         <tbody>
@@ -43,9 +45,9 @@ export function MedalTable({ view }: { view: GameView }) {
                   />
                   <span className="truncate font-bold">{p.name}</span>
                   {p.isBot ? (
-                    <Bot className="size-4 shrink-0 text-muted-foreground" aria-label="Computer" />
+                    <Bot className="size-4 shrink-0 text-muted-foreground" aria-label={t("standings.bot")} />
                   ) : (
-                    <UserRound className="size-4 shrink-0 text-muted-foreground" aria-label="Mensch" />
+                    <UserRound className="size-4 shrink-0 text-muted-foreground" aria-label={t("standings.human")} />
                   )}
                 </span>
               </td>
@@ -56,9 +58,7 @@ export function MedalTable({ view }: { view: GameView }) {
           ))}
         </tbody>
       </table>
-      <p className="border-t-2 border-ink/10 px-3 py-2 text-xs text-muted-foreground">
-        Gold zählt 2 Punkte, Silber 1 Punkt.
-      </p>
+      <p className="border-t-2 border-ink/10 px-3 py-2 text-xs text-muted-foreground">{t("standings.pointsRule")}</p>
     </div>
   );
 }
@@ -80,23 +80,23 @@ export function StandingsScreen() {
   return (
     <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.1fr)]">
       <section>
-        <h2 className="mb-2 num text-3xl leading-none">Medaillenspiegel</h2>
+        <h2 className="mb-2 num text-3xl leading-none">{t("standings.medalTable")}</h2>
         <MedalTable view={view} />
         {(view.activeEreignisse ?? []).length > 0 && (
           <div className="mt-4 rounded-[16px] border-2 border-ink bg-st-ereignis p-3">
             <h3 className="flex items-center gap-1.5 font-display text-lg font-bold">
-              <Dice5 className="size-5" /> Aktive Ereignisse
+              <Dice5 className="size-5" /> {t("phase.activeEreignisse")}
             </h3>
             <ul className="mt-1 list-disc pl-5 text-sm">
-              {view.activeEreignisse.map((t) => (
-                <li key={t}>{t}</li>
+              {view.activeEreignisse.map((e, i) => (
+                <li key={i}>{tm(e)}</li>
               ))}
             </ul>
           </div>
         )}
       </section>
       <section>
-        <h2 className="mb-2 num text-3xl leading-none">Saisonverlauf</h2>
+        <h2 className="mb-2 num text-3xl leading-none">{t("standings.history")}</h2>
         <ol className="flex flex-col gap-1.5">
           {entries.map((e, i) => {
             const Icon = KIND_ICON[e.kind] ?? Info;
@@ -111,9 +111,9 @@ export function StandingsScreen() {
               >
                 <Icon className="mt-0.5 size-4 shrink-0" />
                 <span className="min-w-0 flex-1">
-                  {e.text}
+                  {tm(e.msg)}
                   {e.kind !== "station" && station && (
-                    <span className="ml-1 text-xs text-muted-foreground">({station.name})</span>
+                    <span className="ml-1 text-xs text-muted-foreground">({stationName(station)})</span>
                   )}
                 </span>
               </li>

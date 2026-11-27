@@ -6,6 +6,8 @@ import { RowerRow } from "@/components/RowerCard";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { sortRowers } from "@/screens/TeamScreen";
+import { t, tm } from "@/i18n";
+import { selectionEffect } from "@/i18n/data";
 
 export function SelectionPhase() {
   const { view, you, submit, submitting } = useGame();
@@ -19,12 +21,12 @@ export function SelectionPhase() {
 
   return (
     <PhaseFrame
-      title={view.phase.title}
-      prompt={view.phase.prompt}
+      title={tm(view.phase.title)}
+      prompt={tm(view.phase.prompt)}
       headerExtra={
         view.phase.selectionEffect && (
           <p className="mt-3 inline-flex items-center gap-2 rounded-xl border-2 border-ink bg-st-training px-3 py-2 font-display text-lg font-bold">
-            <Sparkles className="size-5" /> Wirkung: {view.phase.selectionEffect}
+            <Sparkles className="size-5" /> {t("selection.effect", { effect: selectionEffect(view.phase) })}
           </p>
         )
       }
@@ -32,14 +34,14 @@ export function SelectionPhase() {
         <div className="flex items-center gap-2">
           <p className="min-w-0 flex-1 pl-1" aria-live="polite">
             <span className={cn("num text-3xl leading-none", full ? "text-leaf" : "")}>{picked.length}</span>
-            <span className="text-sm font-semibold"> von {count} gewählt</span>
+            <span className="text-sm font-semibold"> {t("selection.ofPicked", { count })}</span>
           </p>
           <Button
             size="lg"
             onClick={() => submit({ rowerIds: picked })}
             disabled={picked.length !== count || submitting}
           >
-            <Send /> Bestätigen
+            <Send /> {t("common.confirm")}
           </Button>
         </div>
       }

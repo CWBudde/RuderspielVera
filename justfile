@@ -38,6 +38,10 @@ gendata:
 gen-types:
     go run github.com/gzuidhof/tygo@latest generate
 
+# Data texts (German from internal/data, English from internal/data/i18n/en.json) for the web UI
+gen-i18n:
+    go run ./cmd/geni18n
+
 #################################
 # Static build (GitHub Pages, engine as WebAssembly)
 #################################

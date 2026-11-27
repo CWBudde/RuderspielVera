@@ -31,7 +31,6 @@ type rower struct {
 	base     Stats // starting values
 	stats    Stats // current values
 	event    *eventCard
-	isTwin   bool
 	// Siegesmotivation: temporary Motivation bonus after a winning placement (rules.json
 	// winMotivation). It is not part of stats, so training, Tausch and stat-based events never
 	// see it; winLeft is the number of competitions it still lasts (0 = inactive).
@@ -42,11 +41,15 @@ type rower struct {
 type eventCard struct {
 	def     *data.EventType
 	mission *missionState
+	// Seelenzwilling: the linked teammate. At the next training (or camp) in which the card holder
+	// or the partner gets points, each also receives the other's points; then the card is spent.
+	partner *rower
+	spent   bool
 }
 
 type missionState struct {
 	def    *data.Mission
-	text   string
+	rower  any // rowerName of the card holder, the {name} of the mission text
 	starts int // competitions started since the mission was given
 	done   bool
 	failed bool
@@ -54,6 +57,7 @@ type missionState struct {
 
 type boat struct {
 	id, name string
+	defID    string // boats.json id
 	class    BoatClass
 	value    int
 	city     bool
@@ -105,14 +109,15 @@ func (c poolCard) kind() string {
 	}
 }
 
-func (c poolCard) name() string {
+// nameMsg is the card's name as a Msg arg (rower names are proper names).
+func (c poolCard) nameMsg() any {
 	switch {
 	case c.rower != nil:
-		return c.rower.name
+		return rowerName(c.rower)
 	case c.boat != nil:
-		return c.boat.name
+		return dataMsg("boat", c.boat.defID, "name")
 	default:
-		return c.trainer.def.Name
+		return dataMsg("trainer", c.trainer.def.ID, "name")
 	}
 }
 
@@ -231,10 +236,7 @@ func (g *Game) deal() {
 	g.dealTrainers(rules.Trainers)
 	g.dealBoats()
 
-	g.addLog("station", "", fmt.Sprintf(
-		"Spielvorbereitung: Jeder Spieler erhält %d Ruderer, städtische Boote und %d Trainer.",
-		len(g.players[0].rowers), rules.Trainers,
-	))
+	g.addLog("station", "", msg("log.setup", "rowers", len(g.players[0].rowers), "trainers", rules.Trainers))
 }
 
 // dealAgeGroup shuffles one age group and deals perPlayer rowers to each player, first
@@ -335,14 +337,14 @@ func (g *Game) dealBoats() {
 		case b.City:
 			for _, p := range g.players {
 				p.boats = append(p.boats, &boat{
-					id: b.ID + "-" + p.id, name: b.Name, class: BoatClass(b.Class),
+					id: b.ID + "-" + p.id, defID: b.ID, name: b.Name, class: BoatClass(b.Class),
 					value: b.Value, city: true, artKey: b.ArtKey,
 				})
 			}
 		case b.Shared:
 		default:
 			g.pool = append(g.pool, poolCard{boat: &boat{
-				id: b.ID, name: b.Name, class: BoatClass(b.Class),
+				id: b.ID, defID: b.ID, name: b.Name, class: BoatClass(b.Class),
 				value: b.Value, artKey: b.ArtKey,
 			}})
 		}
@@ -430,8 +432,8 @@ func (g *Game) points(p *player) int {
 	return p.gold*g.d.Rules.MedalPoints.Gold + p.silver*g.d.Rules.MedalPoints.Silver + p.bonus
 }
 
-func (g *Game) addLog(kind, playerID, text string) {
-	g.log = append(g.log, LogEntry{StationIndex: g.station, Kind: kind, Text: text, PlayerID: playerID})
+func (g *Game) addLog(kind, playerID string, m Msg) {
+	g.log = append(g.log, LogEntry{StationIndex: g.station, Kind: kind, Msg: m, PlayerID: playerID})
 }
 
 func (g *Game) currentStation() *data.Station { return &g.d.Calendar[g.station] }

@@ -133,8 +133,23 @@ func (b *brain) gain(ol *outlook, rowerID string, delta engine.Stats) float64 {
 	return val * (1 + b.noise[rowerID])
 }
 
+// twinPartners maps both rowers of every unspent Seelenzwilling card to each other: a point
+// trained on one of them also lands on the other (engine applyTwinTraining).
+func twinPartners(rowers []engine.RowerView) map[string]string {
+	out := map[string]string{}
+
+	for _, r := range rowers {
+		if e := r.Event; e != nil && e.Type == "seelenzwilling" && !e.Spent && e.PartnerID != "" {
+			out[r.ID], out[e.PartnerID] = e.PartnerID, r.ID
+		}
+	}
+
+	return out
+}
+
 func (b *brain) training(points, maxRowers int) []engine.TrainingAlloc {
 	ol := b.outlook(3)
+	twins := twinPartners(b.me.Rowers)
 	alloc := map[[2]string]int{}
 	var order [][2]string
 	chosen := map[string]bool{}
@@ -151,6 +166,10 @@ func (b *brain) training(points, maxRowers int) []engine.TrainingAlloc {
 
 			for _, s := range engine.TrainableStats {
 				v := b.gain(ol, r.ID, engine.Stats{s: 1})
+				if p, ok := twins[r.ID]; ok {
+					v += b.gain(ol, p, engine.Stats{s: 1})
+				}
+
 				if v > bestV {
 					bestV, bestR, bestS = v, r.ID, s
 				}
@@ -167,6 +186,12 @@ func (b *brain) training(points, maxRowers int) []engine.TrainingAlloc {
 		chosen[bestR] = true
 		for _, st := range ol.starts[bestR] {
 			ol.add(st, ol.comps[st.k].weights[bestS])
+		}
+
+		if p, ok := twins[bestR]; ok {
+			for _, st := range ol.starts[p] {
+				ol.add(st, ol.comps[st.k].weights[bestS])
+			}
 		}
 	}
 

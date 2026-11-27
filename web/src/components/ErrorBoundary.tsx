@@ -1,5 +1,6 @@
 import { Component, type ErrorInfo, type ReactNode } from "react";
 import { Button } from "@/components/ui/button";
+import { t } from "@/i18n";
 
 /** Catches render errors so a bad view never leaves a blank page; the game itself is safe on the server. */
 export class ErrorBoundary extends Component<{ children: ReactNode; onHome?: () => void }, { error: Error | null }> {
@@ -18,13 +19,11 @@ export class ErrorBoundary extends Component<{ children: ReactNode; onHome?: () 
     return (
       <div className="grid min-h-dvh place-items-center p-6 text-center">
         <div className="max-w-sm rounded-[20px] bg-cream p-5 cut">
-          <p className="font-display text-xl font-bold">Hier ist etwas schiefgegangen</p>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Dein Spielstand ist gespeichert. Lade die Seite neu, um weiterzuspielen.
-          </p>
+          <p className="font-display text-xl font-bold">{t("error.title")}</p>
+          <p className="mt-1 text-sm text-muted-foreground">{t("error.hint")}</p>
           <p className="mt-2 font-mono text-xs break-words text-muted-foreground">{this.state.error.message}</p>
           <div className="mt-4 flex flex-col gap-2">
-            <Button onClick={() => window.location.reload()}>Neu laden</Button>
+            <Button onClick={() => window.location.reload()}>{t("error.reload")}</Button>
             {this.props.onHome && (
               <Button
                 variant="outline"
@@ -33,7 +32,7 @@ export class ErrorBoundary extends Component<{ children: ReactNode; onHome?: () 
                   this.props.onHome?.();
                 }}
               >
-                Zum Start
+                {t("app.toStart")}
               </Button>
             )}
           </div>

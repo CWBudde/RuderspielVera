@@ -1,7 +1,6 @@
 package engine
 
 import (
-	"fmt"
 	"slices"
 )
 
@@ -25,8 +24,6 @@ func (d *draftState) offerIndex(id string) int {
 
 	return -1
 }
-
-var cardKindNames = map[string]string{"rower": "Ruderer", "boat": "Boot", "trainer": "Trainer"}
 
 // openDraft draws an open offer of (players + extraOffer) cards from the pool and opens the first
 // pick. Pick order: fewest medal points first (catch-up), then fewer golds, then seat order.
@@ -60,7 +57,7 @@ func (g *Game) openDraft() bool {
 
 	for range extra {
 		order = append(order, ps[0].id)
-		g.addLog("ereignis", ps[0].id, fmt.Sprintf("Sponsor: %s darf eine zusätzliche Karte wählen.", ps[0].name))
+		g.addLog("ereignis", ps[0].id, msg("log.sponsor", "player", ps[0].name))
 	}
 
 	g.draft = &draftState{offer: offer, order: order}
@@ -121,8 +118,7 @@ func (g *Game) draftOrder() []*player {
 func (g *Game) openDraftPick() {
 	pid := g.draft.order[g.draft.turn]
 	pl := g.playerByID(pid)
-	g.newPhase(PhaseDraft, stageNone, []string{pid}, "Kartenauswahl",
-		pl.name+" wählt eine Karte aus dem offenen Angebot.")
+	g.newPhase(PhaseDraft, stageNone, []string{pid}, msg("title.draft"), msg("prompt.draft", "player", pl.name))
 }
 
 func (g *Game) nextDraftPick() bool {
@@ -152,5 +148,5 @@ func (g *Game) applyDraftPick(pl *player, cardID string) {
 		pl.trainers = append(pl.trainers, c.trainer)
 	}
 
-	g.addLog("draft", pl.id, fmt.Sprintf("%s wählt %s (%s).", pl.name, c.name(), cardKindNames[c.kind()]))
+	g.addLog("draft", pl.id, msg("log.draftPick", "player", pl.name, "card", c.nameMsg(), "kind", msg("cardKind."+c.kind())))
 }

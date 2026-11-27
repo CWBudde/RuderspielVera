@@ -190,12 +190,12 @@ func TestPlayFullSeason(t *testing.T) {
 	if len(lr.Log) == 0 || len(lr.Results) == 0 {
 		t.Fatalf("log %d entries, %d results", len(lr.Log), len(lr.Results))
 	}
-	// Further decisions after game over are rejected with a German message.
-	var er map[string]string
+	// Further decisions after game over are rejected with a message key.
+	var er ErrorBody
 
 	ack := engine.Decision{PhaseID: view.Phase.ID, Kind: engine.PhaseAck}
 	if st := cl.do("POST", "/api/games/"+cr.GameID+"/decisions", cr.Token, ack, &er); st != http.StatusBadRequest ||
-		er["error"] == "" {
+		er.Error == "" {
 		t.Fatalf("after game over: status %d, %v", st, er)
 	}
 }
@@ -206,9 +206,9 @@ func TestErrors(t *testing.T) {
 	_, cl := newTestServer(t, "")
 	cr := cl.create(3)
 	base := "/api/games/" + cr.GameID
-	var er map[string]string
+	var er ErrorBody
 
-	if st := cl.do("GET", base, "", nil, &er); st != http.StatusUnauthorized || er["error"] == "" {
+	if st := cl.do("GET", base, "", nil, &er); st != http.StatusUnauthorized || er.Error == "" {
 		t.Errorf("missing token: status %d, %v", st, er)
 	}
 
@@ -221,7 +221,7 @@ func TestErrors(t *testing.T) {
 	}
 
 	stale := engine.Decision{PhaseID: "x-does-not-exist", Kind: cr.View.Phase.Kind}
-	if st := cl.do("POST", base+"/decisions", cr.Token, stale, &er); st != http.StatusConflict || er["error"] == "" {
+	if st := cl.do("POST", base+"/decisions", cr.Token, stale, &er); st != http.StatusConflict || er.Error == "" {
 		t.Errorf("stale phase: status %d, %v", st, er)
 	}
 
@@ -230,11 +230,11 @@ func TestErrors(t *testing.T) {
 		wrongKind = engine.PhaseAck
 	}
 
-	er = nil
+	er = ErrorBody{}
 
 	bad := engine.Decision{PhaseID: cr.View.Phase.ID, Kind: wrongKind}
 	if st := cl.do("POST", base+"/decisions", cr.Token, bad, &er); st != http.StatusBadRequest ||
-		!strings.Contains(er["error"], "Entscheidungstyp") {
+		!strings.Contains(er.Error, "err.wrongKind") {
 		t.Errorf("invalid decision: status %d, %v", st, er)
 	}
 

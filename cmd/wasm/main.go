@@ -99,15 +99,15 @@ func export(nargs int, fn func([]js.Value) (int, any, error)) js.Func {
 		defer func() {
 			if r := recover(); r != nil {
 				slog.Error("panic in wasm call", "panic", fmt.Sprint(r))
-				result = envelope(0, nil, &gameservice.Error{Status: gameservice.StatusInternal, Msg: "Interner Fehler."})
+				result = envelope(0, nil, gameservice.NewError(gameservice.StatusInternal, "err.internal"))
 			}
 		}()
 		if len(args) < nargs {
-			return envelope(0, nil, &gameservice.Error{Status: gameservice.StatusBadRequest, Msg: "Ungültige Anfrage: Parameter fehlen."})
+			return envelope(0, nil, gameservice.NewError(gameservice.StatusBadRequest, "err.badRequestArgs"))
 		}
 		for _, a := range args[:nargs] {
 			if a.Type() != js.TypeString {
-				return envelope(0, nil, &gameservice.Error{Status: gameservice.StatusBadRequest, Msg: "Ungültige Anfrage: Parameter müssen Zeichenketten sein."})
+				return envelope(0, nil, gameservice.NewError(gameservice.StatusBadRequest, "err.badRequestArgs"))
 			}
 		}
 		status, data, err := fn(args)
@@ -117,7 +117,7 @@ func export(nargs int, fn func([]js.Value) (int, any, error)) js.Func {
 
 func decode(v js.Value, out any) error {
 	if err := json.Unmarshal([]byte(v.String()), out); err != nil {
-		return &gameservice.Error{Status: gameservice.StatusBadRequest, Msg: "Ungültige Anfrage: Die Daten konnten nicht gelesen werden."}
+		return gameservice.NewError(gameservice.StatusBadRequest, "err.badRequestBody")
 	}
 	return nil
 }
@@ -127,9 +127,10 @@ func envelope(status int, data any, err error) string {
 	if err != nil {
 		se := gameservice.AsError(err)
 		v = struct {
-			Status int    `json:"status"`
-			Error  string `json:"error"`
-		}{se.Status, se.Msg}
+			Status int        `json:"status"`
+			Error  string     `json:"error"` // message key
+			Msg    engine.Msg `json:"msg"`
+		}{se.Status, se.Msg.Key, se.Msg}
 	} else {
 		v = struct {
 			Status int `json:"status"`

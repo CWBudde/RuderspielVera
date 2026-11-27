@@ -7,11 +7,15 @@ import { RowerCard } from "@/components/RowerCard";
 import { BoatCard, TrainerCard } from "@/components/GearCards";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-
-const KIND_LABEL: Record<string, string> = { rower: "Ruderer", boat: "Boot", trainer: "Trainer" };
+import { t, tData, tm } from "@/i18n";
+import { tr } from "@/i18n/rich";
+import { boatName, rowerName, trainerName } from "@/i18n/data";
 
 function cardName(c: DraftCard): string {
-  return c.rower?.name ?? c.boat?.name ?? c.trainer?.name ?? "Karte";
+  if (c.rower) return rowerName(c.rower);
+  if (c.boat) return boatName(c.boat);
+  if (c.trainer) return trainerName(c.trainer);
+  return t("draft.card");
 }
 
 export function DraftPhase() {
@@ -27,10 +31,10 @@ export function DraftPhase() {
 
   return (
     <PhaseFrame
-      title={phase.title}
-      prompt={phase.prompt}
+      title={tm(phase.title)}
+      prompt={tm(phase.prompt)}
       headerExtra={
-        <ol className="mt-3 flex flex-wrap items-center gap-1.5" aria-label="Wahlreihenfolge">
+        <ol className="mt-3 flex flex-wrap items-center gap-1.5" aria-label={t("draft.order")}>
           {order.map((id, i) => {
             const p = view.players.find((x) => x.id === id);
             const done = i < turn;
@@ -45,7 +49,7 @@ export function DraftPhase() {
                 aria-current={now ? "true" : undefined}
               >
                 <span className="num text-base leading-none">{i + 1}.</span>
-                {id === view.you ? "Du" : (p?.name ?? id)}
+                {id === view.you ? t("draft.you") : (p?.name ?? id)}
                 {done && <Check className="size-4" />}
               </li>
             );
@@ -56,33 +60,31 @@ export function DraftPhase() {
         waiting ? (
           <p className="flex min-h-12 items-center justify-center gap-2 font-bold" role="status">
             <Loader2 className="size-5 animate-spin text-lake" />
-            wartet auf {onTurn ? playerName(view, onTurn) : "die anderen"} …
+            {onTurn ? t("draft.waitingFor", { name: playerName(view, onTurn) }) : t("draft.waitingOthers")}
           </p>
         ) : (
           <div className="flex items-center gap-2">
             <p className="min-w-0 flex-1 truncate pl-1 text-sm font-semibold">
               {picked ? (
-                <>
-                  Gewählt: <span className="font-bold">{cardName(picked)}</span>
-                </>
+                <>{tr("draft.picked", { name: <span className="font-bold">{cardName(picked)}</span> })}</>
               ) : (
-                "Tippe auf eine Karte."
+                t("draft.tapCard")
               )}
             </p>
             <Button size="lg" disabled={!pick || submitting} onClick={() => submit({ draftCardId: pick })}>
-              <Hand /> Karte nehmen
+              <Hand /> {t("draft.take")}
             </Button>
           </div>
         )
       }
     >
       {offer.length === 0 ? (
-        <p className="rounded-xl border-2 border-ink bg-cream p-3 text-sm">Die Auslage ist leer.</p>
+        <p className="rounded-xl border-2 border-ink bg-cream p-3 text-sm">{t("draft.empty")}</p>
       ) : (
         <ul
           className="grid grid-cols-1 gap-4 min-[380px]:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
           role="radiogroup"
-          aria-label="Auslage"
+          aria-label={t("draft.offer")}
         >
           {offer.map((c) => {
             const on = c.id === pick;
@@ -101,7 +103,7 @@ export function DraftPhase() {
                   )}
                 >
                   <span className="mb-3 inline-block rounded-full border-2 border-ink bg-white px-2 text-xs font-bold">
-                    {KIND_LABEL[c.kind] ?? c.kind}
+                    {tData(`draft.kind.${c.kind}`, c.kind)}
                   </span>
                   <div
                     className={cn(on && "[&>article]:outline-4 [&>article]:outline-offset-4 [&>article]:outline-lake")}

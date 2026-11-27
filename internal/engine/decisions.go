@@ -7,18 +7,17 @@ import (
 )
 
 // ErrStalePhase is returned when a decision names a phase that is no longer open (HTTP 409).
-// The message is German UI text and shown verbatim.
-//
-//nolint:revive,staticcheck // error-strings: UI sentence, shown as is
-var ErrStalePhase = errors.New("Diese Entscheidung gehört zu einer bereits abgeschlossenen Phase. Bitte neu laden.")
+// The UI shows the message key "err.stalePhase".
+var ErrStalePhase = errors.New("err.stalePhase")
 
-// ValidationError is an invalid decision; Msg is German and can be shown in the UI (HTTP 400).
-type ValidationError struct{ Msg string }
+// ValidationError is an invalid decision (HTTP 400); Msg is shown in the UI.
+type ValidationError struct{ Msg Msg }
 
-func (e *ValidationError) Error() string { return e.Msg }
+func (e *ValidationError) Error() string { return e.Msg.String() }
 
-func invalid(format string, args ...any) error {
-	return &ValidationError{Msg: fmt.Sprintf(format, args...)}
+// invalid builds a ValidationError from a message key and name/value pairs (see NewMsg).
+func invalid(key string, kv ...any) error {
+	return &ValidationError{Msg: msg(key, kv...)}
 }
 
 // SubmittedDecision is one entry of the persisted decision log.
@@ -31,12 +30,12 @@ type SubmittedDecision struct {
 // the phase is resolved and the game advances to the next phase.
 func (g *Game) Submit(playerID string, dec Decision) error {
 	if g.over {
-		return invalid("Das Spiel ist bereits beendet.")
+		return invalid("err.gameOver")
 	}
 
 	pl := g.playerByID(playerID)
 	if pl == nil {
-		return invalid("Unbekannter Spieler.")
+		return invalid("err.unknownPlayer")
 	}
 
 	p := g.phase
@@ -45,15 +44,15 @@ func (g *Game) Submit(playerID string, dec Decision) error {
 	}
 
 	if !p.isRequired(playerID) {
-		return invalid("Du bist in dieser Phase nicht an der Reihe.")
+		return invalid("err.notYourTurn")
 	}
 
 	if _, done := p.decisions[playerID]; done {
-		return invalid("Du hast in dieser Phase bereits entschieden.")
+		return invalid("err.alreadyDecided")
 	}
 
 	if dec.Kind != p.kind {
-		return invalid("Falscher Entscheidungstyp: erwartet %q, erhalten %q.", p.kind, dec.Kind)
+		return invalid("err.wrongKind", "want", string(p.kind), "got", string(dec.Kind))
 	}
 
 	err := g.validate(pl, p, dec)
@@ -87,13 +86,13 @@ func (g *Game) validate(pl *player, p *phase, d Decision) error {
 		return g.validateEntries(pl, p.comp, d.TrainerID, d.Entries)
 	case PhaseDraft:
 		if g.draft.offerIndex(d.DraftCardID) < 0 {
-			return invalid("Diese Karte ist nicht im Angebot.")
+			return invalid("err.cardNotOffered")
 		}
 
 		return nil
 	}
 
-	return invalid("In dieser Phase ist keine Entscheidung möglich.")
+	return invalid("err.noDecision")
 }
 
 // resolve applies all decisions of a phase in seat order (deterministic RNG order).

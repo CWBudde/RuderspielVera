@@ -141,8 +141,8 @@ from a weighted deck. Effects: Wetter-Event (that rower's boat +4 when weather �
 (rower's best stat +2 at every training incl. camps); Phönix (weakest +5, tie → random); Tausch
 (player swaps two stat values of that rower, one decision); Verdopplung (current best stat doubled
 once, permanent); Kraft/Ausdauer/Geschwindigkeit/Technik/Motivation-Event (+8 to that stat);
-Seelenzwilling (new rower card "<Name> (Zwilling)", same age/gender, stats = 80 % of current, can't get
-an event); Geheime Mission (random mission from a catalog of ~8, e.g. "Gold im Einer vor JTFO",
+Seelenzwilling (links a teammate, preferring the same gender and age; the next training of either one
+is mirrored onto the other once); Geheime Mission (random mission from a catalog of ~8, e.g. "Gold im Einer vor JTFO",
 "Bei einem Ergo-Cup gewinnen"; reward +10 on best stat or +1 medal point; expires at season end).
 
 **Ereignisse (11 stations).** Deck of ~10 global effects, one drawn per station, shown to all:

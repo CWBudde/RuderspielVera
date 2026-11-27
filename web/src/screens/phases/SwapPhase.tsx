@@ -14,8 +14,10 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { CORE_STATS, STAT_LABEL } from "@/lib/labels";
+import { CORE_STATS, statLabel } from "@/lib/labels";
 import { cn } from "@/lib/utils";
+import { t, tm } from "@/i18n";
+import { rowerName } from "@/i18n/data";
 
 export function SwapPhase() {
   const { view, you, submit, submitting } = useGame();
@@ -34,15 +36,15 @@ export function SwapPhase() {
 
   return (
     <PhaseFrame
-      title={view.phase.title}
-      prompt={view.phase.prompt}
+      title={tm(view.phase.title)}
+      prompt={tm(view.phase.prompt)}
       footer={
         <div className="flex gap-2">
           <Button variant="outline" size="lg" className="flex-1" onClick={() => submit({})} disabled={submitting}>
-            Nicht tauschen
+            {t("swap.skip")}
           </Button>
           <Button size="lg" className="flex-1" onClick={() => setOpen(true)}>
-            <ArrowLeftRight /> Werte wählen
+            <ArrowLeftRight /> {t("swap.chooseStats")}
           </Button>
         </div>
       }
@@ -52,21 +54,19 @@ export function SwapPhase() {
           <RowerCard rower={rower} preview={preview} />
         </div>
       ) : (
-        <p className="text-sm text-muted-foreground">Ruderer nicht gefunden.</p>
+        <p className="text-sm text-muted-foreground">{t("swap.rowerNotFound")}</p>
       )}
 
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="bg-cream">
           <DialogHeader>
-            <DialogTitle className="font-display text-2xl">Zwei Werte tauschen</DialogTitle>
+            <DialogTitle className="font-display text-2xl">{t("swap.title")}</DialogTitle>
             <DialogDescription>
-              {rower
-                ? `Wähle zwei Werte von ${rower.name}. Sie tauschen ihre Zahlen. Motivation lässt sich nicht tauschen.`
-                : "Wähle zwei Werte."}
+              {rower ? t("swap.descriptionRower", { name: rowerName(rower) }) : t("swap.description")}
             </DialogDescription>
           </DialogHeader>
           {rower && (
-            <ul className="flex flex-col gap-1.5" role="group" aria-label="Werte">
+            <ul className="flex flex-col gap-1.5" role="group" aria-label={t("swap.stats")}>
               {CORE_STATS.map((s) => {
                 const on = pick.includes(s);
                 const other = pick.length === 2 && on ? pick.find((x) => x !== s) : undefined;
@@ -83,7 +83,7 @@ export function SwapPhase() {
                       )}
                     >
                       <StatBadge stat={s} className="size-8" />
-                      <span className="flex-1 font-semibold">{STAT_LABEL[s]}</span>
+                      <span className="flex-1 font-semibold">{statLabel(s)}</span>
                       <span className="num text-2xl">{rower.stats[s] ?? 0}</span>
                       {other && <span className="num text-2xl text-[#c2507a]">→ {rower.stats[other] ?? 0}</span>}
                     </button>
@@ -94,10 +94,10 @@ export function SwapPhase() {
           )}
           <DialogFooter className="gap-2">
             <Button variant="outline" onClick={() => setOpen(false)}>
-              Abbrechen
+              {t("common.cancel")}
             </Button>
             <Button disabled={pick.length !== 2 || submitting} onClick={() => submit({ swap: [pick[0], pick[1]] })}>
-              <ArrowLeftRight /> Tauschen
+              <ArrowLeftRight /> {t("swap.swap")}
             </Button>
           </DialogFooter>
         </DialogContent>

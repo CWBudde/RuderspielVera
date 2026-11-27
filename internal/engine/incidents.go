@@ -1,11 +1,8 @@
 package engine
 
 import (
-	"fmt"
 	"math"
 	"math/rand/v2"
-	"strconv"
-	"strings"
 
 	"ruderspiel/internal/data"
 )
@@ -35,14 +32,4 @@ func rollIncident(rng *rand.Rand, kentern, material, krebs int) IncidentKind {
 	}
 
 	return IncidentNone
-}
-
-// perMilleText formats a per-mille probability as a German percentage without the sign: 300 → "30",
-// 5 → "0,5".
-func perMilleText(v int) string {
-	if v%10 == 0 {
-		return strconv.Itoa(v / 10)
-	}
-
-	return strings.Replace(fmt.Sprintf("%.1f", float64(v)/10), ".", ",", 1)
 }

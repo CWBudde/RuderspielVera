@@ -8,6 +8,8 @@ import { BoatCard, TrainerCard } from "@/components/GearCards";
 import { AGE_ORDER, playerColor } from "@/lib/labels";
 import { readStorage, writeStorage } from "@/lib/storage";
 import { cn } from "@/lib/utils";
+import { t } from "@/i18n";
+import { eventDescription, eventName, missionReward, missionText, rowerName } from "@/i18n/data";
 
 export function sortRowers(rowers: RowerView[]): RowerView[] {
   return [...rowers].sort(
@@ -52,7 +54,7 @@ export function TeamScreen() {
 
   return (
     <div>
-      <div className="mb-3 flex flex-wrap items-center gap-2" role="radiogroup" aria-label="Team auswählen">
+      <div className="mb-3 flex flex-wrap items-center gap-2" role="radiogroup" aria-label={t("team.choose")}>
         {view.players.map((pl) => (
           <button
             key={pl.id}
@@ -69,7 +71,7 @@ export function TeamScreen() {
               className="size-3 rounded-full border border-ink"
               style={{ background: playerColor(view.players, pl.id) }}
             />
-            {pl.id === view.you ? "Dein Team" : pl.name}
+            {pl.id === view.you ? t("team.yours") : pl.name}
           </button>
         ))}
       </div>
@@ -77,13 +79,13 @@ export function TeamScreen() {
       <Tabs defaultValue="rowers">
         <TabsList className={tabListClass}>
           <TabsTrigger value="rowers" className={tabTriggerClass}>
-            Ruderer <span className="text-xs opacity-75">{rowers.length}</span>
+            {t("team.tab.rowers")} <span className="text-xs opacity-75">{rowers.length}</span>
           </TabsTrigger>
           <TabsTrigger value="boats" className={tabTriggerClass}>
-            Boote <span className="text-xs opacity-75">{p.boats?.length ?? 0}</span>
+            {t("team.tab.boats")} <span className="text-xs opacity-75">{p.boats?.length ?? 0}</span>
           </TabsTrigger>
           <TabsTrigger value="trainers" className={tabTriggerClass}>
-            Trainer <span className="text-xs opacity-75">{p.trainers?.length ?? 0}</span>
+            {t("team.tab.trainers")} <span className="text-xs opacity-75">{p.trainers?.length ?? 0}</span>
           </TabsTrigger>
         </TabsList>
 
@@ -92,13 +94,13 @@ export function TeamScreen() {
             <div
               className="inline-flex items-center rounded-xl border-2 border-ink bg-cream p-0.5"
               role="radiogroup"
-              aria-label="Sortierung"
+              aria-label={t("team.sort")}
             >
               <ArrowDownWideNarrow className="mx-1.5 size-4 text-ink/60" aria-hidden />
               {(
                 [
-                  ["age", "Alter"],
-                  ["sum", "Summe"],
+                  ["age", t("team.sortAge")],
+                  ["sum", t("team.sortSum")],
                 ] as const
               ).map(([s, label]) => (
                 <button
@@ -119,12 +121,12 @@ export function TeamScreen() {
             <div
               className="inline-flex rounded-xl border-2 border-ink bg-cream p-0.5"
               role="radiogroup"
-              aria-label="Darstellung"
+              aria-label={t("team.view")}
             >
               {(
                 [
-                  ["cards", LayoutGrid, "Karten"],
-                  ["list", List, "Liste"],
+                  ["cards", LayoutGrid, t("team.viewCards")],
+                  ["list", List, t("team.viewList")],
                 ] as const
               ).map(([m, Icon, label]) => (
                 <button
@@ -169,8 +171,8 @@ export function TeamScreen() {
 
         <TabsContent value="trainers" className="mt-2">
           <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-            {(p.trainers ?? []).map((t) => (
-              <TrainerCard key={t.id} trainer={t} />
+            {(p.trainers ?? []).map((tr) => (
+              <TrainerCard key={tr.id} trainer={tr} />
             ))}
           </div>
         </TabsContent>
@@ -185,19 +187,31 @@ function EventList({ rowers }: { rowers: RowerView[] }) {
   if (withEvents.length === 0) return null;
   return (
     <section className="mt-5">
-      <h3 className="num text-2xl">Eventkarten</h3>
+      <h3 className="num text-2xl">{t("team.eventCards")}</h3>
       <ul className="mt-2 grid gap-2 sm:grid-cols-2">
         {withEvents.map((r) => (
           <li key={r.id} className="rounded-xl border-2 border-ink bg-[#fde4ec] p-3">
             <p className="font-display text-lg leading-tight font-bold">
-              {r.event?.name} <span className="text-sm font-semibold text-muted-foreground">für {r.name}</span>
+              {r.event ? eventName(r.event) : ""}{" "}
+              <span className="text-sm font-semibold text-muted-foreground">
+                {t("team.eventFor", { name: rowerName(r) })}
+              </span>
             </p>
-            <p className="text-sm">{r.event?.description}</p>
+            <p className="text-sm">{r.event ? eventDescription(r.event) : ""}</p>
+            {r.event?.partnerName && (
+              <p className="mt-1 text-sm">
+                <span className="font-bold">{t("team.twinPartner", { name: r.event.partnerName })}</span>
+                {r.event.spent && <span className="ml-1 font-bold text-muted-foreground">{t("team.twinSpent")}</span>}
+              </p>
+            )}
             {r.event?.mission && (
               <p className="mt-1 text-sm">
-                <span className="font-bold">Mission:</span> {r.event.mission.text} ({r.event.mission.reward})
-                {r.event.mission.done && <span className="ml-1 font-bold text-leaf">Erfüllt</span>}
-                {r.event.mission.failed && <span className="ml-1 font-bold text-destructive">Gescheitert</span>}
+                <span className="font-bold">{t("team.mission")}</span> {missionText(r.event.mission)} (
+                {missionReward(r.event.mission)})
+                {r.event.mission.done && <span className="ml-1 font-bold text-leaf">{t("team.missionDone")}</span>}
+                {r.event.mission.failed && (
+                  <span className="ml-1 font-bold text-destructive">{t("team.missionFailed")}</span>
+                )}
               </p>
             )}
           </li>

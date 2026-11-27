@@ -4,6 +4,8 @@ import { Button } from "@/components/ui/button";
 import { LakeScene } from "@/components/LakeScene";
 import { readStorage, writeStorage } from "@/lib/storage";
 import type { Session } from "@/api/client";
+import { t } from "@/i18n";
+import { LanguageToggle } from "@/components/LanguageToggle";
 
 interface Props {
   stored: Session | null;
@@ -27,13 +29,16 @@ export function StartScreen({ stored, mock, busy, onCreate, onResume }: Props) {
     <div className="flex min-h-dvh flex-col">
       <LakeScene className="h-[44dvh] min-h-[260px] border-b-2 border-ink md:h-[52dvh]">
         <div className="absolute inset-x-0 top-0 px-4 pt-[calc(var(--safe-top)+1.25rem)] text-center">
+          <div className="absolute top-[calc(var(--safe-top)+0.75rem)] right-3">
+            <LanguageToggle />
+          </div>
           <h1
             className="num text-[clamp(3.4rem,17vw,7.5rem)] leading-[0.85] text-white uppercase"
             style={{ WebkitTextStroke: "2px var(--ink)", textShadow: "0 4px 0 var(--ink)" }}
           >
-            Ruderspiel
+            {t("app.title")}
           </h1>
-          <p className="mt-2 font-display text-lg font-bold text-navy italic md:text-xl">Eine Saison am Maschsee</p>
+          <p className="mt-2 font-display text-lg font-bold text-navy italic md:text-xl">{t("start.tagline")}</p>
         </div>
       </LakeScene>
 
@@ -48,7 +53,7 @@ export function StartScreen({ stored, mock, busy, onCreate, onResume }: Props) {
           }}
         >
           <label htmlFor="name" className="block font-display text-lg font-bold">
-            Dein Name
+            {t("start.nameLabel")}
           </label>
           <input
             id="name"
@@ -56,7 +61,7 @@ export function StartScreen({ stored, mock, busy, onCreate, onResume }: Props) {
             onChange={(e) => setName(e.target.value)}
             maxLength={24}
             autoComplete="nickname"
-            placeholder="z. B. Vera"
+            placeholder={t("start.namePlaceholder")}
             className="mt-1 h-12 w-full rounded-xl border-2 border-ink bg-white px-3 text-base font-semibold outline-none focus-visible:ring-4 focus-visible:ring-lake/30"
           />
 
@@ -67,7 +72,7 @@ export function StartScreen({ stored, mock, busy, onCreate, onResume }: Props) {
             onClick={() => setShowSeed((v) => !v)}
           >
             <ChevronDown className={`size-4 transition-transform ${showSeed ? "rotate-180" : ""}`} />
-            Startwert festlegen (optional)
+            {t("start.seedToggle")}
           </button>
           {showSeed && (
             <div className="mb-1">
@@ -76,20 +81,18 @@ export function StartScreen({ stored, mock, busy, onCreate, onResume }: Props) {
                 inputMode="numeric"
                 value={seed}
                 onChange={(e) => setSeed(e.target.value.replace(/[^\d]/g, ""))}
-                placeholder="z. B. 2026"
-                aria-label="Startwert"
+                placeholder={t("start.seedPlaceholder")}
+                aria-label={t("start.seedLabel")}
                 aria-invalid={!seedValid}
                 className="h-12 w-full rounded-xl border-2 border-ink bg-white px-3 text-base font-semibold tabular-nums outline-none focus-visible:ring-4 focus-visible:ring-lake/30"
               />
-              <p className="mt-1 text-sm text-muted-foreground">
-                Gleicher Startwert, gleiche Kartenverteilung und Würfel.
-              </p>
+              <p className="mt-1 text-sm text-muted-foreground">{t("start.seedHint")}</p>
             </div>
           )}
 
           <Button type="submit" size="lg" className="mt-3 w-full" disabled={!canStart}>
             <Play className="fill-current" />
-            {busy ? "Karten werden gemischt …" : "Neues Spiel gegen 2 Computer"}
+            {busy ? t("start.shuffling") : t("start.newGame", { count: 2 })}
           </Button>
           {stored && (
             <Button
@@ -101,13 +104,13 @@ export function StartScreen({ stored, mock, busy, onCreate, onResume }: Props) {
               disabled={busy}
             >
               <RotateCcw />
-              Spiel fortsetzen
+              {t("start.resume")}
             </Button>
           )}
         </form>
         {mock && (
           <p className="mt-4 flex items-center justify-center gap-1.5 text-sm font-semibold text-muted-foreground">
-            <FlaskConical className="size-4" /> Testmodus ohne Server
+            <FlaskConical className="size-4" /> {t("start.mockMode")}
           </p>
         )}
       </main>

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"maps"
 	"slices"
+	"strings"
 
 	"ruderspiel/internal/data"
 )
@@ -22,7 +23,7 @@ func (g *Game) View(playerID string) GameView {
 	}
 	for i, st := range g.d.Calendar {
 		gv.Calendar = append(gv.Calendar, StationView{
-			Index: i, Section: st.Section, Type: StationType(st.Type), Name: st.Name, Info: st.Info,
+			ID: st.ID, Index: i, Section: st.Section, Type: StationType(st.Type), Name: st.Name, Info: st.Info,
 		})
 	}
 
@@ -71,12 +72,13 @@ func (g *Game) CurrentPhase(playerID string) PhaseView {
 		Points: p.points, MaxRowers: p.maxRowers, Count: p.count,
 		Waiting: p.kind != PhaseGameOver && (decided || !p.isRequired(playerID)),
 	}
-	if txt, ok := p.prompts[playerID]; ok {
-		pv.Prompt = txt
+	if m, ok := p.prompts[playerID]; ok {
+		pv.Prompt = m
 	}
 
 	if p.selection != nil {
 		pv.SelectionEffect = p.selection.Label
+		pv.SelectionID = p.selectionID
 	}
 
 	if p.swap != nil {
@@ -85,9 +87,9 @@ func (g *Game) CurrentPhase(playerID string) PhaseView {
 
 	if cs := p.comp; cs != nil {
 		pv.Competition = &CompetitionView{
-			Name: cs.name, Kind: StationType(cs.def.Kind), Weights: maps.Clone(cs.weights),
+			ID: cs.def.ID, Name: cs.name, Kind: StationType(cs.def.Kind), Weights: maps.Clone(cs.weights),
 			Races: g.raceViews(cs), Weather: cs.weather, TeamEvent: cs.team(),
-			Notes: append([]string{}, cs.notes...), Context: cs.def.Context, CityBoatMod: cs.cityBoatMod,
+			Notes: slices.Clone(cs.notes), Context: cs.def.Context, CityBoatMod: cs.cityBoatMod,
 		}
 	}
 
@@ -148,14 +150,21 @@ func (g *Game) raceViews(cs *compState) []RaceSpec {
 func rowerView(r *rower, owner bool) RowerView {
 	v := RowerView{
 		ID: r.id, Name: r.name, Age: r.age, Gender: r.gender, Stats: r.effectiveStats(), Base: r.base.clone(),
-		ArtKey: r.artKey, IsTwin: r.isTwin, WinMotivation: r.winBonus, WinMotivationLeft: r.winLeft,
+		ArtKey: r.artKey, WinMotivation: r.winBonus, WinMotivationLeft: r.winLeft,
 	}
 	if r.event != nil {
 		ev := &EventCardView{
 			Type: r.event.def.Type, Name: r.event.def.Name, Description: r.event.def.Description, RowerID: r.id,
+			Spent: r.event.spent,
+		}
+		if p := r.event.partner; p != nil {
+			ev.PartnerID, ev.PartnerName = p.id, p.name
 		}
 		if ms := r.event.mission; ms != nil && (owner || ms.done || ms.failed) {
-			ev.Mission = &MissionView{Text: ms.text, Reward: ms.def.RewardText, Done: ms.done, Failed: ms.failed}
+			ev.Mission = &MissionView{
+				ID: ms.def.ID, RowerName: r.name, Text: strings.ReplaceAll(ms.def.Text, "{name}", r.name),
+				Reward: ms.def.RewardText, Done: ms.done, Failed: ms.failed,
+			}
 		}
 
 		v.Event = ev
@@ -165,7 +174,7 @@ func rowerView(r *rower, owner bool) RowerView {
 }
 
 func boatView(b *boat) BoatView {
-	return BoatView{ID: b.id, Name: b.name, Class: b.class, Value: b.value, City: b.city, ArtKey: b.artKey}
+	return BoatView{ID: b.id, DefID: b.defID, Name: b.name, Class: b.class, Value: b.value, City: b.city, ArtKey: b.artKey}
 }
 
 // trainerView is a trainer card with its current mood (Laune) in this game.
@@ -221,7 +230,7 @@ func Catalog() (CatalogView, error) {
 
 	for _, b := range d.Boats {
 		cv.Boats = append(cv.Boats, BoatView{
-			ID: b.ID, Name: b.Name, Class: BoatClass(b.Class), Value: b.Value,
+			ID: b.ID, DefID: b.ID, Name: b.Name, Class: BoatClass(b.Class), Value: b.Value,
 			City: b.City, ArtKey: b.ArtKey,
 		})
 	}

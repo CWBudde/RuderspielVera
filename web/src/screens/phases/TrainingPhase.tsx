@@ -7,11 +7,25 @@ import { Art } from "@/components/Art";
 import { AgeBadge, GenderMark, MiniStats, SumTag, winMotivationText } from "@/components/RowerCard";
 import { StatBadge } from "@/components/icons";
 import { Button } from "@/components/ui/button";
-import { ALL_STATS, CORE_STATS, STAT_LABEL } from "@/lib/labels";
+import { ALL_STATS, CORE_STATS, statLabel } from "@/lib/labels";
 import { cn } from "@/lib/utils";
 import { sortRowers } from "@/screens/TeamScreen";
+import { t, tm } from "@/i18n";
+import { rowerName } from "@/i18n/data";
 
 type Alloc = Record<string, Partial<Record<Stat, number>>>;
+
+/** Unspent Seelenzwilling links in both directions: rower id → partner name. */
+function twinPartners(rowers: RowerView[]): Record<string, string> {
+  const out: Record<string, string> = {};
+  for (const r of rowers) {
+    const e = r.event;
+    if (e?.type !== "seelenzwilling" || e.spent || !e.partnerId) continue;
+    out[r.id] = e.partnerName ?? "";
+    out[e.partnerId] = r.name;
+  }
+  return out;
+}
 
 function rowerTotal(a: Alloc, id: string): number {
   return Object.values(a[id] ?? {}).reduce<number>((s, n) => s + (n ?? 0), 0);
@@ -24,6 +38,7 @@ export function TrainingPhase() {
   const [alloc, setAlloc] = useState<Alloc>({});
   const [open, setOpen] = useState<Set<string>>(new Set());
   const rowers = useMemo(() => sortRowers(you.rowers), [you.rowers]);
+  const twins = useMemo(() => twinPartners(you.rowers), [you.rowers]);
 
   const used = Object.keys(alloc).reduce((s, id) => s + rowerTotal(alloc, id), 0);
   const remaining = points - used;
@@ -51,8 +66,8 @@ export function TrainingPhase() {
 
   return (
     <PhaseFrame
-      title={view.phase.title}
-      prompt={view.phase.prompt}
+      title={tm(view.phase.title)}
+      prompt={tm(view.phase.prompt)}
       headerExtra={
         <div className="mt-3 flex flex-wrap items-center gap-2">
           {maxRowers > 0 && (
@@ -62,7 +77,7 @@ export function TrainingPhase() {
                 atRowerLimit ? "bg-st-training" : "bg-white",
               )}
             >
-              max. {maxRowers} Ruderer, {trainedRowers.length} gewählt
+              {t("training.rowerLimit", { max: maxRowers, picked: trainedRowers.length })}
             </span>
           )}
         </div>
@@ -74,7 +89,7 @@ export function TrainingPhase() {
               <span className={cn("num text-3xl leading-none", remaining === 0 ? "text-leaf" : "text-ink")}>
                 {remaining}
               </span>
-              <span className="text-sm font-semibold">von {points} Punkten übrig</span>
+              <span className="text-sm font-semibold">{t("training.pointsLeft", { count: points })}</span>
             </p>
             <div className="mt-1 h-2 overflow-hidden rounded-full border border-ink bg-white">
               <div
@@ -86,14 +101,14 @@ export function TrainingPhase() {
           <Button
             variant="outline"
             size="icon"
-            aria-label="Zurücksetzen"
+            aria-label={t("training.reset")}
             onClick={() => setAlloc({})}
             disabled={used === 0}
           >
             <RotateCcw />
           </Button>
           <Button size="lg" onClick={send} disabled={!valid || submitting}>
-            <Send /> Trainieren
+            <Send /> {t("training.train")}
           </Button>
         </div>
       }
@@ -104,6 +119,7 @@ export function TrainingPhase() {
             key={r.id}
             rower={r}
             alloc={alloc[r.id] ?? {}}
+            twin={twins[r.id]}
             open={open.has(r.id)}
             onToggle={() =>
               setOpen((s) => {
@@ -126,6 +142,7 @@ export function TrainingPhase() {
 function TrainRow({
   rower,
   alloc,
+  twin,
   open,
   onToggle,
   canAdd,
@@ -134,6 +151,7 @@ function TrainRow({
 }: {
   rower: RowerView;
   alloc: Partial<Record<Stat, number>>;
+  twin?: string;
   open: boolean;
   onToggle: () => void;
   canAdd: boolean;
@@ -164,11 +182,14 @@ function TrainRow({
         </div>
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-1.5">
-            <span className="truncate num text-lg leading-none text-navy">{rower.name}</span>
+            <span className="truncate num text-lg leading-none text-navy">{rowerName(rower)}</span>
             <AgeBadge age={rower.age} short className="h-5 px-1.5 text-xs" />
             <GenderMark gender={rower.gender} className="size-5 text-[11px]" />
             <SumTag rower={rower} add={total} className="ml-auto" />
           </div>
+          {twin && (
+            <p className="truncate text-xs font-bold text-muted-foreground">{t("training.twin", { name: twin })}</p>
+          )}
           <MiniStats rower={preview} className={cn(open && "max-lg:hidden", "lg:hidden")} />
         </div>
         {total > 0 && (
@@ -182,7 +203,7 @@ function TrainRow({
           return (
             <div key={s} className="flex items-center gap-2 py-0.5">
               <StatBadge stat={s} className="size-7" />
-              <span className="min-w-0 flex-1 truncate text-sm font-semibold">{STAT_LABEL[s]}</span>
+              <span className="min-w-0 flex-1 truncate text-sm font-semibold">{statLabel(s)}</span>
               <span className="w-14 text-right tabular-nums">
                 <span className="num text-xl">{(rower.stats[s] ?? 0) + n}</span>
                 {n > 0 && <span className="ml-0.5 text-xs font-bold text-leaf">+{n}</span>}
@@ -193,7 +214,7 @@ function TrainRow({
                   className="grid size-11 place-items-center rounded-xl border-2 border-ink bg-white disabled:opacity-35"
                   onClick={() => onChange(s, -1)}
                   disabled={n === 0}
-                  aria-label={`${STAT_LABEL[s]} von ${rower.name} verringern`}
+                  aria-label={t("training.decrease", { stat: statLabel(s), name: rowerName(rower) })}
                 >
                   <Minus className="size-4" strokeWidth={3} />
                 </button>
@@ -202,7 +223,7 @@ function TrainRow({
                   className="grid size-11 place-items-center rounded-xl border-2 border-ink bg-st-training shadow-[0_2px_0_var(--ink)] active:translate-y-[2px] active:shadow-none disabled:opacity-35 disabled:shadow-none"
                   onClick={() => onChange(s, 1)}
                   disabled={!canAdd}
-                  aria-label={`${STAT_LABEL[s]} von ${rower.name} erhöhen`}
+                  aria-label={t("training.increase", { stat: statLabel(s), name: rowerName(rower) })}
                 >
                   <Plus className="size-4" strokeWidth={3} />
                 </button>
@@ -213,9 +234,10 @@ function TrainRow({
         <div className="flex items-center gap-2 py-0.5">
           <StatBadge stat="motivation" className="size-7" />
           <span className="min-w-0 flex-1 text-sm font-semibold">
-            {STAT_LABEL.motivation}
+            {statLabel("motivation")}
             <span className="block text-xs font-normal text-muted-foreground">
-              nicht trainierbar{rower.winMotivation ? ` · ${winMotivationText(rower)}` : ""}
+              {t("training.notTrainable")}
+              {rower.winMotivation ? ` · ${winMotivationText(rower)}` : ""}
             </span>
           </span>
           <span className="w-14 text-right num text-xl tabular-nums">{rower.stats.motivation ?? 0}</span>

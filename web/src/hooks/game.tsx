@@ -3,6 +3,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import type { Decision, GameView, PlayerSummary } from "@/api/types.gen";
 import { ApiError, getGame, getLog, submitDecision, type LogResponse, type Session } from "@/api/client";
+import { t } from "@/i18n";
 
 interface GameContextValue {
   session: Session;
@@ -48,7 +49,7 @@ export function GameProvider({
       void qc.invalidateQueries({ queryKey: ["log", session.gameId] });
     },
     onError: (err) => {
-      const msg = err instanceof ApiError ? err.message : "Unbekannter Fehler.";
+      const msg = err instanceof ApiError ? err.message : t("common.unknownError");
       toast.error(msg);
       if (err instanceof ApiError && err.status === 409) void qc.invalidateQueries({ queryKey: key });
     },

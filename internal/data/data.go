@@ -196,6 +196,9 @@ type Race struct {
 	Mixed    bool     `json:"mixed,omitempty"`
 	Seats    int      `json:"seats"`
 	LoanBoat bool     `json:"loanBoat,omitempty"` // a loan boat is provided when no own boat is given
+	// TextKey is the catalog key of the race name (see TextEntries). Race IDs repeat across JTFO
+	// variants with different names, so the key includes the competition and variant.
+	TextKey string `json:"-"`
 }
 
 type Competition struct {
@@ -404,6 +407,15 @@ func parse() (*Data, error) {
 
 	for id, c := range d.Competitions {
 		c.ID = id
+		for i := range c.Races {
+			c.Races[i].TextKey = raceTextKey(id, "", c.Races[i].ID)
+		}
+
+		for v, races := range c.Variants {
+			for i := range races {
+				races[i].TextKey = raceTextKey(id, v, races[i].ID)
+			}
+		}
 	}
 
 	err := d.Validate()

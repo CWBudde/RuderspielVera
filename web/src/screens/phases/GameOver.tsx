@@ -4,6 +4,7 @@ import { LakeScene } from "@/components/LakeScene";
 import { MedalIcon } from "@/components/icons";
 import { Button } from "@/components/ui/button";
 import { MedalTable } from "@/screens/StandingsScreen";
+import { t } from "@/i18n";
 
 function Laurel({ flip }: { flip?: boolean }) {
   return (
@@ -36,7 +37,7 @@ export function GameOver() {
       <LakeScene className="rounded-[22px] border-2 border-ink shadow-[0_3px_0_var(--ink)]">
         <div className="relative flex min-h-[19rem] flex-col items-center justify-center px-4 py-6 text-center">
           <p className="rounded-full border-2 border-ink bg-cream px-3 py-0.5 font-display text-base font-bold">
-            Saisonende am Maschsee
+            {t("gameOver.badge")}
           </p>
           <div className="mt-3 flex items-center gap-1 motion-safe:animate-rise">
             <Laurel />
@@ -54,18 +55,21 @@ export function GameOver() {
           <p className="mt-3 max-w-sm rounded-xl bg-cream/90 px-3 py-1.5 text-[15px] font-semibold">
             {youWon
               ? shared
-                ? "Geteilter Sieg! Ihr habt gleich viele Medaillenpunkte."
-                : "Glückwunsch, dein Team gewinnt die Saison!"
-              : `${shared ? "Geteilter Sieg" : "Saisonsieg"} mit ${winners[0]?.points ?? 0} Punkten. Du hast ${you.points}.`}
+                ? t("gameOver.sharedWin")
+                : t("gameOver.youWin")
+              : t(shared ? "gameOver.sharedOther" : "gameOver.otherWin", {
+                  points: winners[0]?.points ?? 0,
+                  yours: you.points,
+                })}
           </p>
         </div>
       </LakeScene>
       <section>
-        <h3 className="mb-2 num text-3xl leading-none">Abschlusswertung</h3>
+        <h3 className="mb-2 num text-3xl leading-none">{t("gameOver.final")}</h3>
         <MedalTable view={view} />
       </section>
       <Button size="lg" variant="lake" onClick={leave} className="self-center">
-        <RotateCcw /> Neue Saison
+        <RotateCcw /> {t("gameOver.newSeason")}
       </Button>
     </div>
   );

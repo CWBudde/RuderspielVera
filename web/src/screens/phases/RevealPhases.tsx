@@ -8,6 +8,9 @@ import { Art } from "@/components/Art";
 import { AgeBadge } from "@/components/RowerCard";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { t, tm } from "@/i18n";
+import { ereignisName, ereignisText } from "@/i18n/data";
+import { eventDescription, eventName, missionReward, missionText, rowerName } from "@/i18n/data";
 
 function EventFace({ rower }: { rower: RowerView }) {
   const ev = rower.event;
@@ -15,19 +18,21 @@ function EventFace({ rower }: { rower: RowerView }) {
     <div className="@container flex size-full flex-col overflow-hidden rounded-[18px] border-2 border-ink bg-[#fde4ec] shadow-[0_3px_0_var(--ink)]">
       <div className="flex items-center justify-between gap-2 bg-[#e889a8] px-3 py-2 text-[#3d0f20]">
         <span className="inline-flex items-center gap-1 font-display text-sm font-bold">
-          <Sparkles className="size-4" /> Event
+          <Sparkles className="size-4" /> {t("reveal.event")}
         </span>
         <AgeBadge age={rower.age} short />
       </div>
       <div className="flex flex-1 flex-col p-2.5 @[13rem]:p-3">
-        <h3 className="num text-xl leading-none @[13rem]:text-[1.9rem]">{ev?.name}</h3>
-        <p className="mt-1.5 text-xs leading-snug @[13rem]:mt-2 @[13rem]:text-[15px]">{ev?.description}</p>
+        <h3 className="num text-xl leading-none @[13rem]:text-[1.9rem]">{ev ? eventName(ev) : ""}</h3>
+        <p className="mt-1.5 text-xs leading-snug @[13rem]:mt-2 @[13rem]:text-[15px]">
+          {ev ? eventDescription(ev) : ""}
+        </p>
         {ev?.mission && (
           <p className="mt-2 rounded-lg border-2 border-ink bg-white p-1.5 text-xs @[13rem]:p-2 @[13rem]:text-sm">
             <Target className="mr-1 inline size-4" />
-            <span className="font-bold">{ev.mission.text}</span>
+            <span className="font-bold">{missionText(ev.mission)}</span>
             <br />
-            Belohnung: {ev.mission.reward}
+            {t("reveal.reward", { reward: missionReward(ev.mission) })}
           </p>
         )}
         <div className="mt-auto flex items-center gap-2 pt-3">
@@ -35,8 +40,8 @@ function EventFace({ rower }: { rower: RowerView }) {
             <Art artKey={rower.artKey} cardId={rower.id} label={rower.name} thumb />
           </div>
           <div>
-            <p className="text-xs font-semibold text-muted-foreground">für</p>
-            <p className="num text-lg leading-none text-navy @[13rem]:text-xl">{rower.name}</p>
+            <p className="text-xs font-semibold text-muted-foreground">{t("reveal.for")}</p>
+            <p className="num text-lg leading-none text-navy @[13rem]:text-xl">{rowerName(rower)}</p>
           </div>
         </div>
       </div>
@@ -58,12 +63,12 @@ export function EventReveal() {
 
   return (
     <PhaseFrame
-      title={view.phase.title}
-      prompt={mine.length && !allRevealed ? "Du hast neue Eventkarten bekommen. Deck sie auf!" : view.phase.prompt}
+      title={tm(view.phase.title)}
+      prompt={mine.length && !allRevealed ? t("reveal.newEvents") : tm(view.phase.prompt)}
       footer={
         allRevealed ? (
           <Button size="lg" className="w-full" onClick={() => submit({})} disabled={submitting}>
-            Weiter <ArrowRight />
+            {t("common.continue")} <ArrowRight />
           </Button>
         ) : (
           <Button
@@ -72,15 +77,13 @@ export function EventReveal() {
             className="w-full"
             onClick={() => setRevealed(new Set(mine.map((r) => r.id)))}
           >
-            Alle aufdecken
+            {t("reveal.revealAll")}
           </Button>
         )
       }
     >
       {mine.length === 0 ? (
-        <p className="rounded-xl border-2 border-ink bg-cream p-3 text-sm">
-          Diesmal hat keiner deiner Ruderer eine Karte bekommen.
-        </p>
+        <p className="rounded-xl border-2 border-ink bg-cream p-3 text-sm">{t("reveal.noneForYou")}</p>
       ) : (
         <div
           className={
@@ -96,7 +99,7 @@ export function EventReveal() {
               revealed={revealed.has(r.id)}
               onReveal={() => setRevealed((s) => new Set(s).add(r.id))}
               backTone="bg-[#c2507a]"
-              backLabel="Eventkarte"
+              backLabel={t("reveal.eventCard")}
               front={<EventFace rower={r} />}
             />
           ))}
@@ -104,11 +107,11 @@ export function EventReveal() {
       )}
       {others.length > 0 && (
         <section className="mt-5">
-          <h3 className="font-display text-lg font-bold">Bei den anderen</h3>
+          <h3 className="font-display text-lg font-bold">{t("reveal.others")}</h3>
           <ul className="mt-1 flex flex-col gap-1.5">
             {others.map((e, i) => (
               <li key={i} className="rounded-xl border-2 border-ink/15 bg-cream/80 p-2.5 text-sm">
-                {e.text}
+                {tm(e.msg)}
               </li>
             ))}
           </ul>
@@ -120,22 +123,22 @@ export function EventReveal() {
 
 export function EreignisReveal() {
   const { view, submit, submitting } = useGame();
-  const name = view.phase.ereignis?.name ?? "Ereignis";
-  const text = view.phase.ereignis?.description ?? view.phase.prompt;
+  const name = ereignisName(view.phase.ereignis);
+  const text = view.phase.ereignis ? ereignisText(view.phase.ereignis) : tm(view.phase.prompt);
   const [revealed, setRevealed] = useState(false);
 
   return (
     <PhaseFrame
-      title={view.phase.title}
-      prompt={revealed ? "Das gilt für alle Teams." : "Ein neues Ereignis für alle Teams. Deck es auf!"}
+      title={tm(view.phase.title)}
+      prompt={revealed ? t("reveal.appliesToAll") : t("reveal.newEreignis")}
       footer={
         revealed ? (
           <Button size="lg" className="w-full" onClick={() => submit({})} disabled={submitting}>
-            Weiter <ArrowRight />
+            {t("common.continue")} <ArrowRight />
           </Button>
         ) : (
           <Button size="lg" variant="lake" className="w-full" onClick={() => setRevealed(true)}>
-            Aufdecken
+            {t("reveal.reveal")}
           </Button>
         )
       }
@@ -146,11 +149,11 @@ export function EreignisReveal() {
           revealed={revealed}
           onReveal={() => setRevealed(true)}
           backTone="bg-leaf"
-          backLabel="Ereigniskarte"
+          backLabel={t("reveal.ereignisCard")}
           front={
             <div className="flex size-full flex-col overflow-hidden rounded-[18px] border-2 border-ink bg-[#e8f5dc] shadow-[0_3px_0_var(--ink)]">
               <div className="flex items-center gap-1.5 bg-st-ereignis px-3 py-2 font-display text-sm font-bold">
-                <Dice5 className="size-4" /> Ereignis für alle
+                <Dice5 className="size-4" /> {t("reveal.ereignisForAll")}
               </div>
               <div className="flex flex-1 flex-col items-center justify-center p-4 text-center">
                 <Dice5 className="size-14 text-leaf" strokeWidth={1.6} />

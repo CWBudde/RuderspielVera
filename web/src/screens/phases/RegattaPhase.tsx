@@ -9,7 +9,7 @@ import { TrainerCard } from "@/components/GearCards";
 import { WeatherIcon, weatherTint, ShellIcon } from "@/components/icons";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet";
-import { AGE_LABEL, BOAT_CLASS_LABEL, GENDER_PLURAL, STAT_LABEL, weatherLabel } from "@/lib/labels";
+import { ageLabel, boatClassLabel, genderPlural, statLabel, weatherLabel } from "@/lib/labels";
 import {
   boatPart,
   crewProblems,
@@ -21,6 +21,8 @@ import {
   trainerPart,
 } from "@/lib/score";
 import { cn } from "@/lib/utils";
+import { fmtNum, t, tm } from "@/i18n";
+import { boatName, stationName, raceName as raceLabel, rowerName, trainerName } from "@/i18n/data";
 
 type Step = "weather" | "trainer" | "lineup";
 
@@ -39,16 +41,16 @@ export function RegattaPhase() {
     return best?.id;
   });
   const [lineup, setLineup] = useState<Record<string, Draft>>({});
-  const trainer = you.trainers.find((t) => t.id === trainerId);
+  const trainer = you.trainers.find((tr) => tr.id === trainerId);
 
   const steps: { id: Step; label: string }[] = [
-    ...(hasWeather ? [{ id: "weather" as const, label: "Wetter" }] : []),
-    { id: "trainer", label: "Trainer" },
-    { id: "lineup", label: "Aufstellung" },
+    ...(hasWeather ? [{ id: "weather" as const, label: t("regatta.step.weather") }] : []),
+    { id: "trainer", label: t("regatta.step.trainer") },
+    { id: "lineup", label: t("regatta.step.lineup") },
   ];
 
   const stepper = (
-    <ol className="mt-3 flex gap-1.5" aria-label="Ablauf">
+    <ol className="mt-3 flex gap-1.5" aria-label={t("regatta.steps")}>
       {steps.map((s, i) => {
         const idx = steps.findIndex((x) => x.id === step);
         const state = i < idx ? "done" : i === idx ? "now" : "next";
@@ -76,12 +78,12 @@ export function RegattaPhase() {
   if (step === "weather") {
     return (
       <PhaseFrame
-        title={comp.name}
-        prompt="Das Wetter steht fest, bevor du Trainer und Boote wählst."
+        title={stationName(view.calendar[view.current])}
+        prompt={t("regatta.weatherPrompt")}
         headerExtra={stepper}
         footer={
           <Button size="lg" className="w-full" onClick={() => setStep("trainer")}>
-            Trainer wählen <ArrowRight />
+            {t("regatta.chooseTrainer")} <ArrowRight />
           </Button>
         }
       >
@@ -93,11 +95,11 @@ export function RegattaPhase() {
   if (step === "trainer") {
     return (
       <PhaseFrame
-        title={comp.name}
+        title={stationName(view.calendar[view.current])}
         prompt={
           hasWeather
-            ? `Wetter heute: ${weatherLabel(comp.weather)}. Welcher Trainer holt am meisten heraus?`
-            : "Welcher Trainer begleitet dein Team?"
+            ? t("regatta.trainerPromptWeather", { weather: weatherLabel(comp.weather) })
+            : t("regatta.trainerPrompt")
         }
         headerExtra={
           <>
@@ -108,32 +110,36 @@ export function RegattaPhase() {
         footer={
           <div className="flex gap-2">
             {hasWeather && (
-              <Button variant="outline" size="icon" aria-label="Zurück" onClick={() => setStep("weather")}>
+              <Button variant="outline" size="icon" aria-label={t("common.back")} onClick={() => setStep("weather")}>
                 <ArrowLeft />
               </Button>
             )}
             <Button size="lg" className="flex-1" onClick={() => setStep("lineup")}>
-              Aufstellung <ArrowRight />
+              {t("regatta.step.lineup")} <ArrowRight />
             </Button>
           </div>
         }
       >
-        <ul className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3" role="radiogroup" aria-label="Trainer">
-          {you.trainers.map((t) => {
-            const on = t.id === trainerId;
+        <ul
+          className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3"
+          role="radiogroup"
+          aria-label={t("regatta.step.trainer")}
+        >
+          {you.trainers.map((tr) => {
+            const on = tr.id === trainerId;
             return (
-              <li key={t.id}>
+              <li key={tr.id}>
                 <button
                   type="button"
                   role="radio"
                   aria-checked={on}
-                  onClick={() => setTrainerId(on ? undefined : t.id)}
+                  onClick={() => setTrainerId(on ? undefined : tr.id)}
                   className="relative w-full text-left"
                 >
                   <TrainerCard
-                    trainer={t}
+                    trainer={tr}
                     weather={comp.weather ?? "normal"}
-                    todayBonus={trainerBonus(t, comp)}
+                    todayBonus={trainerBonus(tr, comp)}
                     className={cn(on && "outline-4 outline-offset-4 outline-lake")}
                   />
                   {on && (
@@ -146,9 +152,7 @@ export function RegattaPhase() {
             );
           })}
         </ul>
-        <p className="mt-3 text-sm text-muted-foreground">
-          Trainerwerte gelten pro Ruderplatz: im Einer einfach, im Zweier doppelt, im Vierer vierfach.
-        </p>
+        <p className="mt-3 text-sm text-muted-foreground">{t("regatta.trainerPerSeat")}</p>
       </PhaseFrame>
     );
   }
@@ -171,7 +175,7 @@ function weightsText(comp: CompetitionView): string {
   return Object.entries(comp.weights)
     .filter(([, w]) => w > 0)
     .sort((a, b) => b[1] - a[1])
-    .map(([s, w]) => `${STAT_LABEL[s] ?? s} ×${String(w).replace(".", ",")}`)
+    .map(([s, w]) => `${statLabel(s)} ×${fmtNum(w)}`)
     .join(", ");
 }
 
@@ -179,11 +183,11 @@ function CompetitionFacts({ comp }: { comp: CompetitionView }) {
   return (
     <div className="mt-3 rounded-xl border-2 border-ink bg-white/70 p-2.5 text-sm">
       <p>
-        <span className="font-bold">Gewertet:</span> {weightsText(comp)}
+        <span className="font-bold">{t("regatta.weighted")}</span> {weightsText(comp)}
       </p>
-      {comp.notes?.map((n) => (
-        <p key={n} className="mt-0.5 text-muted-foreground">
-          {n}
+      {comp.notes?.map((n, i) => (
+        <p key={i} className="mt-0.5 text-muted-foreground">
+          {tm(n)}
         </p>
       ))}
     </div>
@@ -212,11 +216,9 @@ function WeatherReveal({ comp }: { comp: CompetitionView }) {
 
 function raceRule(race: RaceSpec): string {
   const ages =
-    race.ages?.length === 3 || !race.ages?.length
-      ? "alle Altersklassen"
-      : race.ages.map((a) => AGE_LABEL[a] ?? a).join(", ");
-  const genders = race.genders?.length === 1 ? GENDER_PLURAL[race.genders[0]] : "Mädchen und Jungen";
-  return `${genders}, ${ages}`;
+    race.ages?.length === 3 || !race.ages?.length ? t("regatta.allAges") : race.ages.map((a) => ageLabel(a)).join(", ");
+  const genders = race.genders?.length === 1 ? genderPlural(race.genders[0]) : t("regatta.allGenders");
+  return t("regatta.raceRule", { genders, ages });
 }
 
 function LineupBuilder({
@@ -238,7 +240,7 @@ function LineupBuilder({
   onSubmit: (entries: Entry[]) => void;
   submitting: boolean;
 }) {
-  const { you } = useGame();
+  const { you, view } = useGame();
   const [slot, setSlot] = useState<{ raceId: string; seat: number } | null>(null);
   const tBonus = trainerBonus(trainer, comp);
   const rowerById = useMemo(() => new Map(you.rowers.map((r) => [r.id, r])), [you.rowers]);
@@ -263,7 +265,10 @@ function LineupBuilder({
     }
     return m;
   }, [lineup, comp.races]);
-  const raceName = (id: string) => comp.races.find((r) => r.id === id)?.name ?? "";
+  const raceName = (id: string) => {
+    const r = comp.races.find((x) => x.id === id);
+    return r ? raceLabel(r) : "";
+  };
 
   const status = comp.races.map((race) => {
     const d = draftFor(race);
@@ -272,7 +277,8 @@ function LineupBuilder({
     const boat = needsBoat(race) ? you.boats.find((b) => b.id === d.boatId) : undefined;
     const problems = crewProblems(race, crew, !!boat);
     const owner = boat ? boatUsedIn.get(boat.id) : undefined;
-    if (filled > 0 && owner && owner !== race.id) problems.push(`${boat?.name} startet schon: ${raceName(owner)}`);
+    if (filled > 0 && owner && owner !== race.id)
+      problems.push(t("regatta.boatAlreadyStarts", { boat: boat ? boatName(boat) : "", race: raceName(owner) }));
     return { race, d, crew, filled, boat, problems, complete: filled === race.seats && problems.length === 0 };
   });
   const complete = status.filter((s) => s.complete);
@@ -292,8 +298,8 @@ function LineupBuilder({
 
   return (
     <PhaseFrame
-      title={comp.name}
-      prompt="Tippe auf einen Platz, um einen Ruderer zu setzen. Jeder startet höchstens einmal. Rennen dürfen leer bleiben."
+      title={stationName(view.calendar[view.current])}
+      prompt={t("regatta.lineupPrompt")}
       headerExtra={
         <>
           {stepper}
@@ -310,8 +316,8 @@ function LineupBuilder({
             )}
             <span className="inline-flex h-8 items-center gap-1 rounded-full border-2 border-ink bg-white px-2.5 font-bold">
               {trainer
-                ? `${trainer.name}: ${tBonus > 0 ? `+${tBonus} pro Platz` : tBonus === 0 ? "kein Bonus" : `${tBonus} pro Platz`}`
-                : "Kein Trainer"}
+                ? `${trainerName(trainer)}: ${tBonus === 0 ? t("regatta.noBonus") : t("regatta.perSeat", { bonus: tBonus > 0 ? `+${tBonus}` : `${tBonus}` })}`
+                : t("regatta.noTrainer")}
             </span>
             <span className="inline-flex h-8 items-center rounded-full border-2 border-ink bg-white px-2.5 font-semibold">
               {weightsText(comp)}
@@ -321,23 +327,21 @@ function LineupBuilder({
       }
       footer={
         <div className="flex items-center gap-2">
-          <Button variant="outline" size="icon" aria-label="Zurück zum Trainer" onClick={onBack}>
+          <Button variant="outline" size="icon" aria-label={t("regatta.backToTrainer")} onClick={onBack}>
             <ArrowLeft />
           </Button>
           <div className="min-w-0 flex-1 text-sm leading-tight">
-            <p className="font-bold">
-              {complete.length} von {comp.races.length} Rennen gemeldet
-            </p>
+            <p className="font-bold">{t("regatta.entered", { n: complete.length, count: comp.races.length })}</p>
             {blocking.length > 0 ? (
               <p className="flex items-center gap-1 truncate text-destructive">
-                <AlertTriangle className="size-3.5 shrink-0" /> {blocking[0].race.name}: {blocking[0].problems[0]}
+                <AlertTriangle className="size-3.5 shrink-0" /> {raceLabel(blocking[0].race)}: {blocking[0].problems[0]}
               </p>
             ) : (
-              complete.length === 0 && <p className="text-muted-foreground">Du meldest noch kein Rennen.</p>
+              complete.length === 0 && <p className="text-muted-foreground">{t("regatta.noneEntered")}</p>
             )}
           </div>
           <Button size="lg" onClick={send} disabled={blocking.length > 0 || submitting}>
-            <Send /> Melden
+            <Send /> {t("regatta.submit")}
           </Button>
         </div>
       }
@@ -356,26 +360,28 @@ function LineupBuilder({
             <li key={race.id} className={cn("rounded-[16px] bg-cream p-3 cut", ok && "bg-[#eef7e6]")}>
               <header className="flex items-start gap-2">
                 <div className="min-w-0 flex-1">
-                  <h3 className="num text-xl leading-tight">{race.name}</h3>
+                  <h3 className="num text-xl leading-tight">{raceLabel(race)}</h3>
                   <p className="mt-0.5 flex flex-wrap items-center gap-1 text-xs text-muted-foreground">
                     <span className="inline-flex items-center gap-1 rounded-md bg-navy px-1.5 py-0.5 font-bold text-white">
-                      <ShellIcon className="h-3 w-5" /> {BOAT_CLASS_LABEL[race.class] ?? race.class}
+                      <ShellIcon className="h-3 w-5" /> {boatClassLabel(race.class)}
                     </span>
                     {race.mixed && (
-                      <span className="rounded-md bg-st-event px-1.5 py-0.5 font-bold text-ink">Mixed</span>
+                      <span className="rounded-md bg-st-event px-1.5 py-0.5 font-bold text-ink">
+                        {t("regatta.mixed")}
+                      </span>
                     )}
                     <span>{raceRule(race)}</span>
                   </p>
                 </div>
                 <div className="text-right">
-                  <p className="text-[11px] font-semibold text-muted-foreground">geschätzt</p>
+                  <p className="text-[11px] font-semibold text-muted-foreground">{t("regatta.estimated")}</p>
                   <p className="num text-3xl leading-none">{filled ? est : "–"}</p>
                   {!!race.guestScore && (
                     <p
                       className="mt-0.5 text-[11px] font-semibold whitespace-nowrap text-muted-foreground"
-                      title="Gastmannschaft"
+                      title={t("regatta.guestCrew")}
                     >
-                      Gast {race.guestScore}
+                      {t("regatta.guestScore", { score: race.guestScore })}
                     </p>
                   )}
                 </div>
@@ -402,14 +408,20 @@ function LineupBuilder({
                         "flex min-h-12 items-center gap-2 rounded-xl border-2 px-1.5 text-left",
                         r ? "border-ink bg-white" : "border-dashed border-ink/50 bg-white/40 text-ink/60",
                       )}
-                      aria-label={r ? `Platz ${seat + 1}: ${r.name} – ändern` : `Platz ${seat + 1} besetzen`}
+                      aria-label={
+                        r
+                          ? t("regatta.seatChange", { n: seat + 1, name: rowerName(r) })
+                          : t("regatta.seatFill", { n: seat + 1 })
+                      }
                     >
                       {r ? (
                         <>
                           <span className="size-8 shrink-0 overflow-hidden rounded-md border-2 border-ink">
                             <Art artKey={r.artKey} cardId={r.id} label={r.name} thumb />
                           </span>
-                          <span className="min-w-0 flex-1 truncate font-display text-base font-bold">{r.name}</span>
+                          <span className="min-w-0 flex-1 truncate font-display text-base font-bold">
+                            {rowerName(r)}
+                          </span>
                           <span className="text-xs font-bold tabular-nums text-muted-foreground">
                             {Math.round(rowerScore(r, comp.weights))}
                           </span>
@@ -417,7 +429,7 @@ function LineupBuilder({
                       ) : (
                         <>
                           <Plus className="size-4 shrink-0" />
-                          <span className="text-sm font-semibold">Platz {seat + 1}</span>
+                          <span className="text-sm font-semibold">{t("regatta.seat", { n: seat + 1 })}</span>
                         </>
                       )}
                     </button>
@@ -442,10 +454,10 @@ function LineupBuilder({
               {race.class === "8x" && (
                 <div className="mt-2 flex items-center gap-3">
                   <div className="aspect-[3/2] w-24 shrink-0 overflow-hidden rounded-[8px] border-2 border-ink">
-                    <Art artKey="boat-8x" label="Achter" />
+                    <Art artKey="boat-8x" label={boatClassLabel("8x")} />
                   </div>
                   <p className="text-xs text-muted-foreground">
-                    Gemeinsamer Achter für alle Teams, Bootswert {race.fixedBoatValue ?? 0}.
+                    {t("regatta.sharedEight", { value: race.fixedBoatValue ?? 0 })}
                   </p>
                 </div>
               )}
@@ -461,14 +473,14 @@ function LineupBuilder({
                       ))}
                     </ul>
                   )}
-                  {ok && <p className="flex-1 text-xs font-bold text-leaf">Bereit zum Melden</p>}
+                  {ok && <p className="flex-1 text-xs font-bold text-leaf">{t("regatta.ready")}</p>}
                   <Button
                     variant="ghost"
                     size="sm"
                     className="ml-auto min-h-11"
                     onClick={() => setDraft(race.id, { seats: Array(race.seats).fill(undefined) })}
                   >
-                    <Eraser /> Leeren
+                    <Eraser /> {t("regatta.clear")}
                   </Button>
                 </div>
               )}
@@ -489,7 +501,10 @@ function LineupBuilder({
               seat={slot.seat}
               draft={draftFor(activeRace)}
               usedIn={usedIn}
-              raceName={(id) => comp.races.find((r) => r.id === id)?.name ?? ""}
+              raceName={(id) => {
+                const r = comp.races.find((x) => x.id === id);
+                return r ? raceLabel(r) : "";
+              }}
               onPick={(rowerId) => {
                 const d = draftFor(activeRace);
                 const seats = [...d.seats];
@@ -544,12 +559,14 @@ function BoatPicker({
   onChange: (id: string | undefined) => void;
 }) {
   if (boats.length === 0 && !loan) {
-    return <p className="mt-2 text-xs font-semibold text-destructive">Du hast kein Boot dieser Klasse.</p>;
+    return <p className="mt-2 text-xs font-semibold text-destructive">{t("regatta.noBoatOfClass")}</p>;
   }
   return (
     <div className="mt-2">
-      <p className="mb-1 text-xs font-semibold text-muted-foreground">Boot{scale > 1 && ` (Wert zählt ×${scale})`}</p>
-      <div className="flex flex-wrap gap-1.5" role="radiogroup" aria-label="Boot">
+      <p className="mb-1 text-xs font-semibold text-muted-foreground">
+        {scale > 1 ? t("regatta.boatScaled", { scale }) : t("regatta.boat")}
+      </p>
+      <div className="flex flex-wrap gap-1.5" role="radiogroup" aria-label={t("regatta.boat")}>
         {loan && (
           <button
             type="button"
@@ -561,7 +578,7 @@ function BoatPicker({
               !value ? "bg-navy text-white" : "bg-white",
             )}
           >
-            Leihboot
+            {t("regatta.loanBoat")}
             <span
               className={cn("num rounded-md px-1 text-base leading-tight", !value ? "bg-white/20" : "bg-st-regatta")}
             >
@@ -579,7 +596,7 @@ function BoatPicker({
               role="radio"
               aria-checked={on}
               disabled={!!elsewhere && !on}
-              title={elsewhere ? `startet schon: ${elsewhere}` : undefined}
+              title={elsewhere ? t("regatta.alreadyStarts", { race: elsewhere }) : undefined}
               onClick={() => onChange(on && !loan ? undefined : b.id)}
               className={cn(
                 "inline-flex min-h-11 items-center gap-1.5 rounded-xl border-2 border-ink px-2.5 text-left text-sm font-bold",
@@ -588,8 +605,10 @@ function BoatPicker({
               )}
             >
               <span className="flex flex-col leading-tight">
-                {b.name}
-                {elsewhere && <span className="text-[11px] font-semibold">startet: {elsewhere}</span>}
+                {boatName(b)}
+                {elsewhere && (
+                  <span className="text-[11px] font-semibold">{t("regatta.starts", { race: elsewhere })}</span>
+                )}
               </span>
               <span className={cn("num rounded-md px-1 text-base leading-tight", on ? "bg-white/20" : "bg-st-regatta")}>
                 {b.value}
@@ -633,22 +652,21 @@ function RowerPicker({
     <>
       <SheetHeader className="pr-14 pb-0">
         <SheetTitle className="font-display text-2xl leading-tight">
-          {race.name}, Platz {seat + 1}
+          {t("regatta.pickerTitle", { race: raceLabel(race), n: seat + 1 })}
         </SheetTitle>
         <SheetDescription>
-          Sortiert nach Rennwert für diesen Wettkampf.{" "}
-          {ineligible > 0 && `${ineligible} Ruderer sind hier nicht startberechtigt.`}
+          {t("regatta.pickerSorted")} {ineligible > 0 && t("regatta.ineligible", { count: ineligible })}
         </SheetDescription>
       </SheetHeader>
       <div className="overflow-y-auto px-4">
         {current && (
           <Button variant="outline" className="mb-2 w-full" onClick={onClear}>
-            <Eraser /> Platz leeren
+            <Eraser /> {t("regatta.clearSeat")}
           </Button>
         )}
         {eligible.length === 0 && (
           <p className="flex items-center gap-2 rounded-xl border-2 border-ink bg-white p-3 text-sm">
-            <Users className="size-4" /> Kein passender Ruderer im Team.
+            <Users className="size-4" /> {t("regatta.noEligible")}
           </p>
         )}
         <ul className="flex flex-col gap-1.5 pb-2">
@@ -674,24 +692,24 @@ function RowerPicker({
                   </span>
                   <span className="min-w-0 flex-1">
                     <span className="flex items-center gap-1.5">
-                      <span className="truncate num text-lg leading-none text-navy">{r.name}</span>
+                      <span className="truncate num text-lg leading-none text-navy">{rowerName(r)}</span>
                       <AgeBadge age={r.age} short className="h-5 px-1.5 text-xs" />
                       <GenderMark gender={r.gender} className="size-5 text-[11px]" />
                       <SumTag rower={r} className="ml-auto" />
                     </span>
                     {blocked ? (
                       <span className="mt-1 block truncate text-xs font-semibold">
-                        startet schon: {raceName(other)}
+                        {t("regatta.alreadyStarts", { race: raceName(other) })}
                       </span>
                     ) : inThisRace && !isCurrent ? (
-                      <span className="mt-1 block text-xs font-semibold">schon in diesem Boot – wird getauscht</span>
+                      <span className="mt-1 block text-xs font-semibold">{t("regatta.swapInBoat")}</span>
                     ) : (
                       <MiniStats rower={r} highlight={highlight} />
                     )}
                   </span>
                   <span className="text-right">
                     <span className="block num text-2xl leading-none">{Math.round(score)}</span>
-                    <span className="text-[10px] font-semibold text-muted-foreground">Rennwert</span>
+                    <span className="text-[10px] font-semibold text-muted-foreground">{t("regatta.raceValue")}</span>
                   </span>
                 </button>
               </li>

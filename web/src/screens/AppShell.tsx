@@ -14,14 +14,17 @@ import { SeasonScreen } from "@/screens/SeasonScreen";
 import { TeamScreen } from "@/screens/TeamScreen";
 import { ActionScreen } from "@/screens/ActionScreen";
 import { StandingsScreen } from "@/screens/StandingsScreen";
+import { t, type UiKey } from "@/i18n";
+import { LanguageToggle } from "@/components/LanguageToggle";
+import { stationName } from "@/i18n/data";
 
 export type Tab = "saison" | "team" | "aktion" | "wertung";
 
-const TABS: { id: Tab; label: string; icon: typeof MapIcon }[] = [
-  { id: "saison", label: "Saison", icon: MapIcon },
-  { id: "team", label: "Team", icon: Users },
-  { id: "aktion", label: "Aktion", icon: Flag },
-  { id: "wertung", label: "Wertung", icon: Medal },
+const TABS: { id: Tab; label: UiKey; icon: typeof MapIcon }[] = [
+  { id: "saison", label: "shell.tab.season", icon: MapIcon },
+  { id: "team", label: "shell.tab.team", icon: Users },
+  { id: "aktion", label: "shell.tab.action", icon: Flag },
+  { id: "wertung", label: "shell.tab.standings", icon: Medal },
 ];
 
 export function AppShell() {
@@ -50,23 +53,23 @@ export function AppShell() {
       <aside className="sticky top-0 hidden h-dvh flex-col gap-2 border-r-2 border-ink bg-navy p-4 text-white md:flex">
         <div className="mb-4 flex items-center gap-2">
           <Emblem className="size-10" />
-          <span className="num text-3xl leading-none uppercase">Ruderspiel</span>
+          <span className="num text-3xl leading-none uppercase">{t("app.title")}</span>
         </div>
-        <nav className="flex flex-col gap-1.5" aria-label="Bereiche">
-          {TABS.map((t) => (
+        <nav className="flex flex-col gap-1.5" aria-label={t("shell.sections")}>
+          {TABS.map((tb) => (
             <button
-              key={t.id}
+              key={tb.id}
               type="button"
-              onClick={() => setTab(t.id)}
-              aria-current={tab === t.id ? "page" : undefined}
+              onClick={() => setTab(tb.id)}
+              aria-current={tab === tb.id ? "page" : undefined}
               className={cn(
                 "relative flex min-h-12 items-center gap-3 rounded-xl px-3 text-left font-display text-xl font-bold transition-colors",
-                tab === t.id ? "bg-cream text-ink cut-sm" : "text-white/85 hover:bg-white/10",
+                tab === tb.id ? "bg-cream text-ink cut-sm" : "text-white/85 hover:bg-white/10",
               )}
             >
-              <t.icon className="size-5" />
-              {t.label}
-              {t.id === "aktion" && pending && <PendingDot className="ml-auto" />}
+              <tb.icon className="size-5" />
+              {t(tb.label)}
+              {tb.id === "aktion" && pending && <PendingDot className="ml-auto" />}
             </button>
           ))}
         </nav>
@@ -79,7 +82,7 @@ export function AppShell() {
           className="justify-start text-white/80 hover:bg-white/10 hover:text-white"
           onClick={() => setMenu(true)}
         >
-          <Menu /> Menü
+          <Menu /> {t("shell.menu")}
         </Button>
       </aside>
 
@@ -95,15 +98,16 @@ export function AppShell() {
             <div className="min-w-0 flex-1">
               <p className="truncate text-xs font-semibold text-white/75">
                 <span className="min-[400px]:hidden">
-                  Station {view.current + 1}/{view.calendar.length}
+                  {t("shell.stationShort", { n: view.current + 1, total: view.calendar.length })}
                 </span>
                 <span className="hidden min-[400px]:inline">
-                  Station {view.current + 1} von {view.calendar.length}
+                  {t("shell.stationLong", { n: view.current + 1, total: view.calendar.length })}
                 </span>
               </p>
-              <h1 className="truncate num text-2xl leading-tight">{station?.name}</h1>
+              <h1 className="truncate num text-2xl leading-tight">{stationName(station)}</h1>
             </div>
             <MedalTally gold={you.gold} silver={you.silver} points={you.points} light compact />
+            <LanguageToggle className="hidden sm:flex" />
             {session.mock && (
               <Suspense fallback={null}>
                 <DevPhaseSwitcher />
@@ -113,7 +117,7 @@ export function AppShell() {
               variant="ghost"
               size="icon"
               className="text-white hover:bg-white/10 hover:text-white md:hidden"
-              aria-label="Menü"
+              aria-label={t("shell.menu")}
               onClick={() => setMenu(true)}
             >
               <Menu />
@@ -135,30 +139,30 @@ export function AppShell() {
       {/* phone tab bar */}
       <nav
         className="fixed inset-x-0 bottom-0 z-40 border-t-2 border-ink bg-cream pb-[var(--safe-bottom)] md:hidden"
-        aria-label="Bereiche"
+        aria-label={t("shell.sections")}
       >
         <div className="mx-auto grid max-w-md grid-cols-4">
-          {TABS.map((t) => (
+          {TABS.map((tb) => (
             <button
-              key={t.id}
+              key={tb.id}
               type="button"
-              onClick={() => setTab(t.id)}
-              aria-current={tab === t.id ? "page" : undefined}
+              onClick={() => setTab(tb.id)}
+              aria-current={tab === tb.id ? "page" : undefined}
               className={cn(
                 "relative flex min-h-16 flex-col items-center justify-center gap-0.5 font-display text-[15px] font-bold",
-                tab === t.id ? "text-navy" : "text-ink/55",
+                tab === tb.id ? "text-navy" : "text-ink/55",
               )}
             >
               <span
                 className={cn(
                   "grid h-8 w-14 place-items-center rounded-full transition-colors",
-                  tab === t.id && "bg-st-regatta ring-2 ring-ink",
+                  tab === tb.id && "bg-st-regatta ring-2 ring-ink",
                 )}
               >
-                <t.icon className="size-5" strokeWidth={2.4} />
+                <tb.icon className="size-5" strokeWidth={2.4} />
               </span>
-              {t.label}
-              {t.id === "aktion" && pending && <PendingDot className="absolute top-2 right-[calc(50%-1.9rem)]" />}
+              {t(tb.label)}
+              {tb.id === "aktion" && pending && <PendingDot className="absolute top-2 right-[calc(50%-1.9rem)]" />}
             </button>
           ))}
         </div>
@@ -167,13 +171,15 @@ export function AppShell() {
       <Dialog open={menu} onOpenChange={setMenu}>
         <DialogContent className="bg-cream">
           <DialogHeader>
-            <DialogTitle className="font-display text-2xl">Menü</DialogTitle>
-            <DialogDescription>
-              Dein Spielstand bleibt gespeichert. Du kannst ihn auf dem Startbildschirm fortsetzen.
-            </DialogDescription>
+            <DialogTitle className="font-display text-2xl">{t("shell.menu")}</DialogTitle>
+            <DialogDescription>{t("shell.menuHint")}</DialogDescription>
           </DialogHeader>
+          <div className="flex items-center justify-between gap-3">
+            <span className="font-semibold">{t("lang.label")}</span>
+            <LanguageToggle />
+          </div>
           <Button variant="outline" onClick={leave}>
-            <LogOut /> Zum Startbildschirm
+            <LogOut /> {t("shell.toStartScreen")}
           </Button>
         </DialogContent>
       </Dialog>
@@ -183,7 +189,7 @@ export function AppShell() {
 
 function PendingDot({ className }: { className?: string }) {
   return (
-    <span className={cn("relative flex size-3", className)} aria-label="Entscheidung offen">
+    <span className={cn("relative flex size-3", className)} aria-label={t("shell.decisionPending")}>
       <span className="absolute inline-flex size-full rounded-full bg-[#e0475f] opacity-70 motion-safe:animate-ping" />
       <span className="relative inline-flex size-3 rounded-full border-2 border-ink bg-[#e0475f]" />
     </span>
@@ -206,7 +212,7 @@ export function MedalTally({
   return (
     <div
       className={cn("flex items-center gap-2", light ? "text-white" : "text-ink")}
-      aria-label={`${gold} Gold, ${silver} Silber, ${points} Punkte`}
+      aria-label={t("shell.tally", { gold, silver, points })}
     >
       <span className="flex items-center gap-0.5">
         <MedalIcon medal="gold" className="size-6" />
@@ -224,7 +230,7 @@ export function MedalTally({
         )}
       >
         <span className="num text-xl leading-none">{points}</span>
-        <span className="ml-0.5 text-[11px] font-bold">Pkt</span>
+        <span className="ml-0.5 text-[11px] font-bold">{t("common.pointsShort")}</span>
       </span>
     </div>
   );

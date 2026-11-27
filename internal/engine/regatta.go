@@ -1,10 +1,8 @@
 package engine
 
 import (
-	"fmt"
 	"slices"
 	"strconv"
-	"strings"
 
 	"ruderspiel/internal/data"
 )
@@ -21,7 +19,7 @@ type compState struct {
 	material    int     // Materialschaden probability in per mille
 	cityBoatMod int
 	guestMod    float64 // added to every guest stat level
-	notes       []string
+	notes       []Msg
 }
 
 func (cs *compState) race(id string) *RaceSpec {
@@ -37,7 +35,7 @@ func (cs *compState) race(id string) *RaceSpec {
 func (cs *compState) team() bool { return cs.def.Kind == string(StationJTFO) }
 
 func raceSpec(r data.Race) RaceSpec {
-	rs := RaceSpec{ID: r.ID, Name: r.Name, Class: BoatClass(r.Class), Mixed: r.Mixed, Seats: r.Seats, LoanBoat: r.LoanBoat}
+	rs := RaceSpec{ID: r.ID, Name: r.Name, NameKey: r.TextKey, Class: BoatClass(r.Class), Mixed: r.Mixed, Seats: r.Seats, LoanBoat: r.LoanBoat}
 	for _, a := range r.Ages {
 		rs.Ages = append(rs.Ages, AgeGroup(a))
 	}
@@ -49,10 +47,6 @@ func raceSpec(r data.Race) RaceSpec {
 	return rs
 }
 
-var weatherNames = map[Weather]string{
-	WeatherRegen: "Regen", WeatherHitze: "Hitze", WeatherWind: "Wind", WeatherKaelte: "Kälte", WeatherNormal: "Normal",
-}
-
 // openCompetition rolls the weather (water only), consumes matching Ereignisse and opens the
 // regatta decision phase. Weather is known before trainer choice and lineup.
 func (g *Game) openCompetition() {
@@ -61,7 +55,10 @@ func (g *Game) openCompetition() {
 
 	cs := &compState{
 		def: def, station: g.station, name: st.Name, weights: map[Stat]float64{},
-		krebs: g.d.Rules.Incidents.Krebs, material: g.d.Rules.Incidents.Material, notes: slices.Clone(def.Notes),
+		krebs: g.d.Rules.Incidents.Krebs, material: g.d.Rules.Incidents.Material, notes: []Msg{},
+	}
+	for i := range def.Notes {
+		cs.notes = append(cs.notes, dataMsg("competition", def.ID, "notes", strconv.Itoa(i)))
 	}
 	for _, r := range g.d.RacesFor(def, len(g.players)) {
 		cs.races = append(cs.races, raceSpec(r))
@@ -75,12 +72,12 @@ func (g *Game) openCompetition() {
 
 	g.applyCompetitionEreignisse(cs)
 
-	prompt := "Wähle einen Trainer und melde deine Mannschaften. Jeder Ruderer und jedes Boot darf nur einmal starten."
+	prompt := msg("prompt.regatta")
 	if cs.weather != "" {
-		prompt = fmt.Sprintf("Wetter: %s. %s", weatherNames[cs.weather], prompt)
+		prompt = msg("prompt.regattaWeather", "weather", weatherMsg(cs.weather))
 	}
 
-	p := g.newPhase(PhaseRegatta, stageNone, g.allPlayerIDs(), st.Name, prompt)
+	p := g.newPhase(PhaseRegatta, stageNone, g.allPlayerIDs(), dataMsg("station", st.ID, "name"), prompt)
 	p.comp = cs
 }
 
@@ -112,39 +109,44 @@ func (g *Game) applyCompetitionEreignisse(cs *compState) {
 
 		if forced != nil {
 			cs.weather = Weather(forced.Weather)
-			cs.notes = append(cs.notes, forced.Name+": Das Wetter steht fest.")
+			cs.notes = append(cs.notes, msg("note.weatherFixed", "name", dataMsg("ereignis", forced.ID, "name")))
 		} else {
 			cs.weather = Weather(g.d.Rules.WeatherTable[rollD(g.rng, 6)-1])
 		}
 
-		g.addLog("info", "", fmt.Sprintf("Wetter bei %s: %s.", cs.name, weatherNames[cs.weather]))
+		g.addLog("info", "", msg("log.weather", "competition", dataMsg("station", g.d.Calendar[cs.station].ID, "name"),
+			"weather", weatherMsg(cs.weather)))
 	}
 
 	for _, mod := range mods {
 		switch mod.Effect {
 		case data.EffKrebsChance:
 			cs.krebs = mod.Value
-			cs.notes = append(cs.notes, fmt.Sprintf("%s: Krebs-Grundwahrscheinlichkeit %s %%.", mod.Name, perMilleText(mod.Value)))
+			cs.notes = append(cs.notes, msg("note.krebsChance", "name", dataMsg("ereignis", mod.ID, "name"),
+				"percent", float64(mod.Value)/10))
 		case data.EffMaterialChance:
 			cs.material = mod.Value
-			cs.notes = append(cs.notes, fmt.Sprintf("%s: Materialschaden-Wahrscheinlichkeit %s %%.",
-				mod.Name, perMilleText(mod.Value)))
+			cs.notes = append(cs.notes, msg("note.materialChance", "name", dataMsg("ereignis", mod.ID, "name"),
+				"percent", float64(mod.Value)/10))
 		case data.EffCityBoatMod:
 			cs.cityBoatMod += mod.Value
-			cs.notes = append(cs.notes, fmt.Sprintf("%s: Städtische Boote %+d.", mod.Name, mod.Value))
+			cs.notes = append(cs.notes, msg("note.cityBoats", "name", dataMsg("ereignis", mod.ID, "name"),
+				"value", signed(mod.Value)))
 		case data.EffGuestMod:
 			cs.guestMod += float64(mod.Value)
-			cs.notes = append(cs.notes, fmt.Sprintf("%s: Gastmannschaften %+d auf jede Eigenschaft.", mod.Name, mod.Value))
+			cs.notes = append(cs.notes, msg("note.guests", "name", dataMsg("ereignis", mod.ID, "name"),
+				"value", signed(mod.Value)))
 		case data.EffWeightMod:
-			cs.notes = append(cs.notes, mod.Name+": "+g.applyWeightMod(cs, mod.Weights))
+			cs.notes = append(cs.notes, msg("note.weights", "name", dataMsg("ereignis", mod.ID, "name"),
+				"weights", list(g.applyWeightMod(cs, mod.Weights))))
 		}
 	}
 }
 
 // applyWeightMod adds Ereignis weight deltas to the competition weights (in stat display order)
-// and returns a German note like "Kraft zählt 3-fach.".
-func (g *Game) applyWeightMod(cs *compState, deltas map[string]float64) string {
-	var parts []string
+// and returns the new weights as notes ("Kraft zählt 3-fach").
+func (g *Game) applyWeightMod(cs *compState, deltas map[string]float64) []Msg {
+	var parts []Msg
 
 	for _, s := range AllStats {
 		d, ok := deltas[string(s)]
@@ -153,24 +155,19 @@ func (g *Game) applyWeightMod(cs *compState, deltas map[string]float64) string {
 		}
 
 		cs.weights[s] = max(cs.weights[s]+d, 0)
-		parts = append(parts, fmt.Sprintf("%s zählt %s-fach", statName(s), weightText(cs.weights[s])))
+		parts = append(parts, msg("note.weight", "stat", statMsg(s), "weight", cs.weights[s]))
 	}
 
-	return strings.Join(parts, ", ") + "."
-}
-
-// weightText formats a weight German style: 3 → "3", 1.5 → "1,5".
-func weightText(w float64) string {
-	return strings.Replace(strconv.FormatFloat(w, 'f', -1, 64), ".", ",", 1)
+	return parts
 }
 
 func (g *Game) validateEntries(pl *player, cs *compState, trainerID string, entries []Entry) error {
 	if trainerID != "" && pl.trainer(trainerID) == nil {
-		return invalid("Dieser Trainer gehört nicht zu deinem Team.")
+		return invalid("err.trainerNotOwned")
 	}
 
 	if len(entries) > 0 && trainerID == "" && len(pl.trainers) > 0 {
-		return invalid("Wähle einen Trainer für diesen Wettkampf.")
+		return invalid("err.trainerRequired")
 	}
 
 	usedRowers := map[string]bool{}
@@ -180,16 +177,16 @@ func (g *Game) validateEntries(pl *player, cs *compState, trainerID string, entr
 	for _, en := range entries {
 		race := cs.race(en.RaceID)
 		if race == nil {
-			return invalid("Unbekanntes Rennen %q.", en.RaceID)
+			return invalid("err.unknownRace", "race", en.RaceID)
 		}
 
 		if usedRaces[en.RaceID] {
-			return invalid("Pro Rennen ist nur eine Meldung erlaubt (%s).", race.Name)
+			return invalid("err.raceTwice", "race", raceName(race))
 		}
 
 		usedRaces[en.RaceID] = true
 		if len(en.RowerIDs) != race.Seats {
-			return invalid("%s braucht genau %d Ruderer (gemeldet: %d).", race.Name, race.Seats, len(en.RowerIDs))
+			return invalid("err.raceSeats", "race", raceName(race), "seats", race.Seats, "count", len(en.RowerIDs))
 		}
 
 		err := validateCrew(pl, race, en.RowerIDs, usedRowers)
@@ -212,29 +209,28 @@ func validateCrew(pl *player, race *RaceSpec, rowerIDs []string, usedRowers map[
 	for _, id := range rowerIDs {
 		rw := pl.rower(id)
 		if rw == nil {
-			return invalid("Der Ruderer %q gehört nicht zu deinem Team.", id)
+			return invalid("err.rowerNotOwned", "rower", id)
 		}
 
 		if usedRowers[id] {
-			return invalid("%s darf pro Wettkampf nur einmal starten.", rw.name)
+			return invalid("err.rowerTwice", "rower", rowerName(rw))
 		}
 
 		usedRowers[id] = true
 
 		if !slices.Contains(race.Ages, rw.age) {
-			return invalid("%s ist in %s nicht startberechtigt (Altersklasse).", rw.name, race.Name)
+			return invalid("err.rowerAge", "rower", rowerName(rw), "race", raceName(race))
 		}
 
 		if !slices.Contains(race.Genders, rw.gender) {
-			return invalid("%s ist in %s nicht startberechtigt (Geschlecht).", rw.name, race.Name)
+			return invalid("err.rowerGender", "rower", rowerName(rw), "race", raceName(race))
 		}
 
 		rowers = append(rowers, rw)
 	}
 
 	if race.Mixed && !mixedOK(rowers) {
-		return invalid("%s: Mixed-Boote brauchen mindestens ein Mädchen, einen Jungen und zwei Altersgruppen.",
-			race.Name)
+		return invalid("err.mixed", "race", raceName(race))
 	}
 
 	return nil
@@ -245,7 +241,7 @@ func validateBoat(pl *player, race *RaceSpec, boatID string, usedBoats map[strin
 	switch race.Class {
 	case BoatErgo, Boat8x:
 		if boatID != "" {
-			return invalid("Für %s wird kein eigenes Boot gemeldet.", race.Name)
+			return invalid("err.noOwnBoat", "race", raceName(race))
 		}
 
 		return nil
@@ -253,7 +249,7 @@ func validateBoat(pl *player, race *RaceSpec, boatID string, usedBoats map[strin
 
 	if boatID == "" {
 		if !race.LoanBoat {
-			return invalid("Wähle ein Boot für %s.", race.Name)
+			return invalid("err.boatRequired", "race", raceName(race))
 		}
 
 		return nil
@@ -261,15 +257,16 @@ func validateBoat(pl *player, race *RaceSpec, boatID string, usedBoats map[strin
 
 	b := pl.boat(boatID)
 	if b == nil {
-		return invalid("Das Boot %q gehört nicht zu deinem Team.", boatID)
+		return invalid("err.boatNotOwned", "boat", boatID)
 	}
 
 	if b.class != race.Class {
-		return invalid("%s braucht ein Boot der Klasse %s, %s ist ein %s.", race.Name, race.Class, b.name, b.class)
+		return invalid("err.boatClass", "race", raceName(race), "class", msg("boatClass."+string(race.Class)),
+			"boat", dataMsg("boat", b.defID, "name"), "boatClass", msg("boatClass."+string(b.class)))
 	}
 
 	if usedBoats[b.id] {
-		return invalid("Das Boot %s darf pro Wettkampf nur einmal eingesetzt werden.", b.name)
+		return invalid("err.boatTwice", "boat", dataMsg("boat", b.defID, "name"))
 	}
 
 	usedBoats[b.id] = true
@@ -371,7 +368,7 @@ func (g *Game) guestTeamEntry(cs *compState) (EntryResult, bool) {
 // crew (not in team events) and ranks the result.
 func (g *Game) scoreRace(p *phase, race RaceSpec) RaceResult {
 	cs := p.comp
-	rr := RaceResult{RaceID: race.ID, Name: race.Name}
+	rr := RaceResult{RaceID: race.ID, Name: race.Name, NameKey: race.NameKey}
 
 	for _, re := range g.raceEntries(p, race.ID) {
 		er := g.scoreEntry(cs, race, re)
@@ -431,7 +428,7 @@ func (g *Game) resolveCompetition(p *phase) {
 	}
 
 	if cs.team() {
-		tr := RaceResult{RaceID: "team", Name: "Teamwertung"}
+		tr := RaceResult{RaceID: "team", Name: "Teamwertung", NameKey: "race.team"}
 
 		for _, pid := range p.required {
 			if acc := team[pid]; acc != nil && acc.found {
@@ -503,39 +500,34 @@ func (g *Game) awardMedal(er EntryResult, class BoatClass, outcomes map[string]r
 	}
 }
 
-var (
-	medalNames    = map[Medal]string{MedalGold: "Gold", MedalSilver: "Silber"}
-	incidentNames = map[IncidentKind]string{
-		IncidentKentern: "gekentert", IncidentMaterial: "Materialschaden", IncidentKrebs: "Krebs gefangen",
-	}
-)
-
 func (g *Game) logResult(res CompetitionResult) {
+	comp := dataMsg("station", g.d.Calendar[res.StationIndex].ID, "name")
+
 	for _, rr := range res.Races {
-		var parts []string
+		var parts []Msg
 
 		for _, er := range rr.Entries {
-			name := er.Guest
+			var name any = dataMsg("guest", "name")
 			if pl := g.playerByID(er.PlayerID); pl != nil {
 				name = pl.name
 			}
 
-			s := fmt.Sprintf("%s %d", name, er.Total)
+			m := msg("log.resultEntry", "name", name, "total", er.Total)
 			if er.Medal != MedalNone {
-				s = medalNames[er.Medal] + ": " + s
+				m = msg("log.resultEntryMedal", "medal", msg("medal."+string(er.Medal)), "name", name, "total", er.Total)
 			}
 
 			if er.Incident != IncidentNone {
-				s += " (" + incidentNames[er.Incident] + ")"
+				m = msg("log.resultIncident", "entry", m, "incident", msg("incident."+string(er.Incident)))
 			}
 
-			parts = append(parts, s)
+			parts = append(parts, m)
 		}
 
 		if len(parts) == 0 {
 			continue
 		}
 
-		g.addLog("result", "", fmt.Sprintf("%s – %s: %s", res.Name, rr.Name, strings.Join(parts, ", ")))
+		g.addLog("result", "", msg("log.result", "competition", comp, "race", Msg{Key: rr.NameKey}, "entries", list(parts)))
 	}
 }

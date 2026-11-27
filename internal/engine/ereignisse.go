@@ -1,21 +1,19 @@
 package engine
 
 import (
-	"fmt"
 	"slices"
-	"strings"
 
 	"ruderspiel/internal/data"
 )
 
 // runEreignisStation draws one global Ereignis among the cards that can still have an effect
 // (ereignisDrawable). Immediate effects are applied now; the others are stored as pending
-// modifiers until the next matching station consumes them. It returns the card name and the
-// description (with per-player details).
+// modifiers until the next matching station consumes them. It returns the card and the
+// per-player details (affected rowers).
 //
 // RNG order: one weighted draw for the card, then (random_rower_stat only) one draw per player
 // in seat order for the affected rower.
-func (g *Game) runEreignisStation() (string, string) {
+func (g *Game) runEreignisStation() (*data.Ereignis, []Msg) {
 	weights := make([]int, len(g.d.Ereignisse))
 	for i := range g.d.Ereignisse {
 		if e := &g.d.Ereignisse[i]; g.ereignisDrawable(e) {
@@ -31,7 +29,7 @@ func (g *Game) runEreignisStation() (string, string) {
 
 	ev := &g.d.Ereignisse[idx]
 
-	desc := ev.Description
+	details := []Msg{}
 
 	switch ev.Effect {
 	case data.EffAllStat:
@@ -41,8 +39,6 @@ func (g *Game) runEreignisStation() (string, string) {
 			}
 		}
 	case data.EffRandomRowerStat:
-		var details strings.Builder
-
 		for _, pl := range g.players {
 			if len(pl.rowers) == 0 {
 				continue
@@ -50,18 +46,18 @@ func (g *Game) runEreignisStation() (string, string) {
 
 			r := pl.rowers[g.rng.IntN(len(pl.rowers))]
 			r.addStat(Stat(ev.Stat), ev.Value)
-			fmt.Fprintf(&details, " %s: %s (%+d %s).", pl.name, r.name, ev.Value, statName(Stat(ev.Stat)))
+			details = append(details, msg("ereignis.detail", "player", pl.name, "rower", rowerName(r),
+				"value", signed(ev.Value), "stat", statMsg(Stat(ev.Stat))))
 		}
-
-		desc += details.String()
 	case data.EffNone:
 	default:
 		g.pending = append(g.pending, ev)
 	}
 
-	g.addLog("ereignis", "", ev.Name+": "+desc)
+	g.addLog("ereignis", "", msg("log.ereignis", "name", dataMsg("ereignis", ev.ID, "name"),
+		"description", dataMsg("ereignis", ev.ID, "description"), "details", list(details)))
 
-	return ev.Name, desc
+	return ev, details
 }
 
 // nextCompetition returns the first competition after the current station (or nil).
@@ -112,7 +108,7 @@ func (g *Game) consumeTrainingPoints() int {
 	pts := g.d.Rules.TrainingPoints
 	for _, e := range g.takePending(data.EffTrainingPoints) {
 		pts = e.Value
-		g.addLog("ereignis", "", fmt.Sprintf("%s wirkt: Dieses Training bringt %d Punkte.", e.Name, e.Value))
+		g.addLog("ereignis", "", msg("log.trainingPoints", "name", dataMsg("ereignis", e.ID, "name"), "points", e.Value))
 	}
 
 	return pts
@@ -128,16 +124,17 @@ func (g *Game) sponsorPicks() int {
 	return n
 }
 
-// activeEreignisse returns German texts of all pending modifiers.
-func (g *Game) activeEreignisse() []string {
-	out := []string{}
+// activeEreignisse returns all pending modifiers that a later station still consumes.
+func (g *Game) activeEreignisse() []Msg {
+	out := []Msg{}
 
 	for _, e := range g.pending {
 		if !g.ereignisAhead(e) {
 			continue // no station left that would consume it
 		}
 
-		out = append(out, fmt.Sprintf("%s: %s", e.Name, e.Description))
+		out = append(out, msg("ereignis.active", "name", dataMsg("ereignis", e.ID, "name"),
+			"description", dataMsg("ereignis", e.ID, "description")))
 	}
 
 	return out

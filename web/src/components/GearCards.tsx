@@ -2,8 +2,10 @@ import { ArrowDownRight, ArrowUpRight, Building2, Frown, Meh, Smile, Star } from
 import type { BoatView, TrainerEffect, TrainerView, Weather } from "@/api/types.gen";
 import { Art } from "@/components/Art";
 import { ShellIcon, WeatherIcon } from "@/components/icons";
-import { BOAT_CLASS_LABEL, CONTEXT_LABEL, WEATHER_LABEL } from "@/lib/labels";
+import { boatClassLabel, contextLabel } from "@/lib/labels";
 import { cn } from "@/lib/utils";
+import { t, tData, tk } from "@/i18n";
+import { boatName, trainerAbility, trainerDescription, trainerName } from "@/i18n/data";
 
 /** Boat card (kartendesign.png): name header with navy class tab, illustration, value. */
 export function BoatCard({ boat, className }: { boat: BoatView; className?: string }) {
@@ -11,23 +13,23 @@ export function BoatCard({ boat, className }: { boat: BoatView; className?: stri
     <article className={cn("@container overflow-hidden rounded-[16px] bg-cream cut", className)}>
       <header className="flex items-stretch justify-between gap-2">
         <h3 className="min-w-0 px-3 pt-2 pb-1 num text-lg leading-tight text-ink @[14rem]:truncate @[14rem]:text-[22px]">
-          {boat.name}
+          {boatName(boat)}
         </h3>
         <span className="flex shrink-0 items-center gap-1.5 self-start rounded-bl-[14px] bg-navy px-2 py-1.5 text-xs font-bold text-white @[14rem]:self-stretch @[14rem]:px-3 @[14rem]:text-sm">
           <ShellIcon className="hidden h-3.5 w-6 @[14rem]:block" />
-          {BOAT_CLASS_LABEL[boat.class] ?? boat.class}
+          {boatClassLabel(boat.class)}
         </span>
       </header>
       <div className="mx-2 aspect-[2/1] overflow-hidden rounded-[10px] border-2 border-ink">
-        <Art artKey={boat.artKey} label={boat.name} />
+        <Art artKey={boat.artKey} label={boatName(boat)} />
       </div>
       <div className="flex items-center justify-between gap-2 px-3 py-2">
         <span className="inline-flex min-w-0 items-center gap-1 text-xs font-semibold text-muted-foreground @[14rem]:text-sm">
           {boat.city && <Building2 className="size-4 shrink-0" />}
-          <span className="truncate">{boat.city ? "Städtisch" : "Vereinsboot"}</span>
+          <span className="truncate">{boat.city ? t("boat.city") : t("boat.club")}</span>
         </span>
         <span className="flex shrink-0 items-baseline gap-1">
-          <span className="text-xs font-semibold @[14rem]:text-sm">Wert</span>
+          <span className="text-xs font-semibold @[14rem]:text-sm">{t("boat.value")}</span>
           <span className="num text-3xl leading-none">{boat.value}</span>
         </span>
       </div>
@@ -38,18 +40,16 @@ export function BoatCard({ boat, className }: { boat: BoatView; className?: stri
 export function effectText(e: TrainerEffect): string {
   const sign = e.value > 0 ? `+${e.value}` : `${e.value}`;
   const parts: string[] = [];
-  if (e.weather) parts.push(`bei ${WEATHER_LABEL[e.weather] ?? e.weather}`);
-  if (e.context) parts.push(CONTEXT_LABEL[e.context] ?? e.context);
-  return `${sign} ${parts.join(" ") || "immer"}`;
+  if (e.weather) parts.push(tData(`effect.weather.${e.weather}`, e.weather));
+  if (e.context) parts.push(contextLabel(e.context));
+  return `${sign} ${parts.join(" ") || t("effect.always")}`;
 }
 
-const MOOD_LABEL: Record<number, string> = {
-  [-2]: "mies gelaunt",
-  [-1]: "mürrisch",
-  0: "ausgeglichen",
-  1: "gut gelaunt",
-  2: "bestens gelaunt",
-};
+/** Mood label by value, clamped to −2 … +2 (keys mood.m2 … mood.p2). */
+function moodLabel(mood: number): string {
+  const m = Math.max(-2, Math.min(2, mood));
+  return tk(m < 0 ? `mood.m${-m}` : `mood.p${m}`);
+}
 
 function signed(n: number): string {
   return n > 0 ? `+${n}` : n < 0 ? `−${-n}` : "±0";
@@ -60,7 +60,7 @@ export function MoodChip({ trainer, className }: { trainer: TrainerView; classNa
   const mood = trainer.mood ?? 0;
   const trend = trainer.moodTrend ?? 0;
   const Face = mood > 0 ? Smile : mood < 0 ? Frown : Meh;
-  const label = MOOD_LABEL[mood] ?? (mood > 0 ? "bestens gelaunt" : "mies gelaunt");
+  const label = moodLabel(mood);
   return (
     <span
       className={cn(
@@ -72,14 +72,16 @@ export function MoodChip({ trainer, className }: { trainer: TrainerView; classNa
             : "border-transparent bg-cream-2",
         className,
       )}
-      title={`Laune: ${label} (${signed(mood)} pro Ruderplatz)${
-        trend !== 0 ? `, seit dem letzten Abschnitt ${signed(trend)}` : ""
-      }`}
+      title={
+        trend !== 0
+          ? t("mood.titleTrend", { label, mood: signed(mood), trend: signed(trend) })
+          : t("mood.title", { label, mood: signed(mood) })
+      }
     >
       <Face className="size-4 shrink-0" />
-      <span className="truncate">Laune {signed(mood)}</span>
-      {trend > 0 && <ArrowUpRight className="size-4 shrink-0" aria-label="besser gelaunt" />}
-      {trend < 0 && <ArrowDownRight className="size-4 shrink-0" aria-label="schlechter gelaunt" />}
+      <span className="truncate">{t("mood.chip", { mood: signed(mood) })}</span>
+      {trend > 0 && <ArrowUpRight className="size-4 shrink-0" aria-label={t("mood.better")} />}
+      {trend < 0 && <ArrowDownRight className="size-4 shrink-0" aria-label={t("mood.worse")} />}
     </span>
   );
 }
@@ -100,14 +102,14 @@ export function TrainerCard({
   return (
     <article className={cn("overflow-hidden rounded-[16px] bg-cream cut", className)}>
       <header className="flex items-stretch justify-between gap-2">
-        <h3 className="min-w-0 truncate px-3 pt-2 pb-1 num text-[22px] leading-tight">{trainer.name}</h3>
+        <h3 className="min-w-0 truncate px-3 pt-2 pb-1 num text-[22px] leading-tight">{trainerName(trainer)}</h3>
         <span className="flex shrink-0 items-center rounded-bl-[14px] bg-navy px-3 text-sm font-bold text-white">
-          Trainer
+          {t("trainer.badge")}
         </span>
       </header>
       <div className="flex gap-2.5 px-2 pb-2">
         <div className="size-20 shrink-0 overflow-hidden rounded-[10px] border-2 border-ink">
-          <Art artKey={trainer.artKey} cardId={trainer.id} label={trainer.name} thumb />
+          <Art artKey={trainer.artKey} cardId={trainer.id} label={trainerName(trainer)} thumb />
         </div>
         <ul className="flex min-w-0 flex-1 flex-col justify-center gap-1">
           {(trainer.effects ?? []).map((e, i) => {
@@ -132,13 +134,13 @@ export function TrainerCard({
           <li className="flex">
             <MoodChip trainer={trainer} />
           </li>
-          <li className="px-1 text-xs font-semibold text-muted-foreground">je Ruderplatz im Boot</li>
+          <li className="px-1 text-xs font-semibold text-muted-foreground">{t("trainer.perSeat")}</li>
         </ul>
       </div>
       <div className="mx-2 mb-2 rounded-[10px] bg-[#dbe8f3] px-3 py-2">
         <div className="flex items-center justify-between gap-2">
           <span className="inline-flex items-center gap-1 rounded-md bg-navy px-2 py-0.5 text-xs font-bold text-white">
-            <Star className="size-3 fill-sun text-sun" /> {trainer.ability}
+            <Star className="size-3 fill-sun text-sun" /> {trainerAbility(trainer)}
           </span>
           {todayBonus !== undefined && (
             <span
@@ -151,7 +153,7 @@ export function TrainerCard({
             </span>
           )}
         </div>
-        <p className="mt-1 text-sm leading-snug">{trainer.description}</p>
+        <p className="mt-1 text-sm leading-snug">{trainerDescription(trainer)}</p>
       </div>
     </article>
   );

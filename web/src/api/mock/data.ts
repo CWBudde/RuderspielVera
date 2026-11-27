@@ -1,4 +1,5 @@
 import type {
+  Msg,
   AgeGroup,
   BoatView,
   CompetitionView,
@@ -138,7 +139,14 @@ export function buildCalendar(): StationView[] {
   const out: StationView[] = [];
   SECTIONS.forEach((sec, si) => {
     for (const [type, name] of sec) {
-      out.push({ index: out.length, section: si + 1, type, name, info: INFO[name] ?? INFO[type] ?? "" });
+      out.push({
+        id: `mock-${out.length}`,
+        index: out.length,
+        section: si + 1,
+        type,
+        name,
+        info: INFO[name] ?? INFO[type] ?? "",
+      });
     }
   });
   return out;
@@ -244,6 +252,7 @@ export function splitStats(rng: Rng, sum: number): Record<Stat, number> {
 export function cityBoats(owner: string): BoatView[] {
   return (["1x", "2x", "4x"] as const).map((c) => ({
     id: `${owner}-city-${c}`,
+    defId: `city-${c}`,
     name: { "1x": "Stadt-Einer", "2x": "Stadt-Zweier", "4x": "Stadt-Vierer" }[c],
     class: c,
     value: 3,
@@ -279,6 +288,7 @@ export const NAMED_BOATS: [string, string, number][] = [
 export function namedBoats(): BoatView[] {
   return NAMED_BOATS.map(([name, cls, value], i) => ({
     id: `boat-${i + 1}`,
+    defId: `boat-${i + 1}`,
     name,
     class: cls,
     value,
@@ -439,9 +449,10 @@ export const EVENT_DECK: { type: string; name: string; description: string; weig
   { type: "technik", name: "Technik-Event", description: "Technik +8.", weight: 2 },
   { type: "motivation", name: "Motivations-Event", description: "Motivation +8.", weight: 2 },
   {
-    type: "zwilling",
+    type: "seelenzwilling",
     name: "Seelenzwilling",
-    description: "Ein Zwilling mit 80 % der Werte kommt ins Team.",
+    description:
+      "Diese Person wird mit einer Teamkameradin oder einem Teamkameraden verbunden (bevorzugt gleiches Geschlecht und Alter). Beim nächsten Training, in dem eine der beiden Punkte bekommt, erhält die andere dieselben Punkte.",
     weight: 1,
   },
   { type: "mission", name: "Geheime Mission", description: "Erfülle die Mission bis Saisonende.", weight: 1 },
@@ -462,8 +473,8 @@ export const EREIGNISSE: { name: string; text: string; active?: string }[] = [
   },
   {
     name: "Maschsee-Monster",
-    text: "Etwas Großes schwimmt im Maschsee. Bei der nächsten Wasserregatta steigt die Krebsgefahr auf 30 %.",
-    active: "Maschsee-Monster: nächste Wasserregatta Krebs 30 %",
+    text: "Etwas Großes schwimmt im Maschsee. Bei der nächsten Wasserregatta verdoppelt sich die Krebs-Grundwahrscheinlichkeit auf 15 %.",
+    active: "Maschsee-Monster: nächste Wasserregatta Krebs-Grundwahrscheinlichkeit 15 %",
   },
   { name: "Grippewelle", text: "Je Team verliert ein zufälliger Ruderer 5 Motivation." },
   { name: "Vereinsfest", text: "Alle Ruderer bekommen +1 Motivation." },
@@ -521,6 +532,7 @@ function race(id: string, cls: string, ages: AgeGroup[], genders: Gender[], mixe
   return {
     id,
     name: label,
+    nameKey: "", // mock races have no catalog text: the UI shows the German name
     class: cls,
     ages,
     genders,
@@ -539,7 +551,7 @@ for (const cls of ["1x", "2x", "4x"]) {
 }
 
 export function competitionFor(name: string, kind: StationType, rotation: number): CompetitionView {
-  const base = { name, kind, teamEvent: false, notes: [] as string[] };
+  const base = { id: name, name, kind, teamEvent: false, notes: [] as Msg[] };
   if (kind === "ergocup") {
     const races: RaceSpec[] = [];
     for (const age of ["kinder", "b", "a"] as AgeGroup[]) {
@@ -550,7 +562,7 @@ export function competitionFor(name: string, kind: StationType, rotation: number
       context: "ergo",
       weights: { kraft: 2, motivation: 1 },
       races,
-      notes: ["Kein Boot, kein Wetter, keine Zwischenfälle."],
+      notes: [raw("Kein Boot, kein Wetter, keine Zwischenfälle.")],
     };
   }
   if (kind === "jtfo") {
@@ -575,7 +587,7 @@ export function competitionFor(name: string, kind: StationType, rotation: number
           fixedBoatValue: 2,
         },
       ],
-      notes: ["Teamwertung: Die drei Boote zählen zusammen, eine Medaille für das ganze Team."],
+      notes: [raw("Teamwertung: Die drei Boote zählen zusammen, eine Medaille für das ganze Team.")],
     };
   }
   if (name === "Hildesheim") {
@@ -591,7 +603,7 @@ export function competitionFor(name: string, kind: StationType, rotation: number
       context: "langstrecke",
       weights: { ausdauer: 2, motivation: 1 },
       races,
-      notes: ["Langstrecke: Fehlt ein freies eigenes Boot, wird ein Leihboot (Wert 2) gestellt."],
+      notes: [raw("Langstrecke: Fehlt ein freies eigenes Boot, wird ein Leihboot (Wert 2) gestellt.")],
     };
   }
   if (name === "RVH-Herbstsprint") {
@@ -604,7 +616,7 @@ export function competitionFor(name: string, kind: StationType, rotation: number
       context: "sprint",
       weights: { geschwindigkeit: 2, kraft: 1, motivation: 1 },
       races,
-      notes: ["Sprint: Altersklassen gemischt."],
+      notes: [raw("Sprint: Altersklassen gemischt.")],
     };
   }
   if (name === "RVB-Endspurt") {
@@ -616,8 +628,8 @@ export function competitionFor(name: string, kind: StationType, rotation: number
         race("rvb-8x", "8x", ["kinder", "b", "a"], ["w", "m"], true, "Mixed-Achter"),
       ],
       notes: [
-        "Mixed: mindestens ein Mädchen, ein Junge und zwei Altersklassen.",
-        "Der Achter ist für alle gleich (Bootswert 0).",
+        raw("Mixed: mindestens ein Mädchen, ein Junge und zwei Altersklassen."),
+        raw("Der Achter ist für alle gleich (Bootswert 0)."),
       ],
     };
   }
@@ -632,4 +644,9 @@ export function competitionFor(name: string, kind: StationType, rotation: number
     races.push(race(`r${rotation}-${cls}-${age}-${g}`, cls, [age], [g]));
   }
   return { ...base, weights, races };
+}
+
+/** Mock text has no catalog key: it is shown as is (German) via the pass-through key "raw". */
+export function raw(text: string): Msg {
+  return { key: "raw", args: { text } };
 }

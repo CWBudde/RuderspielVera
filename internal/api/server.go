@@ -83,7 +83,7 @@ func (s *Server) Handler(static http.Handler) http.Handler {
 	mux.HandleFunc("GET /api/games/{id}/log", s.handleLog)
 	mux.HandleFunc("GET /api/catalog", s.handleCatalog)
 	mux.HandleFunc("/api/", func(w http.ResponseWriter, _ *http.Request) {
-		writeError(w, http.StatusNotFound, "Unbekannter Endpunkt.")
+		writeError(w, gameservice.NewError(http.StatusNotFound, "err.unknownEndpoint"))
 	})
 
 	if static != nil {
@@ -156,11 +156,10 @@ func bearer(r *http.Request) string {
 
 // ---------- JSON helpers ----------
 
-// reply writes v with status ok, or the service error as {"error": …} with its status.
+// reply writes v with status ok, or the service error as {"error": key, "msg": …} with its status.
 func reply(w http.ResponseWriter, ok int, v any, err error) {
 	if err != nil {
-		se := gameservice.AsError(err)
-		writeError(w, se.Status, se.Msg)
+		writeError(w, gameservice.AsError(err))
 
 		return
 	}
@@ -173,7 +172,7 @@ func decodeBody(w http.ResponseWriter, r *http.Request, v any) bool {
 
 	err := json.NewDecoder(r.Body).Decode(v)
 	if err != nil {
-		writeError(w, http.StatusBadRequest, "Ungültige Anfrage: Die Daten konnten nicht gelesen werden.")
+		writeError(w, gameservice.NewError(http.StatusBadRequest, "err.badRequestBody"))
 		return false
 	}
 
@@ -191,6 +190,13 @@ func writeJSON(w http.ResponseWriter, status int, v any) {
 	}
 }
 
-func writeError(w http.ResponseWriter, status int, msg string) {
-	writeJSON(w, status, map[string]string{"error": msg})
+// writeError sends {"error": "<message key>", "msg": {"key": …, "args": …}}; the UI translates msg.
+func writeError(w http.ResponseWriter, se *gameservice.Error) {
+	writeJSON(w, se.Status, ErrorBody{Error: se.Msg.Key, Msg: se.Msg})
+}
+
+// ErrorBody is the JSON body of every failed API call.
+type ErrorBody struct {
+	Error string     `json:"error"` // message key, e.g. "err.gameNotFound"
+	Msg   engine.Msg `json:"msg"`
 }

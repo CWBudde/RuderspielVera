@@ -1,3 +1,4 @@
+import { t } from "@/i18n";
 import type { CompetitionView, BoatView, RaceSpec, RowerView, Stat, TrainerView } from "@/api/types.gen";
 
 /**
@@ -60,20 +61,20 @@ export function isEligible(rower: RowerView, race: RaceSpec): boolean {
   return ageOk && genderOk;
 }
 
-/** German validation messages for a (partial) crew; empty array = valid. */
+/** Translated validation messages for a (partial) crew; empty array = valid. */
 export function crewProblems(race: RaceSpec, crew: (RowerView | undefined)[], hasBoat: boolean): string[] {
   const filled = crew.filter((r): r is RowerView => !!r);
   if (filled.length === 0) return [];
   const problems: string[] = [];
   if (filled.length < race.seats) {
-    problems.push(`Noch ${race.seats - filled.length} ${race.seats - filled.length === 1 ? "Platz" : "Plätze"} frei`);
+    problems.push(t("crew.seatsFree", { count: race.seats - filled.length }));
   }
   if (race.mixed && filled.length === race.seats) {
     const genders = new Set(filled.map((r) => r.gender));
     const ages = new Set(filled.map((r) => r.age));
-    if (genders.size < 2) problems.push("Mixed: mindestens ein Mädchen und ein Junge");
-    if (ages.size < 2) problems.push("Mixed: mindestens zwei Altersklassen");
+    if (genders.size < 2) problems.push(t("crew.mixedGender"));
+    if (ages.size < 2) problems.push(t("crew.mixedAge"));
   }
-  if (needsBoat(race) && !hasBoat && !race.loanBoat) problems.push("Boot fehlt");
+  if (needsBoat(race) && !hasBoat && !race.loanBoat) problems.push(t("crew.noBoat"));
   return problems;
 }

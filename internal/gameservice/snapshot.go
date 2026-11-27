@@ -1,7 +1,6 @@
 package gameservice
 
 import (
-	"fmt"
 	"maps"
 	"time"
 
@@ -48,7 +47,7 @@ func (s *Service) save(e *gameEntry) error {
 	err := s.store.Save(s.snapshot(e))
 	if err != nil {
 		s.log.Error("save failed", "game", e.id, "err", err)
-		return newError(StatusInternal, "Das Spiel konnte nicht gespeichert werden.")
+		return newError(StatusInternal, "err.saveFailed")
 	}
 
 	return nil
@@ -59,7 +58,7 @@ func (s *Service) save(e *gameEntry) error {
 func (s *Service) Export(gameID string) (Snapshot, error) {
 	e := s.lookup(gameID)
 	if e == nil {
-		return Snapshot{}, newError(StatusNotFound, "Dieses Spiel gibt es nicht.")
+		return Snapshot{}, newError(StatusNotFound, "err.gameNotFound")
 	}
 
 	e.mu.Lock()
@@ -73,24 +72,22 @@ func (s *Service) Export(gameID string) (Snapshot, error) {
 // handed control back, so replaying it yields a game that waits on a human (or is over).
 func (s *Service) Import(snap Snapshot) (string, error) {
 	if snap.Version > 0 && snap.Version < SnapshotVersion {
-		return "", newError(StatusBadRequest,
-			"Dieser Spielstand stammt aus einer älteren Spielversion mit anderen Regeln und kann nicht "+
-				"mehr geladen werden. Bitte starte ein neues Spiel.")
+		return "", newError(StatusBadRequest, "err.snapshotOld")
 	}
 
 	if snap.Version != SnapshotVersion {
-		return "", newError(StatusBadRequest, fmt.Sprintf("Unbekanntes Spielstand-Format (Version %d).", snap.Version))
+		return "", newError(StatusBadRequest, "err.snapshotVersion", "version", snap.Version)
 	}
 
 	id := snap.Config.GameID
 	if !ValidGameID(id) {
-		return "", newError(StatusBadRequest, "Ungültige Spiel-ID im Spielstand.")
+		return "", newError(StatusBadRequest, "err.snapshotGameID")
 	}
 
 	g, err := engine.Replay(snap.Config, snap.Decisions)
 	if err != nil {
 		s.log.Error("replay failed", "game", id, "err", err)
-		return "", newError(StatusBadRequest, "Der Spielstand konnte nicht wiederhergestellt werden.")
+		return "", newError(StatusBadRequest, "err.snapshotReplay")
 	}
 
 	tokens := snap.Tokens

@@ -4,6 +4,8 @@ import type { CompetitionResult, EntryResult, PlayerSummary, RaceResult } from "
 import { MedalIcon, WeatherIcon, weatherTint } from "@/components/icons";
 import { incidentLabel, playerColor, weatherLabel } from "@/lib/labels";
 import { cn } from "@/lib/utils";
+import { t, type UiKey } from "@/i18n";
+import { boatName, guestName, raceName as raceLabel, rowerName } from "@/i18n/data";
 
 export function CrabIcon({ className }: { className?: string }) {
   return (
@@ -62,33 +64,41 @@ export function WeatherChip({ weather, className }: { weather?: string; classNam
 }
 
 function rowerNames(players: PlayerSummary[], e: EntryResult): string {
-  if (e.guest) return "Gastmannschaft: fährt um Platz und Medaille mit, bekommt aber keine Punkte.";
+  if (e.guest) return t("result.guestHint");
   const p = players.find((x) => x.id === e.playerId);
-  return (e.rowerIds ?? []).map((id) => p?.rowers.find((r) => r.id === id)?.name ?? "?").join(", ");
+  return (e.rowerIds ?? [])
+    .map((id) =>
+      (() => {
+        const r = p?.rowers.find((x) => x.id === id);
+        return r ? rowerName(r) : "?";
+      })(),
+    )
+    .join(", ");
 }
 
-function boatName(players: PlayerSummary[], e: EntryResult): string | undefined {
+function entryBoatName(players: PlayerSummary[], e: EntryResult): string | undefined {
   if (!e.boatId) return undefined;
-  return players.find((x) => x.id === e.playerId)?.boats.find((b) => b.id === e.boatId)?.name;
+  const b = players.find((x) => x.id === e.playerId)?.boats.find((b) => b.id === e.boatId);
+  return b ? boatName(b) : undefined;
 }
 
 function Breakdown({ e }: { e: EntryResult }) {
-  const parts: [string, number][] = [
-    ["Crew", e.crew],
-    ["Boot", e.boatValue],
-    ["Trainer", e.trainer],
-    ["Bonus", e.eventBonus],
-    ["Abzug", -e.penalty],
+  const parts: [UiKey, number][] = [
+    ["result.part.crew", e.crew],
+    ["result.part.boat", e.boatValue],
+    ["result.part.trainer", e.trainer],
+    ["result.part.bonus", e.eventBonus],
+    ["result.part.penalty", -e.penalty],
   ];
   return (
     <dl className="mt-1.5 flex flex-wrap gap-1">
       {parts
-        .filter(([label, v]) => v !== 0 || label === "Crew")
-        .map(([label, v]) => (
-          <div key={label} className="flex items-baseline gap-1 rounded-md bg-white/70 px-1.5 py-0.5 text-xs">
-            <dt className="font-semibold text-muted-foreground">{label}</dt>
+        .filter(([key, v]) => v !== 0 || key === "result.part.crew")
+        .map(([key, v]) => (
+          <div key={key} className="flex items-baseline gap-1 rounded-md bg-white/70 px-1.5 py-0.5 text-xs">
+            <dt className="font-semibold text-muted-foreground">{t(key)}</dt>
             <dd className={cn("font-bold tabular-nums", v < 0 && "text-destructive")}>
-              {v > 0 && label !== "Crew" ? `+${v}` : v}
+              {v > 0 && key !== "result.part.crew" ? `+${v}` : v}
             </dd>
           </div>
         ))}
@@ -114,7 +124,7 @@ function RaceCard({
   return (
     <section className={cn("rounded-[16px] bg-cream p-3 cut", mine && "ring-4 ring-lake/25")}>
       <header className="flex items-center justify-between gap-2">
-        <h3 className="min-w-0 truncate num text-xl leading-tight">{race.name}</h3>
+        <h3 className="min-w-0 truncate num text-xl leading-tight">{raceLabel(race)}</h3>
         {entries.length > 0 && (
           <button
             type="button"
@@ -122,12 +132,12 @@ function RaceCard({
             className="-my-2 -mr-2 inline-flex min-h-11 shrink-0 items-center gap-1 px-2 text-sm font-semibold text-muted-foreground"
             aria-expanded={open}
           >
-            Details <ChevronDown className={cn("size-4 transition-transform", open && "rotate-180")} />
+            {t("result.details")} <ChevronDown className={cn("size-4 transition-transform", open && "rotate-180")} />
           </button>
         )}
       </header>
       {entries.length === 0 ? (
-        <p className="mt-1 text-sm text-muted-foreground">Keine Meldungen.</p>
+        <p className="mt-1 text-sm text-muted-foreground">{t("result.noEntries")}</p>
       ) : (
         <ol className="mt-2 flex flex-col gap-2">
           {entries.map((e, i) => {
@@ -145,7 +155,7 @@ function RaceCard({
                       "grid size-8 shrink-0 place-items-center rounded-full border-2 border-ink num text-lg leading-none",
                       e.medal === "gold" ? "bg-gold" : e.medal === "silber" ? "bg-silver" : "bg-white",
                     )}
-                    aria-label={dnf ? "Nicht im Ziel" : `Platz ${e.place}`}
+                    aria-label={dnf ? t("result.dnfAria") : t("result.placeAria", { place: e.place })}
                   >
                     {dnf ? "–" : e.place}
                   </span>
@@ -155,10 +165,12 @@ function RaceCard({
                         className="size-2.5 shrink-0 rounded-full border border-ink"
                         style={{ background: color }}
                       />
-                      <span className="truncate text-sm font-bold">{e.guest ?? p?.name ?? e.playerId}</span>
+                      <span className="truncate text-sm font-bold">
+                        {e.guest ? guestName(e.guest) : (p?.name ?? e.playerId)}
+                      </span>
                       {e.guest && (
                         <span className="shrink-0 rounded-full border border-ink/40 bg-white px-1.5 text-[10px] font-bold tracking-wide text-muted-foreground uppercase">
-                          Gast
+                          {t("result.guest")}
                         </span>
                       )}
                       {e.medal && (
@@ -179,7 +191,9 @@ function RaceCard({
                           }}
                         />
                       </div>
-                      <span className="w-10 text-right num text-xl leading-none">{dnf ? "DNF" : e.total}</span>
+                      <span className="w-10 text-right num text-xl leading-none">
+                        {dnf ? t("result.dnf") : e.total}
+                      </span>
                     </div>
                   </div>
                 </div>
@@ -187,7 +201,7 @@ function RaceCard({
                   <div className="mt-1 pl-10 text-xs">
                     <p className="text-muted-foreground">
                       {rowerNames(players, e)}
-                      {boatName(players, e) && <>, Boot {boatName(players, e)}</>}
+                      {entryBoatName(players, e) && <>, {t("result.boatName", { name: entryBoatName(players, e) })}</>}
                     </p>
                     <Breakdown e={e} />
                   </div>
@@ -219,7 +233,7 @@ export function ResultView({
       <div className="flex flex-wrap items-center gap-2">
         <WeatherChip weather={result.weather} />
         <span className="inline-flex h-8 items-center gap-1.5 rounded-full border-2 border-ink bg-white px-2.5 text-sm font-bold">
-          Deine Ausbeute:
+          {t("result.yourHaul")}
           <MedalIcon medal="gold" className="size-5" /> {golds}
           <MedalIcon medal="silber" className="size-5" /> {silvers}
         </span>

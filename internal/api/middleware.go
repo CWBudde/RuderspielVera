@@ -6,6 +6,8 @@ import (
 	"net/http"
 	"strings"
 	"time"
+
+	"ruderspiel/internal/gameservice"
 )
 
 // devOrigins may call the API cross-origin (Vite dev server).
@@ -46,7 +48,7 @@ func recoverPanics(log *slog.Logger, next http.Handler) http.Handler {
 				}
 
 				log.Error("panic", "path", r.URL.Path, "panic", v)
-				writeError(w, http.StatusInternalServerError, "Interner Fehler.")
+				writeError(w, gameservice.NewError(http.StatusInternalServerError, "err.internal"))
 			}
 		}()
 

@@ -5,8 +5,10 @@ import { StationIcon } from "@/components/icons";
 import { artUrl } from "@/components/Art";
 import { ResultView } from "@/components/ResultView";
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet";
-import { STATION_LABEL, isCompetition, stationColor } from "@/lib/labels";
+import { stationLabel, isCompetition, stationColor } from "@/lib/labels";
 import { cn } from "@/lib/utils";
+import { t } from "@/i18n";
+import { stationInfo, stationName } from "@/i18n/data";
 
 /** Tiny rowing boat used as the shared game piece on the calendar. */
 function BoatFigure({ className }: { className?: string }) {
@@ -37,7 +39,10 @@ function StationDot({
     <button
       type="button"
       onClick={onClick}
-      aria-label={`Station ${st.index + 1}: ${st.name}${status === "current" ? " (aktuell)" : status === "done" ? " (vorbei)" : ""}`}
+      aria-label={t(
+        status === "current" ? "season.dotAriaCurrent" : status === "done" ? "season.dotAriaDone" : "season.dotAria",
+        { n: st.index + 1, name: stationName(st) },
+      )}
       aria-current={status === "current" ? "step" : undefined}
       className={cn(
         "relative grid shrink-0 place-items-center rounded-full border-2 border-ink transition-transform active:scale-95",
@@ -85,18 +90,18 @@ export function SeasonScreen() {
     <div>
       <div className="mb-3 flex items-end justify-between gap-2">
         <div>
-          <h2 className="num text-3xl leading-none">Saisonkalender</h2>
-          <p className="mt-1 text-sm text-muted-foreground">Alle Teams ziehen gemeinsam von Station zu Station.</p>
+          <h2 className="num text-3xl leading-none">{t("season.title")}</h2>
+          <p className="mt-1 text-sm text-muted-foreground">{t("season.subtitle")}</p>
         </div>
       </div>
       <Legend />
 
       {/* phones/tablets: winding vertical path */}
-      <ol className="relative mt-4 lg:hidden" aria-label="Stationen">
+      <ol className="relative mt-4 lg:hidden" aria-label={t("season.stations")}>
         {sections.map((sec, si) => (
           <li key={si} className="mb-2">
             <p className="sticky top-[calc(var(--safe-top)+4.25rem)] z-10 mb-1 inline-block rounded-full border-2 border-ink bg-cream px-3 py-0.5 font-display text-sm font-bold">
-              Abschnitt {si + 1}
+              {t("season.section", { n: si + 1 })}
             </p>
             <ol>
               {sec.map((st) => {
@@ -126,13 +131,15 @@ export function SeasonScreen() {
                       onClick={() => setSelected(st)}
                       className={cn("min-h-11 min-w-0 text-left", s === "done" && "opacity-55")}
                     >
-                      <span className="block truncate font-display text-lg leading-tight font-bold">{st.name}</span>
+                      <span className="block truncate font-display text-lg leading-tight font-bold">
+                        {stationName(st)}
+                      </span>
                       <span className="block truncate text-xs text-muted-foreground">
                         {s === "current"
-                          ? "Hier seid ihr gerade"
+                          ? t("season.youAreHere")
                           : result
-                            ? "Ergebnis ansehen"
-                            : st.info || STATION_LABEL[st.type]}
+                            ? t("season.viewResult")
+                            : stationInfo(st) || stationLabel(st.type)}
                       </span>
                     </button>
                     {s === "current" && <BoatFigure className="h-7 w-14 shrink-0" />}
@@ -162,24 +169,24 @@ export function SeasonScreen() {
                   >
                     <StationIcon type={selected.type} name={selected.name} className="size-4" />
                   </span>
-                  {selected.index + 1}. {selected.name}
+                  {selected.index + 1}. {stationName(selected)}
                 </SheetTitle>
-                <SheetDescription>{selected.info || STATION_LABEL[selected.type]}</SheetDescription>
+                <SheetDescription>{stationInfo(selected) || stationLabel(selected.type)}</SheetDescription>
               </SheetHeader>
               <div className="px-4">
                 {selectedResult ? (
                   <ResultView result={selectedResult} players={view.players} you={you.id} />
                 ) : isCompetition(selected.type) && selected.index < view.current ? (
                   <p className="text-sm text-muted-foreground">
-                    {log.isLoading ? "Ergebnis wird geladen …" : "Für diese Station liegt kein Ergebnis vor."}
+                    {log.isLoading ? t("season.resultLoading") : t("season.noResult")}
                   </p>
                 ) : (
                   <p className="text-sm text-muted-foreground">
                     {selected.index > view.current
-                      ? `Noch ${selected.index - view.current} ${selected.index - view.current === 1 ? "Station" : "Stationen"} bis hierher.`
+                      ? t("season.stationsAhead", { count: selected.index - view.current })
                       : selected.index === view.current
-                        ? "Hier steht die Spielfigur gerade."
-                        : "Diese Station liegt hinter euch."}
+                        ? t("season.pieceHere")
+                        : t("season.behind")}
                   </p>
                 )}
               </div>
@@ -193,17 +200,17 @@ export function SeasonScreen() {
 
 function Legend() {
   const items: [string, string][] = [
-    ["training", "Training"],
-    ["event", "Event"],
-    ["ereignis", "Ereignis"],
-    ["regatta", "Wettkampf"],
-    ["setup", "Vorbereitung"],
+    ["training", t("season.legend.training")],
+    ["event", t("season.legend.event")],
+    ["ereignis", t("season.legend.ereignis")],
+    ["regatta", t("season.legend.competition")],
+    ["setup", t("season.legend.setup")],
   ];
   return (
     <ul className="flex flex-wrap gap-x-3 gap-y-1">
-      {items.map(([t, label]) => (
-        <li key={t} className="flex items-center gap-1.5 text-sm font-semibold">
-          <span className="size-3.5 rounded-full border-2 border-ink" style={{ background: stationColor(t).bg }} />
+      {items.map(([type, label]) => (
+        <li key={type} className="flex items-center gap-1.5 text-sm font-semibold">
+          <span className="size-3.5 rounded-full border-2 border-ink" style={{ background: stationColor(type).bg }} />
           {label}
         </li>
       ))}
@@ -263,12 +270,12 @@ function Board({ status, onSelect }: { status: (i: number) => Status; onSelect: 
           </p>
           {current && (
             <p className="mx-auto mt-[0.8cqw] w-fit rounded-full border-2 border-ink bg-cream px-[1.2cqw] py-[0.2cqw] text-[1.4cqw] font-bold text-ink">
-              Station {view.current + 1}: {current.name}
+              {t("season.currentStation", { n: view.current + 1, name: stationName(current) })}
             </p>
           )}
         </div>
         <span className="absolute top-[0.6cqw] left-[0.6cqw] z-10 -rotate-12 rounded-md border-2 border-ink bg-[#f39c4a] px-[0.8cqw] font-display text-[1.6cqw] font-bold">
-          START
+          {t("season.start")}
         </span>
         {view.calendar.map((st) => {
           const p = pos(st.index);
@@ -277,7 +284,7 @@ function Board({ status, onSelect }: { status: (i: number) => Status; onSelect: 
               key={st.index}
               className="absolute -translate-x-1/2 -translate-y-1/2"
               style={{ left: `${p.x}%`, top: `${p.y}%` }}
-              title={st.name}
+              title={stationName(st)}
             >
               <StationDot st={st} status={status(st.index)} size="board" onClick={() => onSelect(st)} />
             </div>

@@ -11,6 +11,7 @@ import { SwapPhase } from "@/screens/phases/SwapPhase";
 import { RegattaPhase } from "@/screens/phases/RegattaPhase";
 import { DraftPhase } from "@/screens/phases/DraftPhase";
 import { GameOver } from "@/screens/phases/GameOver";
+import { t, tm } from "@/i18n";
 
 export function ActionScreen({ onShowTab }: { onShowTab: (t: Tab) => void }) {
   const { view } = useGame();
@@ -43,13 +44,15 @@ export function ActionScreen({ onShowTab }: { onShowTab: (t: Tab) => void }) {
 function Waiting() {
   const { view } = useGame();
   return (
-    <PhaseFrame title={view.phase.title} prompt="Deine Entscheidung ist abgegeben. Die anderen sind noch dran.">
+    <PhaseFrame title={tm(view.phase.title)} prompt={t("action.waitingPrompt")}>
       <ul className="flex flex-col gap-2">
         {view.players.map((p) => (
           <li key={p.id} className="flex min-h-12 items-center gap-3 rounded-xl border-2 border-ink bg-cream px-3">
             {p.decided ? <Check className="size-5 text-leaf" /> : <Loader2 className="size-5 animate-spin text-lake" />}
             <span className="font-bold">{p.name}</span>
-            <span className="ml-auto text-sm text-muted-foreground">{p.decided ? "fertig" : "überlegt noch …"}</span>
+            <span className="ml-auto text-sm text-muted-foreground">
+              {p.decided ? t("action.done") : t("action.thinking")}
+            </span>
           </li>
         ))}
       </ul>

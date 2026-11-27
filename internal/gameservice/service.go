@@ -33,15 +33,21 @@ const (
 	StatusInternal     = 500
 )
 
-// Error is a failed service call: Status is HTTP-like, Msg is German and safe to show in the UI.
+// Error is a failed service call: Status is HTTP-like, Msg is a message key (with params) that the
+// UI translates. Transports send it as {"error": "<key>", "msg": {"key": …, "args": …}}.
 type Error struct {
 	Status int
-	Msg    string
+	Msg    engine.Msg
 }
 
-func (e *Error) Error() string { return e.Msg }
+func (e *Error) Error() string { return e.Msg.String() }
 
-func newError(status int, msg string) *Error { return &Error{Status: status, Msg: msg} }
+// NewError builds an Error from a message key and name/value pairs (see engine.NewMsg).
+func NewError(status int, key string, kv ...any) *Error {
+	return &Error{Status: status, Msg: engine.NewMsg(key, kv...)}
+}
+
+func newError(status int, key string, kv ...any) *Error { return NewError(status, key, kv...) }
 
 // AsError maps any error to a *Error (unknown errors become a generic 500).
 func AsError(err error) *Error {
@@ -49,7 +55,7 @@ func AsError(err error) *Error {
 		return se
 	}
 
-	return newError(StatusInternal, "Interner Fehler.")
+	return newError(StatusInternal, "err.internal")
 }
 
 // Store persists a game after every change. Save is called with the game lock held.
@@ -171,7 +177,7 @@ func (s *Service) Create(req CreateRequest) (CreateResponse, error) {
 	}
 
 	if bots < 1 || bots > len(botNames) {
-		return CreateResponse{}, newError(StatusBadRequest, fmt.Sprintf("Es sind 1 bis %d Bots möglich.", len(botNames)))
+		return CreateResponse{}, newError(StatusBadRequest, "err.botCount", "max", len(botNames))
 	}
 
 	seed := mrand.Uint64()
@@ -193,7 +199,7 @@ func (s *Service) Create(req CreateRequest) (CreateResponse, error) {
 	g, err := engine.New(cfg)
 	if err != nil {
 		s.log.Error("engine.New failed", "err", err)
-		return CreateResponse{}, newError(StatusInternal, "Das Spiel konnte nicht erstellt werden.")
+		return CreateResponse{}, newError(StatusInternal, "err.createFailed")
 	}
 
 	token := randomHex(16)
@@ -250,12 +256,12 @@ func (s *Service) Submit(gameID, token string, d engine.Decision) (engine.GameVi
 		var ve *engine.ValidationError
 		switch {
 		case errors.Is(err, engine.ErrStalePhase):
-			return engine.GameView{}, newError(StatusConflict, err.Error())
+			return engine.GameView{}, newError(StatusConflict, "err.stalePhase")
 		case errors.As(err, &ve):
-			return engine.GameView{}, newError(StatusBadRequest, ve.Msg)
+			return engine.GameView{}, &Error{Status: StatusBadRequest, Msg: ve.Msg}
 		default:
 			s.log.Error("submit failed", "game", e.id, "player", pid, "err", err)
-			return engine.GameView{}, newError(StatusInternal, "Die Entscheidung konnte nicht verarbeitet werden.")
+			return engine.GameView{}, newError(StatusInternal, "err.submitFailed")
 		}
 	}
 
@@ -300,7 +306,7 @@ func (s *Service) Catalog() (engine.CatalogView, error) {
 	c, err := engine.Catalog()
 	if err != nil {
 		s.log.Error("catalog failed", "err", err)
-		return engine.CatalogView{}, newError(StatusInternal, "Der Kartenkatalog konnte nicht geladen werden.")
+		return engine.CatalogView{}, newError(StatusInternal, "err.catalogFailed")
 	}
 
 	return c, nil
@@ -310,7 +316,7 @@ func (s *Service) Catalog() (engine.CatalogView, error) {
 func (s *Service) WithGame(gameID string, fn func(*engine.Game) error) error {
 	e := s.lookup(gameID)
 	if e == nil {
-		return newError(StatusNotFound, "Dieses Spiel gibt es nicht.")
+		return newError(StatusNotFound, "err.gameNotFound")
 	}
 
 	e.mu.Lock()
@@ -332,7 +338,7 @@ func (s *Service) runBots(e *gameEntry) error {
 	for steps := 0; !e.game.Over(); steps++ {
 		if steps > maxBotSteps {
 			s.log.Error("bots did not hand back control", "game", e.id, "steps", maxBotSteps)
-			return newError(StatusInternal, "Ein Bot konnte nicht entscheiden.")
+			return newError(StatusInternal, "err.botFailed")
 		}
 
 		seat := -1
@@ -358,7 +364,7 @@ func (s *Service) runBots(e *gameEntry) error {
 
 		if err != nil {
 			s.log.Error("bot failed", "game", e.id, "player", pid, "phase", e.game.PhaseID(), "err", err)
-			return newError(StatusInternal, "Ein Bot konnte nicht entscheiden.")
+			return newError(StatusInternal, "err.botFailed")
 		}
 	}
 
@@ -376,17 +382,17 @@ func (s *Service) lookup(gameID string) *gameEntry {
 func (s *Service) authorize(gameID, token string) (*gameEntry, string, error) {
 	e := s.lookup(gameID)
 	if e == nil {
-		return nil, "", newError(StatusNotFound, "Dieses Spiel gibt es nicht.")
+		return nil, "", newError(StatusNotFound, "err.gameNotFound")
 	}
 
 	token = strings.TrimSpace(token)
 	if token == "" {
-		return nil, "", newError(StatusUnauthorized, "Anmeldung fehlt. Bitte starte ein neues Spiel.")
+		return nil, "", newError(StatusUnauthorized, "err.noToken")
 	}
 
 	pid, ok := e.tokens[token] // immutable after creation, no lock needed
 	if !ok {
-		return nil, "", newError(StatusUnauthorized, "Ungültige Anmeldung für dieses Spiel.")
+		return nil, "", newError(StatusUnauthorized, "err.badToken")
 	}
 
 	return e, pid, nil

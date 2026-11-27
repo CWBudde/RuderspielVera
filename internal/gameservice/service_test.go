@@ -68,7 +68,7 @@ func wantStatus(t *testing.T, err error, status int) {
 		t.Fatalf("want *Error with status %d, got %v", status, err)
 	}
 
-	if se.Status != status || se.Msg == "" {
+	if se.Status != status || se.Msg.Key == "" {
 		t.Fatalf("want status %d with message, got %d %q", status, se.Status, se.Msg)
 	}
 }
@@ -224,7 +224,7 @@ func TestExportImportRoundTrip(t *testing.T) {
 	_, err = s2.Import(old)
 	wantStatus(t, err, StatusBadRequest)
 
-	if !strings.Contains(err.Error(), "älteren Spielversion") {
+	if !strings.Contains(err.Error(), "err.snapshotOld") {
 		t.Errorf("old save: %v", err)
 	}
 

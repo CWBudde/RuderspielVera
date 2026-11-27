@@ -5,6 +5,7 @@
  * season. It is NOT the rules engine: scoring, events and bots are deliberately simple.
  */
 import type {
+  EreignisView,
   AgeGroup,
   BoatView,
   CompetitionResult,
@@ -37,11 +38,12 @@ import {
   buildCalendar,
   cityBoats,
   competitionFor,
+  raw,
   namedBoats,
   splitStats,
 } from "./data";
 import { boatPart, crewScore, isEligible, needsBoat, trainerBonus, trainerPart } from "@/lib/score";
-import { ALL_STATS, CORE_STATS, STAT_LABEL } from "@/lib/labels";
+import { ALL_STATS, CORE_STATS, statLabel } from "@/lib/labels";
 
 export type Step = "main" | "swap" | "result" | "draft" | "gameover";
 
@@ -64,7 +66,7 @@ export interface MockState {
   swapRowerId?: string;
   /** Your event cards dealt at the current event station. */
   newEvents?: EventCardView[];
-  ereignis?: { name: string; description: string };
+  ereignis?: EreignisView;
   draftOffer: DraftCard[];
   draftOrder: string[];
   draftTurn: number;
@@ -138,7 +140,7 @@ export function createState(playerName: string, seed: number): MockState {
     phaseSeq: 1,
     players,
     pool: { rowers: all, boats, trainers },
-    log: [{ stationIndex: 0, kind: "station", text: "Die Saison beginnt am Maschsee." }],
+    log: [{ stationIndex: 0, kind: "station", msg: raw("Die Saison beginnt am Maschsee.") }],
     results: [],
     activeEreignisse: [],
     draftOffer: [],
@@ -189,7 +191,7 @@ function weakestStat(r: RowerView): Stat {
 }
 
 function log(s: MockState, kind: string, text: string, playerId?: string) {
-  s.log.push({ stationIndex: s.current, kind, text, playerId });
+  s.log.push({ stationIndex: s.current, kind, msg: raw(text), playerId });
 }
 
 function consumeEreignis(s: MockState, prefix: string): boolean {
@@ -219,19 +221,19 @@ function currentCompetition(s: MockState): CompetitionView {
   if (st.type === "regatta") comp.weather = s.weather;
   if (st.type === "ergocup" && s.activeEreignisse.some((t) => t.startsWith("Neue Ergometer"))) {
     comp.weights = { ...comp.weights, kraft: 3 };
-    comp.notes.push("Neue Ergometer: Kraft zählt dreifach.");
+    comp.notes.push(raw("Neue Ergometer: Kraft zählt dreifach."));
   }
   if (st.type === "regatta" && s.activeEreignisse.some((t) => t.startsWith("Maschsee-Monster"))) {
-    comp.notes.push("Maschsee-Monster: Krebsgefahr 30 %.");
+    comp.notes.push(raw("Maschsee-Monster: Krebs-Grundwahrscheinlichkeit 15 %."));
   }
   if (st.type === "regatta" && s.activeEreignisse.some((t) => t.startsWith("Renovierung"))) {
-    comp.notes.push("Renovierung: städtische Boote −1.");
+    comp.notes.push(raw("Renovierung: städtische Boote −1."));
   }
   return comp;
 }
 
 function drawEvent(s: MockState, rng: Rng, p: PlayerSummary): EventCardView | undefined {
-  const free = p.rowers.filter((r) => !r.event && !r.isTwin);
+  const free = p.rowers.filter((r) => !r.event);
   if (free.length === 0) return undefined;
   const rower = rng.pick(free);
   const total = EVENT_DECK.reduce((a, e) => a + e.weight, 0);
@@ -263,20 +265,21 @@ function drawEvent(s: MockState, rng: Rng, p: PlayerSummary): EventCardView | un
       break;
     }
     case "mission":
-      card.mission = { ...rng.pick(MISSIONS), done: false, failed: false };
+      card.mission = { id: "", rowerName: rower.name, ...rng.pick(MISSIONS), done: false, failed: false };
       break;
-    case "zwilling": {
-      const twinStats = Object.fromEntries(ALL_STATS.map((k) => [k, Math.round((rower.stats[k] ?? 0) * 0.8)]));
-      p.rowers.push({
-        id: `${rower.id}-twin`,
-        name: `${rower.name} (Zwilling)`,
-        age: rower.age,
-        gender: rower.gender,
-        stats: { ...twinStats },
-        base: { ...twinStats },
-        artKey: rower.artKey,
-        isTwin: true,
-      });
+    case "seelenzwilling": {
+      const others = p.rowers.filter((r) => r !== rower);
+      const tiers = [
+        others.filter((r) => r.gender === rower.gender && r.age === rower.age),
+        others.filter((r) => r.gender === rower.gender),
+        others.filter((r) => r.age === rower.age),
+        others,
+      ];
+      const partner = rng.pick(tiers.find((t) => t.length > 0) ?? others);
+      if (partner) {
+        card.partnerId = partner.id;
+        card.partnerName = partner.name;
+      }
       break;
     }
   }
@@ -302,7 +305,7 @@ function enterStation(s: MockState) {
     } else if (st.type === "ereignis") {
       const e = rng.pick(EREIGNISSE);
       log(s, "ereignis", `${e.name}: ${e.text}`);
-      s.ereignis = { name: e.name, description: e.text };
+      s.ereignis = { id: "", name: e.name, description: e.text, details: [] };
       if (e.active) s.activeEreignisse.push(e.active);
       if (e.name === "Vereinsfest") for (const p of s.players) for (const r of p.rowers) addStat(r, "motivation", 1);
       if (e.name === "Grippewelle") for (const p of s.players) addStat(rng.pick(p.rowers), "motivation", -5);
@@ -337,6 +340,17 @@ function applyTraining(s: MockState, p: PlayerSummary, allocs: { rowerId: string
   for (const a of allocs) {
     const r = p.rowers.find((x) => x.id === a.rowerId);
     if (r) addStat(r, a.stat, a.points);
+  }
+  for (const r of p.rowers) {
+    const e = r.event;
+    if (e?.type !== "seelenzwilling" || e.spent || !e.partnerId) continue;
+    const partner = p.rowers.find((x) => x.id === e.partnerId);
+    const mine = allocs.filter((a) => a.rowerId === r.id);
+    const theirs = allocs.filter((a) => a.rowerId === e.partnerId);
+    if (!partner || (mine.length === 0 && theirs.length === 0)) continue;
+    e.spent = true;
+    for (const a of mine) addStat(partner, a.stat, a.points);
+    for (const a of theirs) addStat(r, a.stat, a.points);
   }
   for (const r of p.rowers) if (r.event?.type === "wachstum") addStat(r, bestStat(r, CORE_STATS), 2);
   void s;
@@ -464,11 +478,20 @@ function rankEntries(entries: EntryResult[]): EntryResult[] {
   return [...finished, ...capsized, ...dnf];
 }
 
+// Mirrors engine krebsChance with rules.json incidents.krebsScaling.
+function krebsChance(base: number, seats: number, crew: RowerView[]): number {
+  const seatPercent = ({ 1: 100, 2: 115, 4: 130, 8: 150 } as Record<number, number>)[seats] ?? 100;
+  const technik = crew.reduce((a, r) => a + r.stats.technik, 0);
+  const v = Math.round(((base * seatPercent) / 100) * ((14 * seats) / Math.max(technik, 1)));
+  return Math.min(Math.max(v, 10), 225);
+}
+
 function resolveCompetition(s: MockState, yours: Lineup) {
   const comp = currentCompetition(s);
   const water = comp.kind !== "ergocup";
-  // Per mille, mirrors rules.json incidents: Kentern by boat size, Material, Krebs (Maschsee-Monster 300 ‰).
-  const krebs = consumeEreignis(s, "Maschsee-Monster") ? 300 : 150;
+  // Per mille, mirrors rules.json incidents: Kentern by boat size, Material, Krebs base (Maschsee-Monster 150 ‰)
+  // scaled by krebsScaling (boat size and crew Technik).
+  const krebsBase = consumeEreignis(s, "Maschsee-Monster") ? 150 : 75;
   const renovation = comp.kind === "regatta" && consumeEreignis(s, "Renovierung");
   if (comp.kind === "ergocup") consumeEreignis(s, "Neue Ergometer");
   const lineups = new Map<string, Lineup>();
@@ -503,6 +526,7 @@ function resolveCompetition(s: MockState, yours: Lineup) {
         };
         if (water) {
           const kentern = ({ 1: 20, 2: 10, 4: 5, 8: 2 } as Record<number, number>)[race.seats] ?? 0;
+          const krebs = krebsChance(krebsBase, race.seats, crew);
           const roll = rng.int(1, 1000);
           if (roll <= kentern) res.incident = "kentern";
           else if (roll <= kentern + 30) res.incident = "material";
@@ -532,7 +556,7 @@ function resolveCompetition(s: MockState, yours: Lineup) {
           place: 0,
         });
       }
-      return { raceId: race.id, name: race.name, entries: rankEntries(entries) };
+      return { raceId: race.id, name: race.name, nameKey: race.nameKey, entries: rankEntries(entries) };
     }),
   );
 
@@ -561,7 +585,7 @@ function resolveCompetition(s: MockState, yours: Lineup) {
       })
       .filter((e): e is EntryResult => !!e);
     for (const r of races) for (const e of r.entries) e.medal = undefined;
-    scored = [...races, { raceId: "jtfo-team", name: "Teamwertung", entries: rankEntries(team) }];
+    scored = [...races, { raceId: "jtfo-team", name: "Teamwertung", nameKey: "race.team", entries: rankEntries(team) }];
   }
 
   // Siegesmotivation (engine updateWinMotivation): count down, then +1 for 3 competitions after gold
@@ -739,7 +763,7 @@ export function decide(s: MockState, d: Decision) {
         const va = r.stats[a] ?? 0;
         r.stats[a] = r.stats[b] ?? 0;
         r.stats[b] = va;
-        log(s, "event", `${r.name}: ${STAT_LABEL[a]} und ${STAT_LABEL[b]} getauscht.`, YOU);
+        log(s, "event", `${r.name}: ${statLabel(a)} und ${statLabel(b)} getauscht.`, YOU);
       }
       s.swapRowerId = undefined;
       advance(s);
@@ -811,8 +835,8 @@ function phaseFor(s: MockState): PhaseView {
     return {
       ...base,
       kind: "gameover",
-      title: "Saisonende",
-      prompt: "Die Saison ist vorbei. Hier ist die Abschlusswertung.",
+      title: raw("Saisonende"),
+      prompt: raw("Die Saison ist vorbei. Hier ist die Abschlusswertung."),
     };
   }
   if (s.step === "result") {
@@ -820,8 +844,8 @@ function phaseFor(s: MockState): PhaseView {
       ...base,
       kind: "ack",
       stage: "result",
-      title: `Ergebnis: ${st.name}`,
-      prompt: "Die Rennen sind gefahren.",
+      title: raw(`Ergebnis: ${st.name}`),
+      prompt: raw("Die Rennen sind gefahren."),
     };
   }
   if (s.step === "draft") {
@@ -829,8 +853,8 @@ function phaseFor(s: MockState): PhaseView {
     return {
       ...base,
       kind: "draft",
-      title: "Kartenwahl",
-      prompt: "Wähle eine Karte aus der offenen Auslage. Wer weniger Medaillenpunkte hat, wählt zuerst.",
+      title: raw("Kartenwahl"),
+      prompt: raw("Wähle eine Karte aus der offenen Auslage. Wer weniger Medaillenpunkte hat, wählt zuerst."),
       draftOffer: s.draftOffer,
       draftOrder: s.draftOrder,
       draftTurn: s.draftTurn,
@@ -841,8 +865,8 @@ function phaseFor(s: MockState): PhaseView {
     return {
       ...base,
       kind: "eventswap",
-      title: "Tausch-Event",
-      prompt: "Du darfst zwei Werte dieses Ruderers tauschen – oder alles lassen, wie es ist.",
+      title: raw("Tausch-Event"),
+      prompt: raw("Du darfst zwei Werte dieses Ruderers tauschen – oder alles lassen, wie es ist."),
       swapRowerId: s.swapRowerId,
     };
   }
@@ -852,23 +876,25 @@ function phaseFor(s: MockState): PhaseView {
         ...base,
         kind: "ack",
         stage: "setup",
-        title: "Spielvorbereitung",
-        prompt: "Deine Startkarten sind verteilt: Ruderer aus allen Altersklassen, städtische Boote und zwei Trainer.",
+        title: raw("Spielvorbereitung"),
+        prompt: raw(
+          "Deine Startkarten sind verteilt: Ruderer aus allen Altersklassen, städtische Boote und zwei Trainer.",
+        ),
       };
     case "training":
       return {
         ...base,
         kind: "training",
-        title: "Training",
-        prompt: "Verteile deine Trainingspunkte auf beliebige Ruderer und Werte.",
+        title: raw("Training"),
+        prompt: raw("Verteile deine Trainingspunkte auf beliebige Ruderer und Werte."),
         points: trainingPoints(s),
       };
     case "camp":
       return {
         ...base,
         kind: "training",
-        title: `Trainingslager ${st.name}`,
-        prompt: "Verteile 30 Punkte auf höchstens 5 Ruderer.",
+        title: raw(`Trainingslager ${st.name}`),
+        prompt: raw("Verteile 30 Punkte auf höchstens 5 Ruderer."),
         points: 30,
         maxRowers: 5,
       };
@@ -877,8 +903,8 @@ function phaseFor(s: MockState): PhaseView {
       return {
         ...base,
         kind: "selection",
-        title: st.name === "WR5" ? "Winterruder-Fünfkampf" : st.name,
-        prompt: "Wähle genau 5 Ruderer aus, die mitmachen.",
+        title: raw(st.name === "WR5" ? "Winterruder-Fünfkampf" : st.name),
+        prompt: raw("Wähle genau 5 Ruderer aus, die mitmachen."),
         count: 5,
         selectionEffect: eff.text,
       };
@@ -888,8 +914,8 @@ function phaseFor(s: MockState): PhaseView {
         ...base,
         kind: "ack",
         stage: "event",
-        title: "Event",
-        prompt: "Neue Eventkarten wurden gezogen.",
+        title: raw("Event"),
+        prompt: raw("Neue Eventkarten wurden gezogen."),
         newEvents: s.newEvents,
       };
     case "ereignis":
@@ -897,19 +923,20 @@ function phaseFor(s: MockState): PhaseView {
         ...base,
         kind: "ack",
         stage: "ereignis",
-        title: "Ereignis",
-        prompt: "Ein Ereignis betrifft alle Teams.",
+        title: raw("Ereignis"),
+        prompt: raw("Ein Ereignis betrifft alle Teams."),
         ereignis: s.ereignis,
       };
     default:
       return {
         ...base,
         kind: "regatta",
-        title: st.name,
-        prompt:
+        title: raw(st.name),
+        prompt: raw(
           st.type === "ergocup"
             ? "Stelle deine Starter für die Ergo-Rennen auf."
             : "Wähle deinen Trainer und stelle deine Boote auf. Jeder Ruderer startet höchstens einmal.",
+        ),
         competition: currentCompetition(s),
       };
   }
@@ -929,7 +956,7 @@ export function buildView(s: MockState): GameView {
       decided: decidedAll ? p.isBot : s.draftOrder.indexOf(p.id) < s.draftTurn,
     })),
     lastResult: s.lastResult,
-    activeEreignisse: [...s.activeEreignisse],
+    activeEreignisse: s.activeEreignisse.map(raw),
     log: s.log.slice(-80),
     winners: s.winners,
   };

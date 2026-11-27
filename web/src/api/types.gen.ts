@@ -66,6 +66,20 @@ export type Medal = string;
 export const MedalNone: Medal = "";
 export const MedalGold: Medal = "gold";
 export const MedalSilver: Medal = "silber";
+/**
+ * Msg is player-facing text as a catalog key plus params. The engine never builds sentences: the
+ * frontend renders a Msg per language (web/src/i18n: messages.*.ts for engine keys, ui.*.ts for
+ * shared vocabulary like "stat.kraft", data.gen.ts for "data.*" keys from internal/data).
+ * Args values are one of:
+ *   - string: proper names (players, rowers) and preformatted signed numbers ("+2")
+ *   - int / float64: numbers, formatted by the frontend for the language
+ *   - Msg: a translatable reference, e.g. a stat name or a data text
+ *   - []any of the above: rendered as a natural-language list ("A, B und C")
+ */
+export interface Msg {
+  key: string;
+  args?: { [key: string]: any};
+}
 export type Stats = { [key: Stat]: number /* int */};
 export interface RowerView {
   id: string;
@@ -76,7 +90,6 @@ export interface RowerView {
   base: Stats; // starting values, for "+N trained" display
   artKey: string; // portrait key, e.g. "rower-b-w"
   event?: EventCardView;
-  isTwin?: boolean;
   /**
    * WinMotivation (Siegesmotivation) is the temporary Motivation bonus after a gold or silver
    * placement; it is already included in stats.motivation. It is not trainable or swappable.
@@ -90,7 +103,12 @@ export interface RowerView {
 }
 export interface BoatView {
   id: string;
-  name: string;
+  /**
+   * DefID is the boat's id in boats.json (city boats get a per-player suffix in ID); the UI
+   * looks up the translated name as "data.boat.<defId>.name".
+   */
+  defId: string;
+  name: string; // German fallback
   class: BoatClass;
   value: number /* int */;
   city: boolean; // städtisches Boot
@@ -103,9 +121,9 @@ export interface TrainerEffect {
 }
 export interface TrainerView {
   id: string;
-  name: string;
-  ability: string; // German display name of the ability
-  description: string; // German text for the card
+  name: string; // German fallback of "data.trainer.<id>.name"
+  ability: string; // German fallback of "data.trainer.<id>.ability"
+  description: string; // German fallback of "data.trainer.<id>.description"
   effects: TrainerEffect[];
   artKey: string;
   /**
@@ -121,23 +139,37 @@ export interface TrainerView {
 }
 export interface EventCardView {
   type: string; // e.g. "phoenix", "verdopplung", "mission"
-  name: string; // German display name
-  description: string; // German effect text
+  name: string; // German fallback of "data.event.<type>.name"
+  description: string; // German fallback of "data.event.<type>.description"
   rowerId: string;
   mission?: MissionView;
+  /**
+   * Seelenzwilling: the linked teammate. At the next training or camp in which either of the two
+   * gets points, each also receives the other's points (mirrored per stat); then Spent is true.
+   */
+  partnerId?: string;
+  partnerName?: string;
+  spent?: boolean;
 }
 export interface MissionView {
-  text: string;
-  reward: string;
+  /**
+   * ID is the mission id; the UI renders "data.mission.<id>.text" with {name} = RowerName and
+   * "data.mission.<id>.reward".
+   */
+  id: string;
+  rowerName: string;
+  text: string; // German fallback
+  reward: string; // German fallback
   done: boolean;
   failed: boolean;
 }
 export interface StationView {
+  id: string; // calendar.json id; text keys "data.station.<id>.name|info"
   index: number /* int */; // 0-based position in calendar
   section: number /* int */; // 1..12
   type: StationType;
-  name: string; // German, e.g. "Hildesheim", "Training", "Event"
-  info: string; // short German description of what happens
+  name: string; // German fallback, e.g. "Hildesheimer Regatta"
+  info: string; // German fallback: what happens here
 }
 export interface PlayerSummary {
   id: string;
@@ -156,7 +188,8 @@ export interface PlayerSummary {
  */
 export interface RaceSpec {
   id: string;
-  name: string; // German, e.g. "Juniorinnen B Einer"
+  name: string; // German fallback
+  nameKey: string; // catalog key of the name (race IDs repeat across JTFO variants)
   class: BoatClass;
   ages: AgeGroup[]; // allowed ages (any of)
   genders: Gender[]; // allowed genders (any of)
@@ -185,7 +218,8 @@ export interface RaceSpec {
   guestScore?: number /* int */;
 }
 export interface CompetitionView {
-  name: string;
+  id: string; // competitions.json key ("bremen")
+  name: string; // German fallback (the station name)
   kind: StationType; // regatta | ergocup | jtfo
   weights: { [key: Stat]: number /* float64 */};
   races: RaceSpec[];
@@ -199,7 +233,7 @@ export interface CompetitionView {
    */
   cityBoatMod?: number /* int */;
   teamEvent: boolean; // JTFO: all races form one team score
-  notes: string[]; // German rule hints (e.g. Ereignis modifiers)
+  notes: Msg[]; // rule hints (static competition notes, Ereignis modifiers)
 }
 /**
  * PhaseView is what the current station asks of the viewing player.
@@ -207,12 +241,13 @@ export interface CompetitionView {
 export interface PhaseView {
   id: string; // must be echoed in the decision (stale-decision guard)
   kind: PhaseKind;
-  title: string;
-  prompt: string; // German instruction text
+  title: Msg;
+  prompt: Msg; // instruction text
   points?: number /* int */; // training/camp
   maxRowers?: number /* int */; // camp: at most N rowers
   count?: number /* int */; // selection: exactly N rowers
-  selectionEffect?: string; // e.g. "+10 Motivation"
+  selectionEffect?: string; // German fallback, e.g. "+10 Motivation"
+  selectionId?: string; // rules.json selection key; text "data.selection.<id>.label"
   competition?: CompetitionView;
   draftOffer?: DraftCard[];
   draftOrder?: string[]; // player IDs
@@ -244,8 +279,10 @@ export const StageEvent: PhaseStage = "event";
 export const StageEreignis: PhaseStage = "ereignis";
 export const StageResult: PhaseStage = "result";
 export interface EreignisView {
-  name: string;
-  description: string; // card text plus per-player details (German)
+  id: string; // ereignisse.json id; text "data.ereignis.<id>.name|description"
+  name: string; // German fallback
+  description: string; // German fallback of the card text
+  details: Msg[]; // per-player details (affected rowers)
 }
 export interface DraftCard {
   id: string;
@@ -256,7 +293,7 @@ export interface DraftCard {
 }
 export interface EntryResult {
   playerId: string; // empty for a guest crew
-  guest?: string; // display name of a guest crew (Gastmannschaft)
+  guest?: string; // German name of a guest crew; the UI shows "data.guest.name"
   rowerIds: string[];
   boatId?: string;
   trainerId?: string;
@@ -272,19 +309,20 @@ export interface EntryResult {
 }
 export interface RaceResult {
   raceId: string;
-  name: string;
+  name: string; // German fallback
+  nameKey: string; // catalog key of the name ("race.team" for the JTFO team score)
   entries: EntryResult[]; // sorted by place
 }
 export interface CompetitionResult {
   stationIndex: number /* int */;
-  name: string;
+  name: string; // German fallback of the station name
   weather?: Weather;
   races: RaceResult[];
 }
 export interface LogEntry {
   stationIndex: number /* int */;
   kind: string; // "station", "event", "ereignis", "result", "draft", "mission", "info"
-  text: string; // German, human readable
+  msg: Msg;
   playerId?: string;
 }
 export interface GameView {
@@ -295,7 +333,7 @@ export interface GameView {
   phase: PhaseView;
   players: PlayerSummary[]; // includes you; your entry has full detail
   lastResult?: CompetitionResult; // most recent competition
-  activeEreignisse: string[]; // German texts of pending modifiers
+  activeEreignisse: Msg[]; // pending modifiers
   log: LogEntry[]; // newest last; may be truncated by API
   winners?: string[]; // set at game over (ties possible)
 }

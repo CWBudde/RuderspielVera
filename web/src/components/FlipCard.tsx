@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import { Emblem } from "@/components/icons";
 import { cn } from "@/lib/utils";
+import { t } from "@/i18n";
 
 /**
  * A card that flips from its back to its face. The flip is a CSS 3D transition; with
@@ -33,7 +34,7 @@ export function FlipCard({
           type="button"
           onClick={onReveal}
           disabled={revealed}
-          aria-label={`${backLabel} aufdecken`}
+          aria-label={t("flip.revealAria", { card: backLabel })}
           className={cn(
             "absolute inset-0 grid place-items-center rounded-[18px] border-2 border-ink shadow-[0_3px_0_var(--ink)] backface-hidden",
             backTone,
@@ -42,7 +43,7 @@ export function FlipCard({
           <span className="flex flex-col items-center gap-2 text-white">
             <Emblem className="size-12 sm:size-16" />
             <span className="font-display text-lg font-bold">{backLabel}</span>
-            <span className="px-2 text-center text-xs font-semibold text-white/80">Tippen zum Aufdecken</span>
+            <span className="px-2 text-center text-xs font-semibold text-white/80">{t("flip.tapToReveal")}</span>
           </span>
         </button>
         <div className="absolute inset-0 rotate-y-180 backface-hidden" aria-hidden={!revealed}>

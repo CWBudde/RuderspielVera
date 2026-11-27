@@ -1,9 +1,7 @@
 package engine
 
 import (
-	"fmt"
 	"slices"
-	"strings"
 )
 
 func validStat(s Stat) bool { return slices.Contains(AllStats, s) }
@@ -24,20 +22,19 @@ func (g *Game) validateTraining(pl *player, p *phase, allocs []TrainingAlloc) er
 
 	for _, alloc := range allocs {
 		if pl.rower(alloc.RowerID) == nil {
-			return invalid("Der Ruderer %q gehört nicht zu deinem Team.", alloc.RowerID)
+			return invalid("err.rowerNotOwned", "rower", alloc.RowerID)
 		}
 
 		if !validStat(alloc.Stat) {
-			return invalid("Unbekannte Eigenschaft %q.", alloc.Stat)
+			return invalid("err.unknownStat", "stat", string(alloc.Stat))
 		}
 
 		if !Trainable(alloc.Stat) {
-			return invalid("Motivation kann man nicht trainieren. " +
-				"Sie steigt nur durch Auswahlen, Events, Ereignisse und (befristet) durch Siege.")
+			return invalid("err.trainMotivation")
 		}
 
 		if alloc.Points <= 0 {
-			return invalid("Trainingspunkte müssen positiv sein.")
+			return invalid("err.trainPositive")
 		}
 
 		total += alloc.Points
@@ -45,30 +42,77 @@ func (g *Game) validateTraining(pl *player, p *phase, allocs []TrainingAlloc) er
 	}
 
 	if total != p.points {
-		return invalid("Du musst genau %d Trainingspunkte verteilen (verteilt: %d).", p.points, total)
+		return invalid("err.trainTotal", "points", p.points, "total", total)
 	}
 
 	if p.maxRowers > 0 && len(rowers) > p.maxRowers {
-		return invalid("Im Trainingslager dürfen höchstens %d Ruderer trainieren (gewählt: %d).", p.maxRowers, len(rowers))
+		return invalid("err.campMaxRowers", "maxRowers", p.maxRowers, "count", len(rowers))
 	}
 
 	return nil
 }
 
-// applyTraining adds the points and then triggers Wachstum cards (every training incl. camps).
-// Wachstum raises the best trainable stat: it piggybacks on training, so never Motivation.
+// applyTraining adds the points, mirrors them across Seelenzwilling pairs and then triggers
+// Wachstum cards (every training incl. camps). Wachstum raises the best trainable stat: it
+// piggybacks on training, so never Motivation.
 func (g *Game) applyTraining(pl *player, allocs []TrainingAlloc) {
 	for _, a := range allocs {
 		pl.rower(a.RowerID).addStat(a.Stat, a.Points)
 	}
 
+	g.applyTwinTraining(pl, allocs)
+
 	for _, r := range pl.rowers {
 		if r.event != nil && r.event.def.Type == "wachstum" {
 			s := r.stats.bestOf(TrainableStats)
 			r.addStat(s, r.event.def.Value)
-			g.addLog("event", pl.id, fmt.Sprintf("Wachstum: %s erhält +%d %s.", r.name, r.event.def.Value, statName(s)))
+			g.addLog("event", pl.id, msg("event.gain", "card", dataMsg("event", r.event.def.Type, "name"),
+				"rower", rowerName(r), "value", signed(r.event.def.Value), "stat", statMsg(s)))
 		}
 	}
+}
+
+// applyTwinTraining handles unspent Seelenzwilling cards: if the holder or the partner got points
+// in this training, each also gets the other's points (from allocs, so a pair trained on both
+// sides ends with the sum on both), and the card is spent. The mirrored points do not count
+// against a camp's maxRowers.
+func (g *Game) applyTwinTraining(pl *player, allocs []TrainingAlloc) {
+	for _, r := range pl.rowers {
+		card := r.event
+		if card == nil || card.def.Type != "seelenzwilling" || card.spent || card.partner == nil {
+			continue
+		}
+
+		p := card.partner
+		fromR, fromP := trainedPoints(allocs, r.id), trainedPoints(allocs, p.id)
+
+		if len(fromR) == 0 && len(fromP) == 0 {
+			continue
+		}
+
+		card.spent = true
+
+		for _, s := range TrainableStats {
+			p.addStat(s, fromR[s])
+			r.addStat(s, fromP[s])
+		}
+
+		g.addLog("event", pl.id, msg("log.twinTraining", "card", dataMsg("event", card.def.Type, "name"),
+			"rower", rowerName(r), "partner", rowerName(p)))
+	}
+}
+
+// trainedPoints sums the allocated points per stat for one rower.
+func trainedPoints(allocs []TrainingAlloc, rowerID string) Stats {
+	out := Stats{}
+
+	for _, a := range allocs {
+		if a.RowerID == rowerID {
+			out[a.Stat] += a.Points
+		}
+	}
+
+	return out
 }
 
 func validateSelection(pl *player, p *phase, ids []string) error {
@@ -77,25 +121,25 @@ func validateSelection(pl *player, p *phase, ids []string) error {
 
 	for _, id := range ids {
 		if pl.rower(id) == nil {
-			return invalid("Der Ruderer %q gehört nicht zu deinem Team.", id)
+			return invalid("err.rowerNotOwned", "rower", id)
 		}
 
 		if seen[id] {
-			return invalid("Jeder Ruderer darf nur einmal ausgewählt werden.")
+			return invalid("err.selectTwice")
 		}
 
 		seen[id] = true
 	}
 
 	if len(ids) != want {
-		return invalid("Wähle genau %d Ruderer aus (gewählt: %d).", want, len(ids))
+		return invalid("err.selectCount", "want", want, "count", len(ids))
 	}
 
 	return nil
 }
 
 func (g *Game) applySelection(pl *player, p *phase, ids []string) {
-	names := make([]string, 0, len(ids))
+	names := make([]any, 0, len(ids))
 
 	for _, id := range ids {
 		r := pl.rower(id)
@@ -106,15 +150,9 @@ func (g *Game) applySelection(pl *player, p *phase, ids []string) {
 			}
 		}
 
-		names = append(names, r.name)
+		names = append(names, rowerName(r))
 	}
 
-	g.addLog("info", pl.id, fmt.Sprintf("%s: %s erhalten %s.", pl.name, strings.Join(names, ", "), p.selection.Label))
+	g.addLog("info", pl.id, msg("log.selection", "player", pl.name, "rowers", names,
+		"effect", dataMsg("selection", p.selectionID, "label")))
 }
-
-var statNames = map[Stat]string{
-	StatKraft: "Kraft", StatAusdauer: "Ausdauer", StatSpeed: "Geschwindigkeit", StatTechnik: "Technik",
-	StatMotivation: "Motivation",
-}
-
-func statName(s Stat) string { return statNames[s] }

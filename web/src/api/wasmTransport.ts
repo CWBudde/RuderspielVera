@@ -9,8 +9,10 @@
  */
 import type { Backend, Catalog, CreateGameRequest, CreateGameResponse, LogResponse, Session } from "./client";
 import type { Decision, GameView } from "./types.gen";
-import { ApiError } from "./errors";
+import { ApiError, errorMsg } from "./errors";
+import type { Msg } from "@/i18n";
 import { readStorage, writeStorage } from "@/lib/storage";
+import { t } from "@/i18n";
 
 interface WasmApi {
   createGame(req: string): string;
@@ -22,7 +24,7 @@ interface WasmApi {
   importGame(snapshot: string): string;
 }
 
-type Envelope<T> = { status: number; data: T; error?: undefined } | { status: number; error: string };
+type Envelope<T> = { status: number; data: T; error?: undefined } | { status: number; error: string; msg?: Msg };
 
 declare global {
   // wasm_exec.js defines Go; cmd/wasm defines ruderspielWasm.
@@ -31,7 +33,6 @@ declare global {
 }
 
 const GAME_KEY_PREFIX = "ruderspiel.wasm.game.";
-const LOAD_ERROR = "Die Spiel-Engine konnte nicht geladen werden. Bitte die Seite neu laden.";
 
 let loading: Promise<WasmApi> | null = null;
 const imported = new Set<string>();
@@ -82,7 +83,7 @@ function load(): Promise<WasmApi> {
   })().catch((err: unknown) => {
     loading = null; // allow a retry
     console.error("wasm load failed", err);
-    throw new ApiError(0, LOAD_ERROR);
+    throw new ApiError(0, t("api.engineLoadFailed"));
   });
   return loading;
 }
@@ -92,9 +93,9 @@ function unwrap<T>(raw: string): T {
   try {
     env = JSON.parse(raw) as Envelope<T>;
   } catch {
-    throw new ApiError(500, "Interner Fehler.");
+    throw new ApiError(500, t("api.internalError"));
   }
-  if (env.error !== undefined) throw new ApiError(env.status, env.error);
+  if (env.error !== undefined) throw new ApiError(env.status, errorMsg(env) ?? env.error);
   return env.data;
 }
 

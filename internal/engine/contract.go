@@ -99,6 +99,22 @@ const (
 	MedalSilver Medal = "silber"
 )
 
+// ---------- text ----------
+
+// Msg is player-facing text as a catalog key plus params. The engine never builds sentences: the
+// frontend renders a Msg per language (web/src/i18n: messages.*.ts for engine keys, ui.*.ts for
+// shared vocabulary like "stat.kraft", data.gen.ts for "data.*" keys from internal/data).
+//
+// Args values are one of:
+//   - string: proper names (players, rowers) and preformatted signed numbers ("+2")
+//   - int / float64: numbers, formatted by the frontend for the language
+//   - Msg: a translatable reference, e.g. a stat name or a data text
+//   - []any of the above: rendered as a natural-language list ("A, B und C")
+type Msg struct {
+	Key  string         `json:"key"`
+	Args map[string]any `json:"args,omitempty"`
+}
+
 // ---------- card views ----------
 
 type Stats map[Stat]int
@@ -112,7 +128,6 @@ type RowerView struct {
 	Base   Stats          `json:"base"`   // starting values, for "+N trained" display
 	ArtKey string         `json:"artKey"` // portrait key, e.g. "rower-b-w"
 	Event  *EventCardView `json:"event,omitempty"`
-	IsTwin bool           `json:"isTwin,omitempty"`
 	// WinMotivation (Siegesmotivation) is the temporary Motivation bonus after a gold or silver
 	// placement; it is already included in stats.motivation. It is not trainable or swappable.
 	WinMotivation int `json:"winMotivation,omitempty"`
@@ -122,8 +137,11 @@ type RowerView struct {
 }
 
 type BoatView struct {
-	ID     string    `json:"id"`
-	Name   string    `json:"name"`
+	ID string `json:"id"`
+	// DefID is the boat's id in boats.json (city boats get a per-player suffix in ID); the UI
+	// looks up the translated name as "data.boat.<defId>.name".
+	DefID  string    `json:"defId"`
+	Name   string    `json:"name"` // German fallback
 	Class  BoatClass `json:"class"`
 	Value  int       `json:"value"`
 	City   bool      `json:"city"` // städtisches Boot
@@ -138,9 +156,9 @@ type TrainerEffect struct {
 
 type TrainerView struct {
 	ID          string          `json:"id"`
-	Name        string          `json:"name"`
-	Ability     string          `json:"ability"`     // German display name of the ability
-	Description string          `json:"description"` // German text for the card
+	Name        string          `json:"name"`        // German fallback of "data.trainer.<id>.name"
+	Ability     string          `json:"ability"`     // German fallback of "data.trainer.<id>.ability"
+	Description string          `json:"description"` // German fallback of "data.trainer.<id>.description"
 	Effects     []TrainerEffect `json:"effects"`
 	ArtKey      string          `json:"artKey"`
 	// Mood (Laune, public) is added to the trainer's per-seat effect in every entry, like an
@@ -153,27 +171,37 @@ type TrainerView struct {
 
 type EventCardView struct {
 	Type        string       `json:"type"`        // e.g. "phoenix", "verdopplung", "mission"
-	Name        string       `json:"name"`        // German display name
-	Description string       `json:"description"` // German effect text
+	Name        string       `json:"name"`        // German fallback of "data.event.<type>.name"
+	Description string       `json:"description"` // German fallback of "data.event.<type>.description"
 	RowerID     string       `json:"rowerId"`
 	Mission     *MissionView `json:"mission,omitempty"`
+	// Seelenzwilling: the linked teammate. At the next training or camp in which either of the two
+	// gets points, each also receives the other's points (mirrored per stat); then Spent is true.
+	PartnerID   string `json:"partnerId,omitempty"`
+	PartnerName string `json:"partnerName,omitempty"`
+	Spent       bool   `json:"spent,omitempty"`
 }
 
 type MissionView struct {
-	Text   string `json:"text"`
-	Reward string `json:"reward"`
-	Done   bool   `json:"done"`
-	Failed bool   `json:"failed"`
+	// ID is the mission id; the UI renders "data.mission.<id>.text" with {name} = RowerName and
+	// "data.mission.<id>.reward".
+	ID        string `json:"id"`
+	RowerName string `json:"rowerName"`
+	Text      string `json:"text"`   // German fallback
+	Reward    string `json:"reward"` // German fallback
+	Done      bool   `json:"done"`
+	Failed    bool   `json:"failed"`
 }
 
 // ---------- game view ----------
 
 type StationView struct {
+	ID      string      `json:"id"`      // calendar.json id; text keys "data.station.<id>.name|info"
 	Index   int         `json:"index"`   // 0-based position in calendar
 	Section int         `json:"section"` // 1..12
 	Type    StationType `json:"type"`
-	Name    string      `json:"name"` // German, e.g. "Hildesheim", "Training", "Event"
-	Info    string      `json:"info"` // short German description of what happens
+	Name    string      `json:"name"` // German fallback, e.g. "Hildesheimer Regatta"
+	Info    string      `json:"info"` // German fallback: what happens here
 }
 
 type PlayerSummary struct {
@@ -192,7 +220,8 @@ type PlayerSummary struct {
 // RaceSpec describes one race inside a competition.
 type RaceSpec struct {
 	ID      string     `json:"id"`
-	Name    string     `json:"name"` // German, e.g. "Juniorinnen B Einer"
+	Name    string     `json:"name"`    // German fallback
+	NameKey string     `json:"nameKey"` // catalog key of the name (race IDs repeat across JTFO variants)
 	Class   BoatClass  `json:"class"`
 	Ages    []AgeGroup `json:"ages"`    // allowed ages (any of)
 	Genders []Gender   `json:"genders"` // allowed genders (any of)
@@ -215,7 +244,8 @@ type RaceSpec struct {
 }
 
 type CompetitionView struct {
-	Name    string           `json:"name"`
+	ID      string           `json:"id"`   // competitions.json key ("bremen")
+	Name    string           `json:"name"` // German fallback (the station name)
 	Kind    StationType      `json:"kind"` // regatta | ergocup | jtfo
 	Weights map[Stat]float64 `json:"weights"`
 	Races   []RaceSpec       `json:"races"`
@@ -223,21 +253,22 @@ type CompetitionView struct {
 	// Context is matched against TrainerEffect.Context ("", "ergo", "sprint", "langstrecke").
 	Context string `json:"context,omitempty"`
 	// CityBoatMod is added to the value of städtische Boote (Ereignis modifier, may be negative).
-	CityBoatMod int      `json:"cityBoatMod,omitempty"`
-	TeamEvent   bool     `json:"teamEvent"` // JTFO: all races form one team score
-	Notes       []string `json:"notes"`     // German rule hints (e.g. Ereignis modifiers)
+	CityBoatMod int   `json:"cityBoatMod,omitempty"`
+	TeamEvent   bool  `json:"teamEvent"` // JTFO: all races form one team score
+	Notes       []Msg `json:"notes"`     // rule hints (static competition notes, Ereignis modifiers)
 }
 
 // PhaseView is what the current station asks of the viewing player.
 type PhaseView struct {
 	ID              string           `json:"id"` // must be echoed in the decision (stale-decision guard)
 	Kind            PhaseKind        `json:"kind"`
-	Title           string           `json:"title"`
-	Prompt          string           `json:"prompt"`                    // German instruction text
+	Title           Msg              `json:"title"`
+	Prompt          Msg              `json:"prompt"`                    // instruction text
 	Points          int              `json:"points,omitempty"`          // training/camp
 	MaxRowers       int              `json:"maxRowers,omitempty"`       // camp: at most N rowers
 	Count           int              `json:"count,omitempty"`           // selection: exactly N rowers
-	SelectionEffect string           `json:"selectionEffect,omitempty"` // e.g. "+10 Motivation"
+	SelectionEffect string           `json:"selectionEffect,omitempty"` // German fallback, e.g. "+10 Motivation"
+	SelectionID     string           `json:"selectionId,omitempty"`     // rules.json selection key; text "data.selection.<id>.label"
 	Competition     *CompetitionView `json:"competition,omitempty"`
 	DraftOffer      []DraftCard      `json:"draftOffer,omitempty"`
 	DraftOrder      []string         `json:"draftOrder,omitempty"` // player IDs
@@ -267,8 +298,10 @@ const (
 )
 
 type EreignisView struct {
-	Name        string `json:"name"`
-	Description string `json:"description"` // card text plus per-player details (German)
+	ID          string `json:"id"`          // ereignisse.json id; text "data.ereignis.<id>.name|description"
+	Name        string `json:"name"`        // German fallback
+	Description string `json:"description"` // German fallback of the card text
+	Details     []Msg  `json:"details"`     // per-player details (affected rowers)
 }
 
 type DraftCard struct {
@@ -283,7 +316,7 @@ type DraftCard struct {
 
 type EntryResult struct {
 	PlayerID   string       `json:"playerId"`        // empty for a guest crew
-	Guest      string       `json:"guest,omitempty"` // display name of a guest crew (Gastmannschaft)
+	Guest      string       `json:"guest,omitempty"` // German name of a guest crew; the UI shows "data.guest.name"
 	RowerIDs   []string     `json:"rowerIds"`
 	BoatID     string       `json:"boatId,omitempty"`
 	TrainerID  string       `json:"trainerId,omitempty"`
@@ -300,13 +333,14 @@ type EntryResult struct {
 
 type RaceResult struct {
 	RaceID  string        `json:"raceId"`
-	Name    string        `json:"name"`
+	Name    string        `json:"name"`    // German fallback
+	NameKey string        `json:"nameKey"` // catalog key of the name ("race.team" for the JTFO team score)
 	Entries []EntryResult `json:"entries"` // sorted by place
 }
 
 type CompetitionResult struct {
 	StationIndex int          `json:"stationIndex"`
-	Name         string       `json:"name"`
+	Name         string       `json:"name"` // German fallback of the station name
 	Weather      Weather      `json:"weather,omitempty"`
 	Races        []RaceResult `json:"races"`
 }
@@ -314,7 +348,7 @@ type CompetitionResult struct {
 type LogEntry struct {
 	StationIndex int    `json:"stationIndex"`
 	Kind         string `json:"kind"` // "station", "event", "ereignis", "result", "draft", "mission", "info"
-	Text         string `json:"text"` // German, human readable
+	Msg          Msg    `json:"msg"`
 	PlayerID     string `json:"playerId,omitempty"`
 }
 
@@ -326,7 +360,7 @@ type GameView struct {
 	Phase            PhaseView          `json:"phase"`
 	Players          []PlayerSummary    `json:"players"`              // includes you; your entry has full detail
 	LastResult       *CompetitionResult `json:"lastResult,omitempty"` // most recent competition
-	ActiveEreignisse []string           `json:"activeEreignisse"`     // German texts of pending modifiers
+	ActiveEreignisse []Msg              `json:"activeEreignisse"`     // pending modifiers
 	Log              []LogEntry         `json:"log"`                  // newest last; may be truncated by API
 	Winners          []string           `json:"winners,omitempty"`    // set at game over (ties possible)
 }

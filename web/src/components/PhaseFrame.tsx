@@ -4,6 +4,7 @@ import { useGame } from "@/hooks/game";
 import { StationIcon } from "@/components/icons";
 import { stationColor } from "@/lib/labels";
 import { cn } from "@/lib/utils";
+import { t, tm } from "@/i18n";
 
 /** Common frame for every Aktion view: title, prompt, content and a sticky action bar. */
 export function PhaseFrame({
@@ -42,13 +43,13 @@ export function PhaseFrame({
         </div>
         {headerExtra}
         {ereignisse.length > 0 && (
-          <ul className="mt-2 flex flex-wrap gap-1.5" aria-label="Aktive Ereignisse">
-            {ereignisse.map((t) => (
+          <ul className="mt-2 flex flex-wrap gap-1.5" aria-label={t("phase.activeEreignisse")}>
+            {ereignisse.map((m, i) => (
               <li
-                key={t}
+                key={i}
                 className="inline-flex items-center gap-1 rounded-full border-2 border-ink bg-st-ereignis px-2 py-0.5 text-xs font-bold"
               >
-                <Dice5 className="size-3.5" /> {t}
+                <Dice5 className="size-3.5" /> {tm(m)}
               </li>
             ))}
           </ul>

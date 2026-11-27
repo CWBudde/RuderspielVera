@@ -1,9 +1,7 @@
 package engine
 
 import (
-	"fmt"
 	"strconv"
-	"strings"
 )
 
 // initMood gives every trainer of the catalog the starting mood (rules.json trainerMood.start).
@@ -27,7 +25,7 @@ func (g *Game) initMood() {
 func (g *Game) driftMood() {
 	cfg := g.d.Rules.TrainerMood
 
-	parts := make([]string, 0, len(g.d.Trainers))
+	parts := make([]Msg, 0, len(g.d.Trainers))
 	for _, t := range g.d.Trainers {
 		cur := g.mood[t.ID]
 		g.prevMood[t.ID] = cur
@@ -38,8 +36,8 @@ func (g *Game) driftMood() {
 		}
 
 		g.mood[t.ID] = next
-		parts = append(parts, fmt.Sprintf("%s %+d", t.Name, next))
+		parts = append(parts, msg("log.moodEntry", "trainer", dataMsg("trainer", t.ID, "name"), "mood", signed(next)))
 	}
 
-	g.addLog("info", "", "Trainerlaune: "+strings.Join(parts, ", ")+".")
+	g.addLog("info", "", msg("log.mood", "entries", list(parts)))
 }

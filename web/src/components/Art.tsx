@@ -54,13 +54,13 @@ interface ArtProps {
   alt?: string;
   /** Small square crop: zooms portrait art onto the face. */
   thumb?: boolean;
-  /** Rower or trainer card id: `people/<cardId>` wins over the artKey (a "-zwilling" twin shares it). */
+  /** Rower or trainer card id: `people/<cardId>` wins over the artKey. */
   cardId?: string;
 }
 
 /** Image for an artKey, falling back to a drawn placeholder (portrait, boat or trainer). */
 export function Art({ artKey, label, className, alt, thumb, cardId }: ArtProps) {
-  const url = (cardId && PEOPLE_MANIFEST[cardId.replace(/-zwilling$/, "")]) || artUrl(artKey, cardId ?? label);
+  const url = (cardId && PEOPLE_MANIFEST[cardId]) || artUrl(artKey, cardId ?? label);
   const [failed, setFailed] = useState(false);
   if (url && !failed) {
     return (

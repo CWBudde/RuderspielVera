@@ -484,12 +484,6 @@ func TestIncidentRules(t *testing.T) {
 	if ks.TechnikPerSeat != 14 || ks.Min != 10 || ks.Max != 225 || ks.SeatPercent[1] != 100 || ks.SeatPercent[8] != 150 {
 		t.Errorf("krebsScaling %+v, want perSeat 14, min 10, max 225, 1x 100 %%, 8x 150 %%", ks)
 	}
-
-	for v, s := range map[int]string{300: "30", 150: "15", 5: "0,5", 2: "0,2"} {
-		if got := perMilleText(v); got != s {
-			t.Errorf("perMilleText(%d) = %q, want %q", v, got, s)
-		}
-	}
 }
 
 func TestKrebsChance(t *testing.T) {
@@ -497,7 +491,7 @@ func TestKrebsChance(t *testing.T) {
 
 	ks := data.KrebsScaling{SeatPercent: map[int]int{1: 100, 2: 115, 4: 130, 8: 150}, TechnikPerSeat: 14, Min: 20, Max: 450}
 	tests := []struct {
-		name                     string
+		name                       string
 		base, seats, technik, want int
 	}{
 		{"1x at reference keeps base", 150, 1, 14, 150},
@@ -583,53 +577,53 @@ func TestValidateEntries(t *testing.T) {
 			{RaceID: "2x-a-w", RowerIDs: []string{"aw2", "bw1"}, BoatID: b2},
 		}, ""},
 		{"no entries no trainer", hild, "", nil, ""},
-		{"trainer required", hild, "", []Entry{{RaceID: "1x-a-w", RowerIDs: []string{"aw1"}, BoatID: b1}}, "Trainer"},
-		{"foreign trainer", hild, "nobody", nil, "Trainer"},
-		{"unknown race", hild, tr, []Entry{{RaceID: "nope", RowerIDs: []string{"aw1"}, BoatID: b1}}, "Unbekanntes Rennen"},
-		{"wrong age", hild, tr, []Entry{{RaceID: "1x-a-w", RowerIDs: []string{"bw1"}, BoatID: b1}}, "Altersklasse"},
+		{"trainer required", hild, "", []Entry{{RaceID: "1x-a-w", RowerIDs: []string{"aw1"}, BoatID: b1}}, "err.trainerRequired"},
+		{"foreign trainer", hild, "nobody", nil, "err.trainerNotOwned"},
+		{"unknown race", hild, tr, []Entry{{RaceID: "nope", RowerIDs: []string{"aw1"}, BoatID: b1}}, "err.unknownRace"},
+		{"wrong age", hild, tr, []Entry{{RaceID: "1x-a-w", RowerIDs: []string{"bw1"}, BoatID: b1}}, "err.rowerAge"},
 		{"row up in crew boat", hild, tr, []Entry{{RaceID: "2x-a-w", RowerIDs: []string{"aw1", "bw1"}, BoatID: b2}}, ""},
-		{"wrong gender", hild, tr, []Entry{{RaceID: "1x-a-w", RowerIDs: []string{"am1"}, BoatID: b1}}, "Geschlecht"},
-		{"wrong seats", hild, tr, []Entry{{RaceID: "2x-a-w", RowerIDs: []string{"aw1"}, BoatID: b2}}, "genau 2"},
+		{"wrong gender", hild, tr, []Entry{{RaceID: "1x-a-w", RowerIDs: []string{"am1"}, BoatID: b1}}, "err.rowerGender"},
+		{"wrong seats", hild, tr, []Entry{{RaceID: "2x-a-w", RowerIDs: []string{"aw1"}, BoatID: b2}}, "err.raceSeats{count=1 race=data.race.hildesheim.2x-a-w.name seats=2}"},
 		{"rower twice", hild, tr, []Entry{
 			{RaceID: "1x-a-w", RowerIDs: []string{"aw1"}, BoatID: b1},
 			{RaceID: "2x-a-w", RowerIDs: []string{"aw1", "aw2"}, BoatID: b2},
-		}, "nur einmal starten"},
+		}, "err.rowerTwice"},
 		{"boat twice", hild, tr, []Entry{
 			{RaceID: "1x-a-w", RowerIDs: []string{"aw1"}, BoatID: b1},
 			{RaceID: "1x-a-m", RowerIDs: []string{"am1"}, BoatID: b1},
-		}, "nur einmal eingesetzt"},
+		}, "err.boatTwice"},
 		{"race twice", hild, tr, []Entry{
 			{RaceID: "1x-a-w", RowerIDs: []string{"aw1"}, BoatID: b1},
 			{RaceID: "1x-a-w", RowerIDs: []string{"aw2"}, BoatID: b1},
-		}, "nur eine Meldung"},
-		{"wrong boat class", hild, tr, []Entry{{RaceID: "1x-a-w", RowerIDs: []string{"aw1"}, BoatID: b2}}, "Klasse 1x"},
-		{"missing boat", schiller, tr, []Entry{{RaceID: "1x-a-w", RowerIDs: []string{"aw1"}}}, "Wähle ein Boot"},
+		}, "err.raceTwice"},
+		{"wrong boat class", hild, tr, []Entry{{RaceID: "1x-a-w", RowerIDs: []string{"aw1"}, BoatID: b2}}, "err.boatClass"},
+		{"missing boat", schiller, tr, []Entry{{RaceID: "1x-a-w", RowerIDs: []string{"aw1"}}}, "err.boatRequired"},
 		{"hildesheim loan boats", hild, tr, []Entry{
 			{RaceID: "1x-a-w", RowerIDs: []string{"aw1"}, BoatID: b1},
 			{RaceID: "1x-a-m", RowerIDs: []string{"am1"}},
 			{RaceID: "2x-a-w", RowerIDs: []string{"aw2", "bw1"}, BoatID: b2},
 			{RaceID: "2x-b-m", RowerIDs: []string{"bm1", "km1"}},
 		}, ""},
-		{"foreign boat", hild, tr, []Entry{{RaceID: "1x-a-w", RowerIDs: []string{"aw1"}, BoatID: "ice-man"}}, "gehört nicht"},
+		{"foreign boat", hild, tr, []Entry{{RaceID: "1x-a-w", RowerIDs: []string{"aw1"}, BoatID: "ice-man"}}, "NotOwned"},
 		{"foreign rower", hild, tr, []Entry{
 			{RaceID: "1x-a-w", RowerIDs: []string{"michel-a"}, BoatID: b1},
-		}, "gehört nicht"},
+		}, "NotOwned"},
 		{"ergo no boat", ergo, tr, []Entry{{RaceID: "ergo-kinder-w", RowerIDs: []string{"kw1"}}}, ""},
 		{"ergo with boat", ergo, tr, []Entry{
 			{RaceID: "ergo-kinder-w", RowerIDs: []string{"kw1"}, BoatID: b1},
-		}, "kein eigenes Boot"},
+		}, "err.noOwnBoat"},
 		{"mixed ok", rvb, tr, []Entry{
 			{RaceID: "mixed-4x", RowerIDs: []string{"aw1", "am1", "bw1", "kw1"}, BoatID: b4},
 		}, ""},
 		{"mixed one gender", rvb, tr, []Entry{
 			{RaceID: "mixed-4x", RowerIDs: []string{"aw1", "aw2", "bw1", "kw1"}, BoatID: b4},
-		}, "Mixed"},
+		}, "err.mixed"},
 		{"mixed one age", rvb, tr, []Entry{
 			{RaceID: "mixed-4x", RowerIDs: []string{"bw1", "bm1", "bm2", "bm1"}, BoatID: b4},
-		}, "nur einmal"},
+		}, "err.rowerTwice"},
 		{"mixed same age", compFor(g, "rvb", WeatherNormal), tr, []Entry{
 			{RaceID: "mixed-4x", RowerIDs: []string{"aw1", "aw2", "am1", "am1"}, BoatID: b4},
-		}, "nur einmal"},
+		}, "err.rowerTwice"},
 		{"eight without boat", rvb, tr, []Entry{{
 			RaceID:   "mixed-8x",
 			RowerIDs: []string{"aw1", "aw2", "am1", "bw1", "bm1", "bm2", "kw1", "km1"},
@@ -665,7 +659,7 @@ func TestValidateEntries(t *testing.T) {
 	err := g.validateEntries(pl, rvb, tr, []Entry{
 		{RaceID: "mixed-4x", RowerIDs: []string{"bw1", "bw2", "bm1", "bm2"}, BoatID: b4},
 	})
-	if err == nil || !strings.Contains(err.Error(), "Mixed") {
+	if err == nil || !strings.Contains(err.Error(), "err.mixed") {
 		t.Errorf("single-age mixed crew accepted: %v", err)
 	}
 }
@@ -688,15 +682,15 @@ func TestValidateTraining(t *testing.T) {
 		{"exact", training, []TrainingAlloc{
 			alloc("aw1", StatKraft, 4), alloc("bw1", StatTechnik, 3), alloc("kw1", StatSpeed, 3),
 		}, ""},
-		{"too few", training, []TrainingAlloc{alloc("aw1", StatKraft, 9)}, "genau 10"},
-		{"too many", training, []TrainingAlloc{alloc("aw1", StatKraft, 11)}, "genau 10"},
-		{"negative", training, []TrainingAlloc{alloc("aw1", StatKraft, 12), alloc("aw2", StatKraft, -2)}, "positiv"},
-		{"bad stat", training, []TrainingAlloc{alloc("aw1", "magie", 10)}, "Unbekannte Eigenschaft"},
+		{"too few", training, []TrainingAlloc{alloc("aw1", StatKraft, 9)}, "err.trainTotal{points=10"},
+		{"too many", training, []TrainingAlloc{alloc("aw1", StatKraft, 11)}, "err.trainTotal{points=10"},
+		{"negative", training, []TrainingAlloc{alloc("aw1", StatKraft, 12), alloc("aw2", StatKraft, -2)}, "err.trainPositive"},
+		{"bad stat", training, []TrainingAlloc{alloc("aw1", "magie", 10)}, "err.unknownStat"},
 		{"motivation", training, []TrainingAlloc{
 			alloc("aw1", StatKraft, 9), alloc("aw1", StatMotivation, 1),
-		}, "Motivation kann man nicht trainieren"},
-		{"camp motivation", camp, []TrainingAlloc{alloc("aw1", StatMotivation, 30)}, "Motivation kann man nicht trainieren"},
-		{"foreign rower", training, []TrainingAlloc{alloc("michel-a", StatKraft, 10)}, "gehört nicht"},
+		}, "err.trainMotivation"},
+		{"camp motivation", camp, []TrainingAlloc{alloc("aw1", StatMotivation, 30)}, "err.trainMotivation"},
+		{"foreign rower", training, []TrainingAlloc{alloc("michel-a", StatKraft, 10)}, "NotOwned"},
 		{"camp five rowers", camp, []TrainingAlloc{
 			alloc("aw1", StatKraft, 6), alloc("aw2", StatKraft, 6), alloc("am1", StatKraft, 6),
 			alloc("bw1", StatKraft, 6), alloc("bm1", StatKraft, 6),
@@ -704,7 +698,7 @@ func TestValidateTraining(t *testing.T) {
 		{"camp six rowers", camp, []TrainingAlloc{
 			alloc("aw1", StatKraft, 5), alloc("aw2", StatKraft, 5), alloc("am1", StatKraft, 5),
 			alloc("bw1", StatKraft, 5), alloc("bm1", StatKraft, 5), alloc("bm2", StatKraft, 5),
-		}, "höchstens 5"},
+		}, "err.campMaxRowers{count=6 maxRowers=5}"},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -770,27 +764,62 @@ func TestEventEffects(t *testing.T) {
 			t.Errorf("technik %d", r.stats[StatTechnik])
 		}
 	})
-	t.Run("seelenzwilling adds a twin", func(t *testing.T) {
+	t.Run("seelenzwilling links a same-gender, same-age partner", func(t *testing.T) {
 		rw := pl.rower("bm1")
-		rw.stats = Stats{StatKraft: 20, StatAusdauer: 10, StatSpeed: 15, StatTechnik: 12, StatMotivation: 9}
 		n := len(pl.rowers)
 		g.applyEvent(pl, rw, ev("seelenzwilling"))
 
-		if len(pl.rowers) != n+1 {
-			t.Fatalf("no twin added")
+		if len(pl.rowers) != n {
+			t.Fatalf("seelenzwilling added a rower")
 		}
 
-		tw := pl.rowers[n]
+		// bm2 is the only other B-junior man in the test team.
+		if p := rw.event.partner; p == nil || p.id != "bm2" {
+			t.Fatalf("partner %+v, want bm2", p)
+		}
+	})
+	t.Run("seelenzwilling mirrors one training", func(t *testing.T) {
+		rw, p := pl.rower("bm1"), pl.rower("bm2")
+		rw.stats = Stats{StatKraft: 10, StatAusdauer: 10, StatSpeed: 10, StatTechnik: 10, StatMotivation: 10}
+		p.stats = Stats{StatKraft: 10, StatAusdauer: 10, StatSpeed: 10, StatTechnik: 10, StatMotivation: 10}
 
-		want := Stats{StatKraft: 16, StatAusdauer: 8, StatSpeed: 12, StatTechnik: 10, StatMotivation: 7}
-		if !tw.isTwin || tw.age != rw.age || tw.gender != rw.gender || !reflect.DeepEqual(tw.stats, want) {
-			t.Errorf("twin %+v stats %v", tw, tw.stats)
+		// A training without the pair leaves the card unspent.
+		g.applyTraining(pl, []TrainingAlloc{{RowerID: "aw1", Stat: StatKraft, Points: 10}})
+
+		if rw.event.spent || p.stats[StatKraft] != 10 {
+			t.Fatalf("card spent %v, partner kraft %d", rw.event.spent, p.stats[StatKraft])
 		}
 
-		for _, e := range eventEligible(pl) {
-			if e == tw || e == rw {
-				t.Errorf("twin or carded rower still eligible for events")
-			}
+		// Training the partner also trains the holder, and vice versa.
+		g.applyTraining(pl, []TrainingAlloc{
+			{RowerID: "bm2", Stat: StatKraft, Points: 4},
+			{RowerID: "bm1", Stat: StatTechnik, Points: 6},
+		})
+
+		want := Stats{StatKraft: 14, StatAusdauer: 10, StatSpeed: 10, StatTechnik: 16, StatMotivation: 10}
+		if !reflect.DeepEqual(rw.stats, want) || !reflect.DeepEqual(p.stats, want) {
+			t.Fatalf("holder %v, partner %v, want both %v", rw.stats, p.stats, want)
+		}
+
+		if !rw.event.spent {
+			t.Fatalf("card not spent")
+		}
+
+		// Only one training is mirrored.
+		g.applyTraining(pl, []TrainingAlloc{{RowerID: "bm1", Stat: StatKraft, Points: 5}})
+
+		if p.stats[StatKraft] != 14 {
+			t.Errorf("second training mirrored: partner kraft %d", p.stats[StatKraft])
+		}
+	})
+	t.Run("seelenzwilling falls back to the same gender", func(t *testing.T) {
+		g2 := newGame(t, 5)
+		pl2 := testPlayer(g2)
+		rw := pl2.rower("km1")
+		g2.applyEvent(pl2, rw, g2.d.EventType("seelenzwilling"))
+
+		if p := rw.event.partner; p == nil || p.gender != rw.gender || p == rw {
+			t.Errorf("partner %+v, want another man", p)
 		}
 	})
 	t.Run("wachstum grows the best stat at training", func(t *testing.T) {
@@ -884,7 +913,7 @@ func TestMissions(t *testing.T) {
 		}
 	}
 
-	rw.event = &eventCard{def: g.d.EventType("mission"), mission: &missionState{def: ms, text: "x"}}
+	rw.event = &eventCard{def: g.d.EventType("mission"), mission: &missionState{def: ms, rower: rw.name}}
 	g.station = 2 // Hildesheim
 	cs := compFor(g, "hildesheim", WeatherNormal)
 	best := rw.stats.bestStat()
@@ -904,7 +933,7 @@ func TestMissions(t *testing.T) {
 	// Other players never see the mission text before it resolves.
 	r2 := pl.rower("aw2")
 
-	r2.event = &eventCard{def: g.d.EventType("mission"), mission: &missionState{def: ms, text: "geheim"}}
+	r2.event = &eventCard{def: g.d.EventType("mission"), mission: &missionState{def: ms, rower: r2.name}}
 	for _, ps := range g.View(g.players[1].id).Players[0].Rowers {
 		if ps.ID == "aw2" && ps.Event.Mission != nil {
 			t.Errorf("secret mission visible to opponent")
@@ -912,7 +941,7 @@ func TestMissions(t *testing.T) {
 	}
 
 	for _, ps := range g.View(pl.id).Players[0].Rowers {
-		if ps.ID == "aw2" && (ps.Event.Mission == nil || ps.Event.Mission.Text != "geheim") {
+		if ps.ID == "aw2" && (ps.Event.Mission == nil || ps.Event.Mission.ID != ms.ID) {
 			t.Errorf("owner must see the mission")
 		}
 	}

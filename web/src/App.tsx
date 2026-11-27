@@ -9,8 +9,11 @@ import { StartScreen } from "@/screens/StartScreen";
 const AppShell = lazy(() => import("@/screens/AppShell").then((m) => ({ default: m.AppShell })));
 import { Button } from "@/components/ui/button";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
+import { t, useLang } from "@/i18n";
 
 export function App() {
+  // Subscribing here re-renders the whole tree when the language changes.
+  useLang();
   const mockRequested = isMockRequested();
   const [stored, setStored] = useState<Session | null>(() => loadSession());
   const [session, setSession] = useState<Session | null>(() => {
@@ -28,7 +31,7 @@ export function App() {
       setStored(s);
       setSession(s);
     } catch (e) {
-      toast.error(e instanceof ApiError ? e.message : "Spiel konnte nicht gestartet werden.");
+      toast.error(e instanceof ApiError ? e.message : t("app.startFailed"));
     } finally {
       setCreating(false);
     }
@@ -84,14 +87,14 @@ function GameRoot({ session, onLeave, onLost }: { session: Session; onLeave: () 
     return (
       <div className="grid min-h-dvh place-items-center p-6 text-center">
         <div className="max-w-sm rounded-[20px] bg-cream p-5 cut">
-          <p className="font-display text-xl font-bold">Spielstand nicht erreichbar</p>
+          <p className="font-display text-xl font-bold">{t("app.unreachable")}</p>
           <p className="mt-1 text-sm text-muted-foreground">
-            {q.error instanceof ApiError ? q.error.message : "Unbekannter Fehler."}
+            {q.error instanceof ApiError ? q.error.message : t("common.unknownError")}
           </p>
           <div className="mt-4 flex flex-col gap-2">
-            <Button onClick={() => void q.refetch()}>Nochmal versuchen</Button>
+            <Button onClick={() => void q.refetch()}>{t("app.retry")}</Button>
             <Button variant="outline" onClick={onLeave}>
-              Zum Start
+              {t("app.toStart")}
             </Button>
           </div>
         </div>
@@ -104,7 +107,7 @@ function GameRoot({ session, onLeave, onLost }: { session: Session; onLeave: () 
 function Loading() {
   return (
     <div className="grid min-h-dvh place-items-center" role="status">
-      <Loader2 className="size-8 animate-spin text-navy" aria-label="Spiel wird geladen" />
+      <Loader2 className="size-8 animate-spin text-navy" aria-label={t("app.loading")} />
     </div>
   );
 }

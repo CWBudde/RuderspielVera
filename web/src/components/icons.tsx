@@ -21,6 +21,7 @@ import {
 } from "lucide-react";
 import type { Stat, StationType, Weather } from "@/api/types.gen";
 import { cn } from "@/lib/utils";
+import { t } from "@/i18n";
 
 export const STAT_ICON: Record<string, LucideIcon> = {
   kraft: Dumbbell,
@@ -191,7 +192,11 @@ function BasketballIcon({ className }: { className?: string }) {
 export function MedalIcon({ medal, className }: { medal: "gold" | "silber"; className?: string }) {
   const fill = medal === "gold" ? "var(--gold)" : "var(--silver)";
   return (
-    <svg viewBox="0 0 24 24" className={cn("size-5", className)} aria-label={medal === "gold" ? "Gold" : "Silber"}>
+    <svg
+      viewBox="0 0 24 24"
+      className={cn("size-5", className)}
+      aria-label={medal === "gold" ? t("common.gold") : t("common.silver")}
+    >
       <path d="M7 2h4l2 6H9z" fill="#c2412d" stroke="var(--ink)" strokeWidth={1.2} />
       <path d="M13 2h4l-2 6h-4z" fill="#2b78bb" stroke="var(--ink)" strokeWidth={1.2} />
       <circle cx="12" cy="15" r="6.5" fill={fill} stroke="var(--ink)" strokeWidth={1.6} />

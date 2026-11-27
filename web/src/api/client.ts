@@ -1,7 +1,8 @@
 import type { CatalogView, CompetitionResult, Decision, GameView, LogEntry } from "./types.gen";
 import { readStorage, writeStorage } from "@/lib/storage";
-import { ApiError } from "./errors";
+import { ApiError, errorMsg } from "./errors";
 import { wasmBackend } from "./wasmTransport";
+import { t } from "@/i18n";
 
 export { ApiError };
 
@@ -80,7 +81,7 @@ async function request<T>(path: string, init: RequestInit = {}, token?: string):
   try {
     res = await fetch(path, { ...init, headers });
   } catch {
-    throw new ApiError(0, "Keine Verbindung zum Server. Bitte gleich nochmal versuchen.");
+    throw new ApiError(0, t("api.noConnection"));
   }
   const text = await res.text();
   let body: unknown = null;
@@ -92,11 +93,7 @@ async function request<T>(path: string, init: RequestInit = {}, token?: string):
     }
   }
   if (!res.ok) {
-    const msg =
-      body && typeof body === "object" && "error" in body && typeof body.error === "string"
-        ? body.error
-        : `Serverfehler (${res.status})`;
-    throw new ApiError(res.status, msg);
+    throw new ApiError(res.status, errorMsg(body) ?? t("api.serverError", { status: res.status }));
   }
   return body as T;
 }

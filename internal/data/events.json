@@ -91,8 +91,8 @@
     "name": "Seelenzwilling",
     "weight": 5,
     "scope": "any",
-    "value": 80,
-    "description": "Eine neue Rudererkarte kommt ins Team: der Zwilling mit 80 % der aktuellen Werte. Der Zwilling kann kein Event erhalten."
+    "value": 0,
+    "description": "Diese Person wird mit einer Teamkameradin oder einem Teamkameraden verbunden (bevorzugt gleiches Geschlecht und Alter). Beim nächsten Training, in dem eine der beiden Punkte bekommt, erhält die andere dieselben Punkte."
   },
   {
     "type": "mission",

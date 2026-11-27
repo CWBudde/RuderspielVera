@@ -125,11 +125,9 @@ func TestNoWaterEreignisInErgoWinter(t *testing.T) {
 		for range 400 {
 			g.pending = nil
 
-			name, _ := g.runEreignisStation()
-
-			e := byName[name]
+			e, _ := g.runEreignisStation()
 			if e.Scope == data.ScopeWater {
-				t.Fatalf("water Ereignis %s drawn before %s", name, g.nextCompetition().Name)
+				t.Fatalf("water Ereignis %s drawn before %s", e.Name, g.nextCompetition().Name)
 			}
 
 			if e.Scope == data.ScopeErgo {
@@ -250,10 +248,17 @@ func TestEventScopeAndBonus(t *testing.T) {
 		{"water card in the winter", stationIndex(t, g, StationEvent, 1), "regenjacke", true},
 		{"stat card any time", stationIndex(t, g, StationEvent, 10), "kraftraum", true},
 	}
+	t.Run("seelenzwilling needs a second rower", func(t *testing.T) {
+		lone := &player{rowers: g.players[0].rowers[:1]}
+		if g.eventDrawable(lone, ev("seelenzwilling")) || !g.eventDrawable(g.players[0], ev("seelenzwilling")) {
+			t.Errorf("seelenzwilling drawable for a one-rower team or not for a full team")
+		}
+	})
+
 	for _, tc := range draw {
 		t.Run(tc.name, func(t *testing.T) {
 			g.station = tc.station
-			if got := g.eventDrawable(ev(tc.typ)); got != tc.want {
+			if got := g.eventDrawable(g.players[0], ev(tc.typ)); got != tc.want {
 				t.Errorf("drawable = %v, want %v", got, tc.want)
 			}
 		})

@@ -3,8 +3,10 @@ import { Sparkles } from "lucide-react";
 import type { RowerView, Stat } from "@/api/types.gen";
 import { Art } from "@/components/Art";
 import { Emblem, StatBadge } from "@/components/icons";
-import { AGE_LABEL, AGE_SHORT, CORE_STATS, STAT_LABEL, STAT_MEDIUM, STAT_SHORT, ALL_STATS } from "@/lib/labels";
+import { ageLabel, ageShort, CORE_STATS, genderLabel, statLabel, statMedium, statShort, ALL_STATS } from "@/lib/labels";
 import { cn } from "@/lib/utils";
+import { t } from "@/i18n";
+import { eventDescription, eventName, rowerName } from "@/i18n/data";
 
 const AGE_TONE: Record<string, string> = {
   kinder: "bg-[#ffe7a3]",
@@ -20,9 +22,9 @@ export function AgeBadge({ age, short, className }: { age: string; short?: boole
         AGE_TONE[age] ?? "bg-muted",
         className,
       )}
-      title={AGE_LABEL[age]}
+      title={ageLabel(age)}
     >
-      {short ? AGE_SHORT[age] : (AGE_LABEL[age] ?? age)}
+      {short ? ageShort(age) : ageLabel(age)}
     </span>
   );
 }
@@ -36,8 +38,8 @@ export function GenderMark({ gender, className }: { gender: string; className?: 
         female ? "bg-[#f6b9cc] text-[#5a1f33]" : "bg-[#acd5f3] text-[#173a5c]",
         className,
       )}
-      title={female ? "Mädchen" : "Junge"}
-      aria-label={female ? "Mädchen" : "Junge"}
+      title={genderLabel(gender)}
+      aria-label={genderLabel(gender)}
     >
       {female ? "♀" : "♂"}
     </span>
@@ -58,10 +60,10 @@ export function SumTag({ rower, add = 0, className }: { rower: RowerView; add?: 
         "inline-flex shrink-0 items-baseline gap-1 text-[11px] font-bold whitespace-nowrap text-muted-foreground",
         className,
       )}
-      aria-label={add > 0 ? `Summe ${sum}, nach dem Training ${sum + add}` : `Summe ${sum}`}
-      title="Summe aller fünf Werte"
+      aria-label={add > 0 ? t("rower.sumAriaAfter", { sum, after: sum + add }) : t("rower.sumAria", { sum })}
+      title={t("rower.sumTitle")}
     >
-      Summe
+      {t("rower.sum")}
       <span className="num text-base leading-none text-ink">{sum}</span>
       {add > 0 && (
         <>
@@ -81,13 +83,13 @@ export function gain(r: RowerView, s: Stat): number {
 
 /** "noch 1 Regatta" / "noch 3 Regatten": competitions the Siegesmotivation still counts in. */
 function regattenLeft(n: number): string {
-  return n === 1 ? "noch 1 Regatta" : `noch ${n} Regatten`;
+  return t("rower.regattasLeft", { count: n });
 }
 
-/** German text of an active Siegesmotivation, e.g. "+1 Sieg, noch 2 Regatten"; "" if none. */
+/** Text of an active Siegesmotivation, e.g. "+1 Sieg, noch 2 Regatten"; "" if none. */
 export function winMotivationText(r: RowerView): string {
   if (!r.winMotivation) return "";
-  return `+${r.winMotivation} Sieg, ${regattenLeft(r.winMotivationLeft ?? 0)}`;
+  return t("rower.winMotivation", { n: r.winMotivation, left: regattenLeft(r.winMotivationLeft ?? 0) });
 }
 
 /** Small "+1 Sieg" tag with the remaining competitions in the tooltip. */
@@ -100,9 +102,9 @@ export function WinTag({ rower, className }: { rower: RowerView; className?: str
         "inline-flex shrink-0 items-center gap-0.5 rounded-full border border-ink bg-gold px-1.5 text-[10px] leading-4 font-bold whitespace-nowrap text-ink",
         className,
       )}
-      title={`Siegesmotivation: +${rower.winMotivation} Motivation (nicht trainierbar), zählt ${regattenLeft(left)}.`}
+      title={t("rower.winTagTitle", { n: rower.winMotivation, left: regattenLeft(left) })}
     >
-      +{rower.winMotivation} Sieg · {left}
+      {t("rower.winTag", { n: rower.winMotivation, left })}
     </span>
   );
 }
@@ -132,7 +134,7 @@ export function RowerCard({ rower, className, preview }: RowerCardProps) {
   return (
     <article
       className={cn("@container rounded-[18px] bg-cream p-1.5 cut", className)}
-      aria-label={`${rower.name}, ${AGE_LABEL[rower.age] ?? rower.age}`}
+      aria-label={`${rowerName(rower)}, ${ageLabel(rower.age)}`}
     >
       <div className="relative aspect-[5/6] overflow-hidden rounded-[13px] border-2 border-ink">
         <div className="absolute inset-0 [&_img]:object-[20%_center]">
@@ -152,10 +154,10 @@ export function RowerCard({ rower, className, preview }: RowerCardProps) {
         {rower.event && (
           <div
             className="absolute top-[24%] left-0 flex max-w-[62%] items-center gap-1 rounded-r-full border-y-2 border-r-2 border-ink bg-[#f6b9cc] py-0.5 pr-2.5 pl-1.5 text-[11px] font-bold text-[#5a1f33] @[15rem]:text-xs"
-            title={rower.event.description}
+            title={eventDescription(rower.event)}
           >
             <Sparkles className="size-3.5 shrink-0" />
-            <span className="truncate">{rower.event.name}</span>
+            <span className="truncate">{eventName(rower.event)}</span>
           </div>
         )}
 
@@ -168,9 +170,9 @@ export function RowerCard({ rower, className, preview }: RowerCardProps) {
               <StatBadge stat={s} className="absolute left-0 z-10 aspect-square h-[118%] w-auto" />
               <div className="ml-[12%] flex h-full w-full items-center justify-between gap-1 rounded-r-[10px] rounded-l-[4px] border-2 border-ink bg-cream pr-1.5 pl-[20%]">
                 <span className="truncate font-display text-[11px] leading-none font-bold italic @[15rem]:text-sm">
-                  <span className="@[15rem]:hidden">{STAT_SHORT[s]}</span>
-                  <span className="hidden @[15rem]:inline @[20rem]:hidden">{STAT_MEDIUM[s]}</span>
-                  <span className="hidden @[20rem]:inline">{STAT_LABEL[s]}</span>
+                  <span className="@[15rem]:hidden">{statShort(s)}</span>
+                  <span className="hidden @[15rem]:inline @[20rem]:hidden">{statMedium(s)}</span>
+                  <span className="hidden @[20rem]:inline">{statLabel(s)}</span>
                 </span>
                 <span className="flex items-baseline gap-0.5 num text-lg leading-none @[15rem]:text-2xl">
                   <Gain n={g(s)} />
@@ -183,7 +185,7 @@ export function RowerCard({ rower, className, preview }: RowerCardProps) {
 
         <div className="absolute right-1.5 bottom-1.5 w-[48%] overflow-hidden rounded-[10px] border-2 border-ink bg-cream">
           <div className="bg-stat-motivation px-2 py-0.5 font-display text-[11px] leading-tight font-bold italic @[15rem]:text-sm">
-            Motivation
+            {statLabel("motivation")}
           </div>
           <div className="flex items-baseline justify-end gap-1 px-2 num text-lg leading-tight @[15rem]:text-2xl">
             <Gain n={g("motivation")} />
@@ -192,7 +194,7 @@ export function RowerCard({ rower, className, preview }: RowerCardProps) {
           {!!rower.winMotivation && (
             <div
               className="truncate border-t-2 border-ink bg-gold px-2 text-right text-[10px] leading-4 font-bold @[15rem]:text-xs"
-              title="Siegesmotivation nach Gold oder Silber: zählt wie Motivation, ist aber nicht trainierbar und läuft ab."
+              title={t("rower.winMotivationTitle")}
             >
               {winMotivationText(rower)}
             </div>
@@ -201,15 +203,15 @@ export function RowerCard({ rower, className, preview }: RowerCardProps) {
 
         <div className="absolute bottom-2 left-0 max-w-[52%] -skew-x-6 rounded-r-[12px] border-y-2 border-r-2 border-ink bg-cream py-0.5 pr-2.5 pl-2">
           <span className="block skew-x-6 truncate num text-[15px] leading-tight text-navy uppercase @[11rem]:text-[17px] @[15rem]:text-[26px]">
-            {rower.name}
+            {rowerName(rower)}
           </span>
         </div>
       </div>
       <div
         className="flex items-baseline justify-between gap-1 px-1.5 pt-1 font-display text-xs font-bold italic @[15rem]:text-sm"
-        title="Summe aller fünf Werte"
+        title={t("rower.sumTitle")}
       >
-        <span>Summe</span>
+        <span>{t("rower.sum")}</span>
         <span className="flex items-baseline gap-0.5 num text-lg leading-none not-italic @[15rem]:text-xl">
           <Gain n={sumGain} />
           {sum}
@@ -240,10 +242,10 @@ export function RowerRow({
       </div>
       <div className="min-w-0 flex-1">
         <div className="flex items-center gap-1.5">
-          <span className="truncate num text-lg leading-none text-navy">{rower.name}</span>
+          <span className="truncate num text-lg leading-none text-navy">{rowerName(rower)}</span>
           <AgeBadge age={rower.age} short className="h-5 px-1.5 text-xs" />
           <GenderMark gender={rower.gender} className="size-5 text-[11px]" />
-          {rower.event && <Sparkles className="size-4 shrink-0 text-[#c2507a]" aria-label={rower.event.name} />}
+          {rower.event && <Sparkles className="size-4 shrink-0 text-[#c2507a]" aria-label={eventName(rower.event)} />}
           <WinTag rower={rower} />
           <SumTag rower={rower} className="ml-auto" />
         </div>
@@ -278,8 +280,8 @@ export function MiniStats({
             )}
             title={
               s === "motivation" && rower.winMotivation
-                ? `${STAT_LABEL[s]} ${rower.stats[s] ?? 0} (${winMotivationText(rower)})`
-                : STAT_LABEL[s]
+                ? `${statLabel(s)} ${rower.stats[s] ?? 0} (${winMotivationText(rower)})`
+                : statLabel(s)
             }
           >
             <span className={cn("size-2.5 shrink-0 rounded-full border border-ink", statDot(s))} />
