@@ -26,8 +26,8 @@ const (
 	kindJTFO    = "jtfo"    // competition kind / station type of Jugend trainiert für Olympia
 )
 
-// rankRanges are the rank (stat sum) ranges per age group, Regelwerk §5.3 / PoC decision.
-var rankRanges = map[string][2]int{"a": {86, 100}, "b": {59, 85}, "kinder": {46, 58}}
+// rankRanges are the rank (stat sum) ranges per age group, Regelwerk §5.3 / docs/ruderspiel-basiswerte.md.
+var rankRanges = map[string][2]int{"a": {84, 100}, "b": {58, 93}, "kinder": {46, 59}}
 
 // problems collects validation findings.
 type problems []error

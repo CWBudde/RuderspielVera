@@ -206,10 +206,10 @@ func TestCompetitionEreignisse(t *testing.T) {
 		}
 	})
 	t.Run("guest modifier", func(t *testing.T) {
-		race := compFor(g, "mindor", "").races[0]
-		base, _ := GuestScore(g.d, g.d.Competitions["mindor"], 0, race)
+		race := compFor(g, "mindoor", "").races[0]
+		base, _ := GuestScore(g.d, g.d.Competitions["mindoor"], 0, race)
 
-		cs := open("mindor", "starke-gaeste")
+		cs := open("mindoor", "starke-gaeste")
 
 		got, _ := g.guestEntry(cs, race)
 		if want := int(base) + 2*3; got.Total != want { // 1 seat × (Kraft 2 + Motivation 1) × 2
@@ -273,7 +273,7 @@ func TestEventScopeAndBonus(t *testing.T) {
 		{"eisbaden", "jtfo", WeatherKaelte, 8},
 		{"maschsee-kenner", "vr2", WeatherNormal, 3},
 		{"maschsee-kenner", "osnabrueck", "", 0},
-		{"bestzeit-fieber", "mindor", "", 6},
+		{"bestzeit-fieber", "mindoor", "", 6},
 		{"bestzeit-fieber", "rvh", WeatherNormal, 0},
 		{"spurtstark", "rvh", WeatherWind, 6},
 		{"spurtstark", "bremen", WeatherNormal, 0},

@@ -31,11 +31,11 @@
   { "id": "manpower", "name": "Manpower", "class": "1x", "value": 7, "group": "standard", "artKey": "boat-1x" },
   { "id": "kalypso", "name": "Kalypso", "class": "1x", "value": 5, "group": "standard", "artKey": "boat-1x" },
   { "id": "reinfall", "name": "Reinfall", "class": "1x", "value": 5, "group": "standard", "artKey": "boat-1x" },
-  { "id": "bj-turbo", "name": "Bj-Turbo", "class": "2x", "value": 7, "group": "standard", "artKey": "boat-2x" },
+  { "id": "bi-turbo", "name": "Bi-Turbo", "class": "2x", "value": 7, "group": "standard", "artKey": "boat-2x" },
   { "id": "black-sword", "name": "Black Sword", "class": "2x", "value": 6, "group": "standard", "artKey": "boat-2x" },
   { "id": "goodspeed", "name": "Goodspeed", "class": "2x", "value": 5, "group": "standard", "artKey": "boat-2x" },
   { "id": "simsalabim", "name": "Simsalabim", "class": "4x", "value": 6, "group": "standard", "artKey": "boat-4x" },
-  { "id": "oshra", "name": "Oshra", "class": "4x", "value": 5, "group": "standard", "artKey": "boat-4x" },
+  { "id": "oshi", "name": "Oshi", "class": "4x", "value": 5, "group": "standard", "artKey": "boat-4x" },
   { "id": "need-4-speed", "name": "Need 4 Speed", "class": "4x", "value": 7, "group": "standard", "artKey": "boat-4x" },
 
   {

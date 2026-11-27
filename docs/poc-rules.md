@@ -22,7 +22,7 @@ Numbers live in `internal/data/*.json`, not in code, so most changes are data ed
   _Trainingslager_ (camps).
 - PoC assumption: **WR5**, **Basketballturnier** and **Wanderfahrt** are _selection_ stations
   (choose 5 rowers).
-- Mindor-Cup, DRC-Ergo-Cup and Osnabrücker Ergo-Cup are Ergo-Cups; JTFO is a team competition;
+- Mindoor-Cup, DRC-Ergo-Cup and Osnabrücker Ergo-Cup are Ergo-Cups; JTFO is a team competition;
   Hildesheim, Bremen, Kassel, Verbandsregatta I/II, Schillerschule, RVH and RVB are water regattas.
 - Counts: 12 trainings, 2 camps, 3 selections, 11 Event stations, 11 Ereignis stations, 12
   competitions.
@@ -32,8 +32,9 @@ Numbers live in `internal/data/*.json`, not in code, so most changes are data ed
 ### 2.1 Rowers (Ruderer)
 
 - 55 cards, names exactly from Regelwerk §14.1–14.3.
-- PoC assumption: rank (= sum of the five starting stats incl. Motivation, §5.3) A-Junioren 100…86
-  (Michel = 100, the others shuffled), B-Junioren 85…59, Kinder 58…46.
+- Rank (= sum of the five starting stats incl. Motivation, §5.3) per card from the handwritten list in
+  `docs/ruderspiel-basiswerte.md`: every value 46…100 once; A-Junioren 84…100 (Michel = 100),
+  B-Junioren 58…93, Kinder 46…59 (the age ranges overlap).
 - PoC assumption: each sum is split by one of five archetypes with ±15 % jitter per stat, every stat
   ≥ 5:
 
@@ -74,7 +75,7 @@ Yara (w).
   | ------ | -------------------------------------------- | -------------------------------------------------------------- |
   | Einer  | Ice-Man 6, Manpower 7, Kalypso 5, Reinfall 5 | Zwergenkreuzer 8, Traumstart 9, Rennschlumpf 8, Singlespeed 10 |
   | Zweier | Bi-Turbo 7, Black Sword 6, Goodspeed 5       | Freiheit 8, X-Wing 10, Laufwunder 9, H zwei O 8                |
-  | Vierer | Simsalabim 6, Oshra 5, Need 4 Speed 7        | Q 10, 5 Freunde 9, Wilhelm 8                                   |
+  | Vierer | Simsalabim 6, Oshi 5, Need 4 Speed 7         | Q 10, 5 Freunde 9, Wilhelm 8                                   |
 
   Note: §14.5 lists **21** named boats (not 22).
 
@@ -214,18 +215,18 @@ random walk:
 
 ### 4.3 Weights and races
 
-| Competition                                    | Weights                              | Races                                                |
-| ---------------------------------------------- | ------------------------------------ | ---------------------------------------------------- |
-| Hildesheimer Regatta (Langstrecke)             | Ausdauer 2, Motivation 1             | 1x and 2x × A/B × Mädchen/Jungen (8), loan boats     |
-| Mindor-Cup, DRC-Ergo-Cup, Osnabrücker Ergo-Cup | Kraft 2, Motivation 1                | Ergometer × Kinder/B/A × Mädchen/Jungen (6), no boat |
-| Regatta Bremen                                 | Geschw. 1, Technik 1, Motivation 1   | 1x B w/m, 4x B w/m                                   |
-| Kasselregatta                                  | Geschw. 1, Kraft 1, Motivation 1     | 2x Kinder w/m, 4x A w/m                              |
-| Verbandsregatta I                              | Technik 1.5, Geschw. 1, Motivation 1 | 1x Kinder w/m, 2x B w/m                              |
-| Regatta Schillerschule                         | Geschw. 1, Technik 1, Motivation 1   | 1x A w/m, Kinder-Vierer (gemischt), 4x B w           |
-| Verbandsregatta II                             | Technik 1.5, Geschw. 1, Motivation 1 | 2x A w/m, 4x B m, 1x Kinder w                        |
-| JTFO                                           | Geschw. 1, Technik 1, Motivation 1   | team competition, see 4.4                            |
-| RVH-Herbstsprintregatta (Sprint)               | Geschw. 2, Kraft 1, Motivation 1     | 1x/2x/4x × Mädchen/Jungen, all ages (6)              |
-| RVB-Endspurtregatta (Sprint)                   | Geschw. 2, Technik 1, Motivation 1   | Mixed-Vierer, Mixed-Achter (shared eight)            |
+| Competition                                     | Weights                              | Races                                                |
+| ----------------------------------------------- | ------------------------------------ | ---------------------------------------------------- |
+| Hildesheimer Regatta (Langstrecke)              | Ausdauer 2, Motivation 1             | 1x and 2x × A/B × Mädchen/Jungen (8), loan boats     |
+| Mindoor-Cup, DRC-Ergo-Cup, Osnabrücker Ergo-Cup | Kraft 2, Motivation 1                | Ergometer × Kinder/B/A × Mädchen/Jungen (6), no boat |
+| Regatta Bremen                                  | Geschw. 1, Technik 1, Motivation 1   | 1x B w/m, 4x B w/m                                   |
+| Kasselregatta                                   | Geschw. 1, Kraft 1, Motivation 1     | 2x Kinder w/m, 4x A w/m                              |
+| Verbandsregatta I                               | Technik 1.5, Geschw. 1, Motivation 1 | 1x Kinder w/m, 2x B w/m                              |
+| Regatta Schillerschule                          | Geschw. 1, Technik 1, Motivation 1   | 1x A w/m, Kinder-Vierer (gemischt), 4x B w           |
+| Verbandsregatta II                              | Technik 1.5, Geschw. 1, Motivation 1 | 2x A w/m, 4x B m, 1x Kinder w                        |
+| JTFO                                            | Geschw. 1, Technik 1, Motivation 1   | team competition, see 4.4                            |
+| RVH-Herbstsprintregatta (Sprint)                | Geschw. 2, Kraft 1, Motivation 1     | 1x/2x/4x × Mädchen/Jungen, all ages (6)              |
+| RVB-Endspurtregatta (Sprint)                    | Geschw. 2, Technik 1, Motivation 1   | Mixed-Vierer, Mixed-Achter (shared eight)            |
 
 Motivation counts with weight 1 in **every** competition (designer rule; data validation enforces a
 Motivation weight > 0).
@@ -264,7 +265,7 @@ index + guestOffset of the competition` (Kinder 14, B 18, A 22, growth 0.2 per s
   ranking only.
 - `guestOffset` per competition evens out how hard the guests are (the bots' training concentrates
   on the stats of the next competitions, Kraft above all before the Ergo-Cups): Hildesheim −4.5,
-  Mindor-Cup +1, DRC-Ergo-Cup +5.5, Osnabrücker Ergo-Cup +7, Bremen −1, Kasselregatta −1.5,
+  Mindoor-Cup +1, DRC-Ergo-Cup +5.5, Osnabrücker Ergo-Cup +7, Bremen −1, Kasselregatta −1.5,
   Verbandsregatta I +2.5, Schillerschule +1, Verbandsregatta II 0, JTFO −1.25, RVH −3.5,
   RVB −3.5. They are tuned so that the guest crew wins about 28 % of the contested races of every
   competition in 3-player all-bot games (section 10.3).
@@ -333,7 +334,7 @@ everyone. Immediate effects apply at once; the others wait until the next matchi
 
 - A `water` card is only drawn when the **next competition** is a water regatta (incl. JTFO), an
   `ergo` card only when it is an Ergo-Cup. In the Ergo-Cup winter (the Ereignisse before
-  Mindor-Cup, DRC-Ergo-Cup and Osnabrücker Ergo-Cup) there is therefore no Maschsee-Monster,
+  Mindoor-Cup, DRC-Ergo-Cup and Osnabrücker Ergo-Cup) there is therefore no Maschsee-Monster,
   Hitzewelle or Treibgut; from the Ereignis before Bremen on there are no ergo cards.
 - A competition modifier is consumed by the next competition of its scope, which with this rule is
   always the next competition. `any` modifiers (Gastmannschaften) apply at the next competition of
@@ -444,7 +445,7 @@ seat. Boat draft picks are ~50 % of all picks because an extra boat also allows 
 
 Designer rules: Hildesheim races get loan boats (4.1), incidents in per mille with capsizes by boat
 size (4.2), Motivation can't be trained and counts with weight 1 everywhere (3, 4.3). Rebalanced
-`guestOffset`: Hildesheim −4 → −4.5 (bots now also enter weaker crews there), Mindor-Cup
+`guestOffset`: Hildesheim −4 → −4.5 (bots now also enter weaker crews there), Mindoor-Cup
 +1.5 → +1, DRC-Ergo-Cup +5.5 → +5, Osnabrücker Ergo-Cup +6 → +5.5 (Motivation is no longer trained,
 so players lost ground against the guests at the Ergo-Cups).
 
@@ -478,19 +479,19 @@ trainer has a mood (2.4.1). No other numbers changed.
 
 Sim numbers, 1000 games, seed 1, 3 players (default personalities):
 
-| Metric                                              | Before                 | After                  |
-| --------------------------------------------------- | ---------------------- | ---------------------- |
-| Final points mean (sd)                              | 37.6 (5.3)             | 38.4 (5.5)             |
-| Final points min / p10 / median / p90 / max         | 19 / 31 / 37 / 45 / 57 | 19 / 32 / 38 / 45 / 60 |
-| Share of final scores in 15..40                     | 71.6 %                 | 66.0 %                 |
-| Winner minus last                                   | 10.1                   | 10.3                   |
-| Win rate Taktiker (1 vs 2 Bauchgefühl)              | 41.8 %                 | 44.8 %                 |
-| Max seat win rate, all seats Taktiker (500 games)   | 38.7 %                 | 34.4 %                 |
-| Guest crew 1st in contested races                   | 46.0 %                 | 43.6 %                 |
-| Guest crew 1st at the Ergo-Cups (Mindor/DRC/Osnab.) | 47.5 / 45.0 / 39.1 %   | 41.5 / 39.8 / 35.0 %   |
-| Krebs per water entry                               | 16.7 %                 | 15.1 %                 |
-| Score share trainer / events                        | 3.6 / 0.1 %            | 3.7 / 0.3 %            |
-| 2 / 4 players: final points mean (500 games)        | 47.1 / 32.1            | 48.2 / 32.7            |
+| Metric                                               | Before                 | After                  |
+| ---------------------------------------------------- | ---------------------- | ---------------------- |
+| Final points mean (sd)                               | 37.6 (5.3)             | 38.4 (5.5)             |
+| Final points min / p10 / median / p90 / max          | 19 / 31 / 37 / 45 / 57 | 19 / 32 / 38 / 45 / 60 |
+| Share of final scores in 15..40                      | 71.6 %                 | 66.0 %                 |
+| Winner minus last                                    | 10.1                   | 10.3                   |
+| Win rate Taktiker (1 vs 2 Bauchgefühl)               | 41.8 %                 | 44.8 %                 |
+| Max seat win rate, all seats Taktiker (500 games)    | 38.7 %                 | 34.4 %                 |
+| Guest crew 1st in contested races                    | 46.0 %                 | 43.6 %                 |
+| Guest crew 1st at the Ergo-Cups (Mindoor/DRC/Osnab.) | 47.5 / 45.0 / 39.1 %   | 41.5 / 39.8 / 35.0 %   |
+| Krebs per water entry                                | 16.7 %                 | 15.1 %                 |
+| Score share trainer / events                         | 3.6 / 0.1 %            | 3.7 / 0.3 %            |
+| 2 / 4 players: final points mean (500 games)         | 47.1 / 32.1            | 48.2 / 32.7            |
 
 The mood alone changes almost nothing in the aggregate (a run without mood steps: mean 38.3,
 Taktiker 44.3 %); the rise of the Taktiker edge comes from the larger decks: more conditional

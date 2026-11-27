@@ -1,7 +1,8 @@
 // Command gendata generates internal/data/rowers.json deterministically.
 //
-// Every rower gets a rank (the SUM of the five starting stats, Regelwerk §5.3): A-Junioren 100…86
-// (Michel = 100), B-Junioren 85…59, Kinder 58…46. The sum is split by one of five archetypes with
+// Every rower gets a rank (the SUM of the five starting stats, Regelwerk §5.3) from the handwritten
+// list in docs/ruderspiel-basiswerte.md: A-Junioren 84…100 (Michel = 100), B-Junioren 58…93,
+// Kinder 46…59; every value from 46 to 100 occurs exactly once. The sum is split by one of five archetypes with
 // seeded jitter; every stat is at least 5. The output is committed and may be hand-edited afterwards
 // (the loader validates that the stats still add up to the rank).
 package main
@@ -48,6 +49,17 @@ var (
 		"Yara", "Matilda", "Lea", "Annabelle", "Emilie", "Jonathan", "Maxi", "Fabi", "Niclas",
 		"Michel", "Jonte", "Simon", "Tara", "Johanna", "Matilda",
 	}
+)
+
+// Ranks (stat sums) per name, in the same order as the name lists above
+// (docs/ruderspiel-basiswerte.md).
+var (
+	kinderRanks    = []int{54, 52, 48, 47, 46, 59, 57, 50, 53, 56, 49, 55, 51}
+	bJuniorenRanks = []int{
+		64, 68, 70, 62, 79, 74, 76, 72, 81, 71, 60, 78, 61, 66, 65, 69, 73, 75, 83, 87, 93,
+		80, 82, 77, 67, 58, 63,
+	}
+	aJuniorenRanks = []int{91, 92, 86, 88, 84, 97, 96, 98, 99, 100, 95, 94, 85, 89, 90}
 )
 
 // genders maps every first name to "w" (Mädchen) or "m" (Jungen). Names marked guessed in
@@ -117,26 +129,30 @@ func main() {
 }
 
 type group struct {
-	age      string
-	names    []string
-	top, low int
+	age   string
+	names []string
+	ranks []int
 }
 
 func generate(seed uint64) ([]rower, error) {
 	rng := rand.New(rand.NewPCG(seed, seed^0x9e3779b97f4a7c15))
 	groups := []group{
-		{"a", aJunioren, 100, 86},
-		{"b", bJunioren, 85, 59},
-		{"kinder", kinder, 58, 46},
+		{"a", aJunioren, aJuniorenRanks},
+		{"b", bJunioren, bJuniorenRanks},
+		{"kinder", kinder, kinderRanks},
 	}
 	var all []rower
 
 	for _, grp := range groups {
-		if grp.top-grp.low+1 != len(grp.names) {
-			return nil, fmt.Errorf("group %s: %d names for ranks %d..%d", grp.age, len(grp.names), grp.top, grp.low)
+		if len(grp.ranks) != len(grp.names) {
+			return nil, fmt.Errorf("group %s: %d names but %d ranks", grp.age, len(grp.names), len(grp.ranks))
 		}
 
-		rankOf := shuffledRanks(rng, grp)
+		// The ranks used to be shuffled; the draw is kept so every rower keeps its archetype and
+		// jitter from before the fixed list.
+		skipShuffle(rng, len(grp.names))
+
+		rankOf := grp.ranks
 		seen := map[string]int{}
 
 		for idx, name := range grp.names {
@@ -169,37 +185,9 @@ func generate(seed uint64) ([]rower, error) {
 	return all, nil
 }
 
-// shuffledRanks assigns the ranks top..low to the group's names in random order. Michel is fixed
-// at the top rank; everyone else gets a shuffled rank.
-func shuffledRanks(rng *rand.Rand, grp group) []int {
-	ranks := make([]int, 0, len(grp.names))
-	for r := grp.top; r >= grp.low; r-- {
-		ranks = append(ranks, r)
-	}
-
-	order := make([]int, len(grp.names))
-	for i := range order {
-		order[i] = i
-	}
-
-	rng.Shuffle(len(order), func(i, j int) { order[i], order[j] = order[j], order[i] })
-
-	if grp.age == "a" {
-		mi := indexOf(grp.names, "Michel")
-		for k, idx := range order {
-			if idx == mi {
-				order[0], order[k] = order[k], order[0]
-				break
-			}
-		}
-	}
-
-	rankOf := make([]int, len(grp.names))
-	for k, idx := range order {
-		rankOf[idx] = ranks[k]
-	}
-
-	return rankOf
+// skipShuffle consumes the random draws of the former rank shuffle of n names.
+func skipShuffle(rng *rand.Rand, n int) {
+	rng.Shuffle(n, func(int, int) {})
 }
 
 // split distributes total over the five stats by the archetype weights with ±15 % jitter per stat,
@@ -267,14 +255,4 @@ func split(rng *rand.Rand, total int, a archetype) map[string]int {
 func slugify(s string) string {
 	r := strings.NewReplacer("ä", "ae", "ö", "oe", "ü", "ue", "ß", "ss", " ", "-")
 	return r.Replace(strings.ToLower(s))
-}
-
-func indexOf(xs []string, s string) int {
-	for i, x := range xs {
-		if x == s {
-			return i
-		}
-	}
-
-	return -1
 }

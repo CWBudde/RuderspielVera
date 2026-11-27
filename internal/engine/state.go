@@ -233,7 +233,8 @@ func (g *Game) deal() {
 
 	g.addLog("station", "", fmt.Sprintf(
 		"Spielvorbereitung: Jeder Spieler erhält %d Ruderer, städtische Boote und %d Trainer.",
-		len(g.players[0].rowers), rules.Trainers))
+		len(g.players[0].rowers), rules.Trainers,
+	))
 }
 
 // dealAgeGroup shuffles one age group and deals perPlayer rowers to each player, first

@@ -116,7 +116,7 @@ func TestStationTypes(t *testing.T) {
 	d := MustLoad()
 	want := map[string]string{
 		"s5-hankensbuettel": "camp", "s6-kassel-camp": "camp", "s3-wr5": "selection",
-		"s5-basketball": "selection", "s8-wanderfahrt": "selection", "s2-mindor": "ergocup",
+		"s5-basketball": "selection", "s8-wanderfahrt": "selection", "s2-mindoor": "ergocup",
 		"s3-drc": "ergocup", "s4-osnabrueck": "ergocup", "s10-jtfo": "jtfo", "s1-hildesheim": "regatta",
 		"s11-rvh": "regatta", "s12-rvb": "regatta",
 	}

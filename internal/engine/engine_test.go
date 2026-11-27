@@ -480,7 +480,7 @@ func TestValidateEntries(t *testing.T) {
 	b1, b2, b4 := pl.boats[0].id, pl.boats[1].id, pl.boats[2].id
 	hild := compFor(g, "hildesheim", WeatherNormal)
 	rvb := compFor(g, "rvb", WeatherNormal)
-	ergo := compFor(g, "mindor", "")
+	ergo := compFor(g, "mindoor", "")
 	jtfo := compFor(g, "jtfo", WeatherNormal)
 	schiller := compFor(g, "schillerschule", WeatherNormal)
 

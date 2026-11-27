@@ -342,8 +342,8 @@
       }
     ]
   },
-  "mindor": {
-    "name": "Mindor-Cup",
+  "mindoor": {
+    "name": "Mindoor-Cup",
     "kind": "ergocup",
     "context": "ergo",
     "water": false,

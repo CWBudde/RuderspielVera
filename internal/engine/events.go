@@ -199,7 +199,8 @@ func (g *Game) openSwapPhase() bool {
 		prompts[pl.id] = fmt.Sprintf(
 			"Tausch-Event: Du darfst zwei Eigenschaften von %s miteinander tauschen "+
 				"(Motivation ausgenommen) – oder darauf verzichten.",
-			pl.rower(q[0]).name)
+			pl.rower(q[0]).name,
+		)
 	}
 
 	if len(required) == 0 {

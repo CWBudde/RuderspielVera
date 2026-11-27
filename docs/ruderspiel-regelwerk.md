@@ -69,7 +69,7 @@ Die folgende Reihenfolge ist aus dem handschriftlichen Ablauf übernommen. Jede 
 | Abschnitt | Stationen in zeitlicher Reihenfolge                                              |
 | --------- | -------------------------------------------------------------------------------- |
 | 1         | Spielvorbereitung → Training → Hildesheim                                        |
-| 2         | Event → Training → Ereignis → Mindor-Cup                                         |
+| 2         | Event → Training → Ereignis → Mindoor-Cup                                        |
 | 3         | Event → WR5 (Winterruder-Fünfkampf) → Training → Ereignis → DRC-Ergo-Cup         |
 | 4         | Event → Training → Ereignis → Osnabrücker Ergo-Cup                               |
 | 5         | Event → Basketballturnier → Training → Ereignis → Hankensbüttel → Regatta Bremen |
@@ -83,7 +83,7 @@ Die folgende Reihenfolge ist aus dem handschriftlichen Ablauf übernommen. Jede 
 
 Danach erfolgt die abschließende Medaillenwertung.
 
-**Offen:** Der Mindor-Cup wurde im Gespräch auch Mindero-Cup genannt; die endgültige Schreibweise ist zu prüfen. Ob Hankensbüttel und Kassel jeweils eigene Wettkämpfe, Trainingslager oder sonstige Stationen sind, geht aus dem Ablauf nicht zweifelsfrei hervor. Auch die genaue Funktion der Wanderfahrt ist offen. Die beiden Verbandsregatten sind zur Unterscheidung nummeriert; die Nummern sind keine offiziellen Namen. Die Position(en) des Trainingslagers müssen noch zugeordnet werden. In den Notizen sind RVH-Herbstsprintregatta und RVB-Endspurtregatta getrennte Stationen; das Spiel endet nach mündlicher Festlegung mit der RVB-Endspurtregatta.
+**Offen:** Der Mindoor-Cup wurde im Gespräch auch Mindero-Cup genannt; die endgültige Schreibweise ist zu prüfen. Ob Hankensbüttel und Kassel jeweils eigene Wettkämpfe, Trainingslager oder sonstige Stationen sind, geht aus dem Ablauf nicht zweifelsfrei hervor. Auch die genaue Funktion der Wanderfahrt ist offen. Die beiden Verbandsregatten sind zur Unterscheidung nummeriert; die Nummern sind keine offiziellen Namen. Die Position(en) des Trainingslagers müssen noch zugeordnet werden. In den Notizen sind RVH-Herbstsprintregatta und RVB-Endspurtregatta getrennte Stationen; das Spiel endet nach mündlicher Festlegung mit der RVB-Endspurtregatta.
 
 ## 3. Spielmaterial
 
@@ -169,6 +169,8 @@ Die Eigenschaften können durch Training, Events und Sonderveranstaltungen dauer
 ### 5.3 Anfängliche Basiswerte
 
 Für die erste Version wird eine gemeinsame Leistungsrangfolge verwendet. Michel (A-Junior) erhält als stärkster Ruderer einen anfänglichen Gesamtrichtwert von 100. Die folgenden Karten erhalten Richtwerte von 99, 98, 97 usw. Die schwächsten Karten liegen damit im zweistelligen Bereich.
+
+Die konkreten Werte je Karte stehen in `docs/ruderspiel-basiswerte.md` (jeder Wert von 46 bis 100 genau einmal).
 
 Der Richtwert ist die **Summe der fünf anfänglichen Eigenschaften**, kein zusätzlicher sechster Wert. Er dient der internen Kartenerstellung und Sortierung. Auf der Karte selbst muss die Summe nicht angezeigt werden.
 
@@ -352,7 +354,7 @@ Wetter, Bootswert, Trainer-Spezialfähigkeiten und Wasserwettkampf-Zwischenfäll
 
 Vorgesehene Veranstaltungen:
 
-- Mindor-Cup (Mindero-Cup im Gespräch)
+- Mindoor-Cup
 - DRC-Ergo-Cup
 - Osnabrücker Ergo-Cup
 
@@ -500,8 +502,8 @@ Die Namensliste enthält zwei Gruppen regulärer Boote. Die zweite ist handschri
 | Kategorie | Erste Namensgruppe                   |
 | --------- | ------------------------------------ |
 | Einer     | Ice-Man, Manpower, Kalypso, Reinfall |
-| Zweier    | Bj-Turbo, Black Sword, Goodspeed     |
-| Vierer    | Simsalabim, Oshra, Need 4 Speed      |
+| Zweier    | Bi-Turbo, Black Sword, Goodspeed     |
+| Vierer    | Simsalabim, Oshi, Need 4 Speed       |
 
 | Kategorie | Zweite Namensgruppe (umrandet)                                          |
 | --------- | ----------------------------------------------------------------------- |
@@ -511,7 +513,7 @@ Die Namensliste enthält zwei Gruppen regulärer Boote. Die zweite ist handschri
 
 Die regulären Achter Hannover, Kraftwerk und Pointbreak (letzter Name unsicher) sind in den Notizen durchgestrichen und gehören nicht zum normalen Bootsbestand. Der einheitliche Sonder-Achter für die Endspurtregatta erhält gegebenenfalls noch einen Namen.
 
-Die handschriftlichen Bootsnamen umfassen mehr als die separat notierte Zahl „12 Boote“. Es ist daher noch zu klären, welche davon tatsächlich als Karten aufgenommen werden, ob städtische Boote separat zählen und ob weitere Boote ergänzt werden. Schreibweisen wie Bj-Turbo, Oshra und Rennschlumpf sind vorläufig.
+Die handschriftlichen Bootsnamen umfassen mehr als die separat notierte Zahl „12 Boote“. Es ist daher noch zu klären, welche davon tatsächlich als Karten aufgenommen werden, ob städtische Boote separat zählen und ob weitere Boote ergänzt werden. Schreibweisen wie Bi-Turbo, Oshi und Rennschlumpf sind vorläufig.
 
 ## 15. Umsetzung als Computerspiel
 

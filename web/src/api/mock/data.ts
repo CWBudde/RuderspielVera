@@ -51,7 +51,7 @@ const SECTIONS: StationDef[][] = [
     ["event", "Event"],
     ["training", "Training"],
     ["ereignis", "Ereignis"],
-    ["ergocup", "Mindor-Cup"],
+    ["ergocup", "Mindoor-Cup"],
   ],
   [
     ["event", "Event"],
@@ -210,7 +210,7 @@ export const ROWER_NAMES: Record<string, [string, Gender][]> = {
   ],
 };
 
-export const SUM_RANGE: Record<string, [number, number]> = { a: [86, 100], b: [59, 85], kinder: [46, 58] };
+export const SUM_RANGE: Record<string, [number, number]> = { a: [84, 100], b: [58, 93], kinder: [46, 59] };
 
 /** Archetypes split a stat sum; weights per stat in display order. */
 export const ARCHETYPES: { name: string; w: Record<Stat, number> }[] = [
@@ -254,11 +254,11 @@ export const NAMED_BOATS: [string, string, number][] = [
   ["Manpower", "1x", 6],
   ["Kalypso", "1x", 6],
   ["Reinfall", "1x", 5],
-  ["Bj-Turbo", "2x", 6],
+  ["Bi-Turbo", "2x", 6],
   ["Black Sword", "2x", 7],
   ["Goodspeed", "2x", 6],
   ["Simsalabim", "4x", 6],
-  ["Oshra", "4x", 7],
+  ["Oshi", "4x", 7],
   ["Need 4 Speed", "4x", 7],
   ["Zwergenkreuzer", "1x", 8],
   ["Traumstart", "1x", 9],
