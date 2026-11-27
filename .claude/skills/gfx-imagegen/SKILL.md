@@ -17,8 +17,10 @@ Run from the repo root with `K=.claude/skills/gfx-imagegen`; repo paths (`art/`,
   with `mkdir -p`; `gen.sh` writes to `art/gen/<GEN_DIR>/<group>/` there). Never touch other repos
   there (Historyline lives next door), never touch `/mnt/Large`, never delete files there.
 - At most **three** Codex runs at once on .20 (other agents share it); `gen.sh` waits for a free slot,
-  but the check is not atomic: launch at most three `gen.sh` at once yourself. The remote disk is nearly
-  full; `gen.sh` refuses under 2 GB free.
+  but the check is not atomic: launch at most three `gen.sh` at once yourself. Both remote disks are
+  nearly full: `gen.sh` refuses under 2 GB free on `/mnt/Projekte` and under 1 GB free for `~/.codex`
+  (the root disk, which holds Codex's transcripts and images). When the root disk is full, Codex says
+  the image tool "lost" its result; ask the user to free space there, do not delete anything yourself.
 - **Real children**: the rowers on the real cards (`examples/vera-karte.png`, `kartendesign.png`) are
   real children of a rowing club. Generate only generic, fictional characters; never attempt a
   likeness. Attach `vera-karte.png` only as a style/backdrop reference and say so: "style only, invent a

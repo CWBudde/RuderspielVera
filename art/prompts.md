@@ -96,69 +96,85 @@ grey long-sleeve shirt, a clipboard tucked under her arm. Not a rower: no tank t
 
 ## Boats (Objects)
 
+Side views kept failing on direction and oar counts; these high-angle entries produced the picks
+(1x, 2x, 4x). The 8x entry has not produced an image yet (.20 disk full).
+
 **boat-1x** [objects] single scull
 
 ```text
-A single scull on the Maschsee: exactly 1 rower with two identical oars, one per hand and one per
-side, so exactly 1 shaft and blade on the near side and 1 on the far side, 2 in total. The boat
-travels toward the LEFT, seen from a low three-quarter side view at water level: the pointed bow is at
-the left end, the wake trails off to the right. Slim white shell with a red stripe. The rower in a
-plain navy tank top sits facing RIGHT toward the stern, back to the bow, at the catch (arms straight,
-knees bent, both blades just entering the water, mirror-symmetric). Tree-lined shore and the distant
-domes of the Neues Rathaus in the background, one small white sailboat. LANDSCAPE, aspect 3:2 (for
-example 1536 x 1024 pixels). The boat spans about 60 percent of the canvas width, centred slightly
-below the middle, with at least 15 percent empty water left and right.
+A single scull on the Maschsee seen from a HIGH ANGLE, looking down at about 50 degrees from above and
+slightly to the side, so that both sides of the boat and all oars are clearly visible, spread out
+symmetrically like wings. Exactly 1 rower with two identical oars, one per hand and one per
+side: exactly 1 oar on the left-hand side of the hull and 1 on the right-hand side, 2 in total, never
+3. Each oar starts at the oarlock on a rigger beside the rower; the two oars form a symmetric V
+and never cross each other or the hull; the left oar mirrors the right oar
+exactly. Both oars identical (same length, dark shaft, same blue blades), all blades at the
+water surface in the same stroke phase (the catch: arms straight, knees bent). The boat travels
+diagonally toward the upper LEFT of the canvas: the pointed bow leads at the upper left, a white wake
+trails behind the stern toward the lower right. White shell with a red stripe, the rower in a plain navy tank top
+facing the stern (toward the lower right), back to the bow. Blue water with sparkles all around, a
+strip of tree-lined shore along the top edge. LANDSCAPE, aspect 3:2 (for example 1536 x 1024 pixels).
+The boat with its oars spans at most 60 percent of the canvas width, with at least 15 percent empty
+water left and right.
 ```
 
 **boat-2x** [objects] double scull
 
 ```text
-A double scull on the Maschsee: exactly 2 rowers, each with two identical oars, one per hand and one
-per side. Exactly 2 shafts and blades on the near side and 2 on the far side, 4 in total, never 3 or
-5; the far-side blades are visible beyond the hull and mirror the near-side ones; the two oars of a
-side are parallel and never cross; each oar sits in the oarlock beside its own rower; the two handles
-of each rower overlap slightly in front of the chest. All four oars identical (same length, shaft
-colour, blade shape and blade colour) and in the same stroke phase. The boat travels toward the LEFT,
-low three-quarter side view at water level: the pointed bow is at the left end, the wake trails off to
-the right. Yellow shell, both rowers in plain navy tank tops facing RIGHT toward the stern, backs to
-the bow. Tree-lined shore and small white sailboats behind. LANDSCAPE, aspect 3:2 (for example 1536 x
-1024 pixels). The boat spans at most 65 percent of the canvas width, with at least 15 percent empty
+A double scull on the Maschsee seen from a HIGH ANGLE, looking down at about 50 degrees from above and
+slightly to the side, so that both sides of the boat and all oars are clearly visible, spread out
+symmetrically like wings. Exactly 2 rowers, each with two identical oars, one per hand and one per
+side: exactly 2 oars on the left-hand side of the hull and 2 on the right-hand side, 4 in total, never
+3 or 5. Each oar starts at the oarlock on a rigger beside its own rower; the two oars on one side are
+parallel and never cross each other or the hull; the oars on one side mirror those on the other side
+exactly. All four oars identical (same length, dark shaft, same blue blades), all blades at the
+water surface in the same stroke phase (the catch: arms straight, knees bent). The boat travels
+diagonally toward the upper LEFT of the canvas: the pointed bow leads at the upper left, a white wake
+trails behind the stern toward the lower right. Yellow shell, both rowers in plain navy tank tops
+facing the stern (toward the lower right), backs to the bow. Blue water with sparkles all around, a
+strip of tree-lined shore along the top edge. LANDSCAPE, aspect 3:2 (for example 1536 x 1024 pixels).
+The boat with its oars spans at most 65 percent of the canvas width, with at least 15 percent empty
 water left and right.
 ```
 
 **boat-4x** [objects] quad scull
 
 ```text
-A quad scull (no coxswain) racing on the Maschsee: exactly 4 rowers, each with two identical oars,
-one per hand and one per side. Exactly 4 shafts and blades on the near side and 4 on the far side, 8
-in total; the far-side oars mirror the near-side oars and their blades are visible beyond the hull;
-riggers symmetric at every seat; each oar sits in the oarlock beside its own rower and never crosses
-the hull. All eight oars identical (same length, shaft colour, blade shape and colour), parallel and in
-the same stroke phase: the catch, all blades just entering the water, every rower with arms straight
-and knees bent. The boat travels toward the LEFT, three-quarter side view slightly from above: the
-pointed bow with a white bow wave is at the left end, the wake trails off to the right. Light-blue
-shell, four rowers in plain navy tank tops, all facing RIGHT toward the stern, backs to the bow.
-Tree-lined shore, the distant domes of the Neues Rathaus above the trees. LANDSCAPE, aspect 3:2 (for
-example 1536 x 1024 pixels). The boat spans at most 70 percent of the canvas width, fully inside the
-canvas, with at least 15 percent empty water left and right.
+A quad scull (no coxswain) on the Maschsee seen from a HIGH ANGLE, looking down at about 50 degrees
+from above and slightly to the side, so that both sides of the boat and all oars are clearly visible,
+spread out symmetrically like wings. Exactly 4 rowers, each with two identical oars, one per hand and
+one per side: exactly 4 oars on the left-hand side of the hull and 4 on the right-hand side, 8 in
+total. Each oar starts at the oarlock on a rigger beside its own rower; the four oars on one side are
+parallel, evenly spaced and never cross each other or the hull; the oars on one side mirror those on
+the other side exactly. All eight oars identical (same length, dark shaft, same yellow blades), all
+blades at the water surface in the same stroke phase (the catch: arms straight, knees bent). The boat
+travels diagonally toward the upper LEFT of the canvas: the pointed bow leads at the upper left, a
+white wake trails behind the stern toward the lower right. Light-blue shell, four rowers in plain navy
+tank tops, all facing the stern (toward the lower right), backs to the bow. Blue water with sparkles
+all around, a strip of tree-lined shore along the top edge. LANDSCAPE, aspect 3:2 (for example 1536 x
+1024 pixels). The boat with its oars spans at most 70 percent of the canvas width, with at least 15
+percent empty water left and right.
 ```
 
 **boat-8x** [objects] sweep eight with coxswain
 
 ```text
-A sweep-rowing eight with coxswain racing on the Maschsee: exactly 8 rowers in one long shell, each
-holding ONE oar with both hands, plus a coxswain. The sides alternate seat by seat (first rower's oar
-on the far side, second on the near side, and so on), so exactly 4 oars on the near side and 4 on the
-far side, never all 8 on one side; the riggers alternate the same way; the far-side blades are
-visible beyond the hull. All eight oars identical (same length, shaft colour, blade shape and colour),
-parallel on each side and in the same stroke phase. The boat travels toward the LEFT, three-quarter
-side view slightly from above: the pointed bow with a strong white bow wave is at the left end. The
-coxswain sits at the far RIGHT end (the stern), facing LEFT toward the bow, face to face with the
-crew. All eight rowers face RIGHT toward the coxswain, backs to the bow. Long yellow-green shell,
-rowers in plain navy tank tops with no marks. Tree-lined shore and small white sailboats behind.
-LANDSCAPE, aspect 3:2 (for example 1536 x 1024 pixels). The whole boat including bow and stern fits
-inside the canvas and spans at most 75 percent of its width, with at least 12 percent empty water
-left and right.
+A sweep-rowing eight with coxswain on the Maschsee seen from a HIGH ANGLE, looking down at about 50
+degrees from above and slightly to the side, so that both sides of the long boat and all oars are
+clearly visible, spread out like the legs of a water strider. Exactly 8 rowers in one long shell, each
+holding ONE oar with both hands, plus a coxswain. The oars alternate sides seat by seat: rower 1 left,
+rower 2 right, rower 3 left, rower 4 right, and so on, so exactly 4 oars stick out on the left-hand
+side and exactly 4 on the right-hand side, 8 in total, never more than 4 on one side; the riggers
+alternate the same way. Each oar starts at the oarlock beside its own rower, the oars on one side are
+parallel and evenly spaced and never cross each other or the hull. All eight oars identical (same
+length, dark shaft, same white blades), all blades at the water surface in the same stroke phase. The
+boat travels diagonally toward the upper LEFT of the canvas: the pointed bow leads at the upper left,
+a white wake trails behind the stern toward the lower right. The coxswain (cap, navy jacket) sits at
+the stern end at the lower right, facing the crew and the bow; all eight rowers face the coxswain,
+backs to the bow. Long yellow-green shell, rowers in plain navy tank tops with no marks. Blue water
+with sparkles all around, a strip of tree-lined shore along the top edge. LANDSCAPE, aspect 3:2 (for
+example 1536 x 1024 pixels). The whole boat with its oars fits inside the canvas and spans at most 80
+percent of its width.
 ```
 
 ## Board (Board)

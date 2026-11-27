@@ -73,6 +73,10 @@ while :; do
 done
 free=$(ssh $host "df -Pk $remote | awk 'NR==2{print \$4}'")
 [ "${free:-0}" -gt 2097152 ] || { echo "FAILED $id: under 2 GB free on $host:$remote" >&2; exit 1; }
+# Codex writes its transcript and generated images under ~/.codex (the root disk on .20); when that is
+# full, the image tool "loses" its result and Codex reports a missing PNG.
+hfree=$(ssh $host "df -Pk ~/.codex | awk 'NR==2{print \$4}'")
+[ "${hfree:-0}" -gt 1048576 ] || { echo "FAILED $id: under 1 GB free for ~/.codex on $host (root disk full); free space there first" >&2; echo "FAILED $id: ~/.codex disk full on $host"; exit 1; }
 
 mkdir -p "$local"
 ssh $host "mkdir -p $remote/$rel"   # only under the dedicated work dir
