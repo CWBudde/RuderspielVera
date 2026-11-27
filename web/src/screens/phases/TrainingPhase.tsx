@@ -143,7 +143,7 @@ function TrainRow({
         className="flex min-h-14 w-full items-center gap-2.5 p-1.5 pr-2 text-left lg:pointer-events-none"
       >
         <div className="size-11 shrink-0 overflow-hidden rounded-lg border-2 border-ink">
-          <Art artKey={rower.artKey} label={rower.name} thumb />
+          <Art artKey={rower.artKey} cardId={rower.id} label={rower.name} thumb />
         </div>
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-1.5">

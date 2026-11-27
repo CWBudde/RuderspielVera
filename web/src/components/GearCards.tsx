@@ -62,7 +62,7 @@ export function TrainerCard({
       </header>
       <div className="flex gap-2.5 px-2 pb-2">
         <div className="size-20 shrink-0 overflow-hidden rounded-[10px] border-2 border-ink">
-          <Art artKey={trainer.artKey} label={trainer.name} thumb />
+          <Art artKey={trainer.artKey} cardId={trainer.id} label={trainer.name} thumb />
         </div>
         <ul className="flex min-w-0 flex-1 flex-col justify-center gap-1">
           {(trainer.effects ?? []).map((e, i) => {

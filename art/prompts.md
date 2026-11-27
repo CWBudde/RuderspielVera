@@ -2,7 +2,8 @@
 
 One entry per asset. The ID is the art key (`web/src/assets/art/<artKey>.png`). `assemble.sh <kind>
 <ID> "<attachment line>"` takes the first ```text block after the line starting `**<ID> `. The kind
-(section of `art/style.md`) is given in brackets. All people are generic, fictional characters.
+(section of `art/style.md`) is given in brackets. All people are generic, fictional characters, except
+the `person` template, which is only used with a photo from `reference-rowers/`.
 
 Default attachments: `examples/vera-karte.png` as "style and backdrop reference only; invent a
 completely different, fictional person, do not copy the face, hair or the card layout, text or stat
@@ -92,6 +93,28 @@ in one hand at chest height. Sporty and approachable. Not a rower: no tank top.
 A fictional rowing coach, a woman of about 35. Dark hair tied in a low bun under a red sun visor,
 light olive skin, focused thoughtful expression with a slight smile, navy softshell vest over a
 grey long-sleeve shirt, a clipboard tucked under her arm. Not a rower: no tank top.
+```
+
+## Named people (Portraits)
+
+Template only: never run it with the placeholders. Copy it to `art/gen/<date>/people/<id>-entry.txt`,
+fill every `<…>` and pick one age-group line; installed as `people/<card-id>`. Only for people with a
+photo in `reference-rowers/` (private; see the skill, "Named-person portraits"). Attach the photo as
+image 1 and `examples/vera-karte.png` as image 2.
+
+**person** [portraits] stylized likeness of a named club member from a reference photo
+
+```text
+A stylized illustrated card portrait of <NAME>, a real <girl|boy|woman|man> from the rowing club,
+drawn from the attached likeness reference photo (image 1). Age group: <one of: Kinder, about 10 to
+12 years | B-Junioren, about 13 to 14 years | A-Junioren, about 15 to 17 years | Trainer, adult>.
+Keep the person recognisable: the same face shape, eye shape, nose and smile, the same hair colour,
+length and style<, the same glasses>, the same skin tone and the same apparent age as in the photo.
+Seen in the photo: <short description: e.g. light-brown straight hair with a side fringe, blue eyes,
+fair skin, slim face>. Translate the person into the game's ink and watercolour style; do not paint a
+photorealistic copy. Do not copy the photo's background, clothing, lighting or framing: <rowers: the
+navy rowing tank top as described | trainers: a navy zip-up club training jacket>, the Maschsee
+backdrop as described. PORTRAIT orientation, aspect 3:4. No text anywhere.
 ```
 
 ## Boats (Objects)

@@ -6,7 +6,9 @@ attachment line. Edit the text blocks here, not in the scripts.
 
 References in `examples/`: `vera-karte.png` (the current rower card), `kartendesign.png` (card layout
 with boat and trainer art), `spielbrett.png` (the illustrated Maschsee board). The rowers on the real
-cards are real children of a rowing club: generated art shows only generic, fictional people.
+cards are real children of a rowing club: generic art keys show only generic, fictional people. Named
+portraits (`people/<card-id>`) are stylized likenesses made from a user-provided photo in
+`reference-rowers/` (private; see the skill, "Named-person portraits").
 
 Palette anchors: navy kit and frames `#1f3a5f`, lake blue `#2f6fb0`–`#5aa0d8`, leaf green
 `#5c9a2e`–`#a8c64a`, warm skin and hair tones, cream highlights `#f6efdc`, red-orange rooftops
@@ -29,8 +31,8 @@ Setting: the Maschsee lake in Hannover in summer, tree-lined shores, small white
 Absolutely no text, letters, numbers, words, signatures, watermarks, logos, brand marks or
 lettering anywhere in the image, also not on clothing, boats, flags or signs. No borders, frames,
 card layouts, UI panels or stat boxes: the image is pure illustration that fills the whole canvas.
-All people are generic, fictional characters invented for this game; never a likeness of a real
-person.
+All people are generic, fictional characters invented for this game and never a likeness of a real
+person, unless the entry below attaches a likeness reference photo of a named person.
 ```
 
 ## Portraits

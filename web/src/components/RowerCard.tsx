@@ -75,7 +75,7 @@ export function RowerCard({ rower, className, preview }: RowerCardProps) {
     >
       <div className="relative aspect-[5/6] overflow-hidden rounded-[13px] border-2 border-ink">
         <div className="absolute inset-0 [&_img]:object-[20%_center]">
-          <Art artKey={rower.artKey} label={rower.name} />
+          <Art artKey={rower.artKey} cardId={rower.id} label={rower.name} />
         </div>
 
         <div className="absolute top-0 left-0 grid size-[22%] place-items-center rounded-br-[14px] border-r-2 border-b-2 border-ink bg-navy">
@@ -152,7 +152,7 @@ export function RowerRow({
   return (
     <div className={cn("flex min-h-14 items-center gap-2.5 rounded-xl border-2 border-ink bg-cream p-1.5 pr-2", className)}>
       <div className="relative size-11 shrink-0 overflow-hidden rounded-lg border-2 border-ink">
-        <Art artKey={rower.artKey} label={rower.name} thumb />
+        <Art artKey={rower.artKey} cardId={rower.id} label={rower.name} thumb />
       </div>
       <div className="min-w-0 flex-1">
         <div className="flex items-center gap-1.5">

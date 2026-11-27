@@ -16,6 +16,20 @@ export const ART_MANIFEST: Record<string, string> = Object.fromEntries(
 );
 
 /**
+ * Named portraits: `src/assets/art/people/<card id>.png`, likenesses of real club members
+ * (git-ignored, local only). An empty or missing directory yields an empty manifest.
+ */
+const peopleFiles = import.meta.glob<string>("../assets/art/people/*.{webp,png,jpg}", {
+  eager: true,
+  query: "?url",
+  import: "default",
+});
+
+export const PEOPLE_MANIFEST: Record<string, string> = Object.fromEntries(
+  Object.entries(peopleFiles).map(([path, url]) => [path.replace(/^.*\/(.+)\.\w+$/, "$1"), url]),
+);
+
+/**
  * Resolves an artKey to a file. Exact match first; otherwise a numbered variant of the same
  * family is picked deterministically by `seed` (e.g. "trainer-m" -> one of "trainer-1..4").
  */
@@ -38,11 +52,13 @@ interface ArtProps {
   alt?: string;
   /** Small square crop: zooms portrait art onto the face. */
   thumb?: boolean;
+  /** Rower or trainer card id: `people/<cardId>` wins over the artKey (a "-zwilling" twin shares it). */
+  cardId?: string;
 }
 
 /** Image for an artKey, falling back to a drawn placeholder (portrait, boat or trainer). */
-export function Art({ artKey, label, className, alt, thumb }: ArtProps) {
-  const url = artUrl(artKey, label);
+export function Art({ artKey, label, className, alt, thumb, cardId }: ArtProps) {
+  const url = (cardId && PEOPLE_MANIFEST[cardId.replace(/-zwilling$/, "")]) || artUrl(artKey, label);
   const [failed, setFailed] = useState(false);
   if (url && !failed) {
     return (

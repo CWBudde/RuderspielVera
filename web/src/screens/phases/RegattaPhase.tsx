@@ -346,7 +346,7 @@ function LineupBuilder({
                       {r ? (
                         <>
                           <span className="size-8 shrink-0 overflow-hidden rounded-md border-2 border-ink">
-                            <Art artKey={r.artKey} label={r.name} thumb />
+                            <Art artKey={r.artKey} cardId={r.id} label={r.name} thumb />
                           </span>
                           <span className="min-w-0 flex-1 truncate font-display text-base font-bold">{r.name}</span>
                           <span className="text-xs font-bold tabular-nums text-muted-foreground">{Math.round(rowerScore(r, comp.weights))}</span>
@@ -562,7 +562,7 @@ function RowerPicker({
                   )}
                 >
                   <span className="size-11 shrink-0 overflow-hidden rounded-lg border-2 border-ink">
-                    <Art artKey={r.artKey} label={r.name} thumb />
+                    <Art artKey={r.artKey} cardId={r.id} label={r.name} thumb />
                   </span>
                   <span className="min-w-0 flex-1">
                     <span className="flex items-center gap-1.5">

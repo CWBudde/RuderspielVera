@@ -1,6 +1,6 @@
 ---
 name: gfx-imagegen
-description: Use when generating, regenerating or trying images for Ruderspiel (rower or trainer portraits, boat art, the board background, the title splash, icon sheets, card art), or when asked to run "imagegen on .20" or "on the gfx machine". Claude cannot make images itself; this runs Codex's built-in image tool over ssh on 192.168.213.20 and covers prompt assembly from art/style.md and art/prompts.md, attaching style references from examples/, the try loop, review records and installing a pick into web/src/assets/art/.
+description: Use when generating, regenerating or trying images for Ruderspiel (rower or trainer portraits, named portraits of club members from reference-rowers/ photos, boat art, the board background, the title splash, icon sheets, card art), or when asked to run "imagegen on .20" or "on the gfx machine". Claude cannot make images itself; this runs Codex's built-in image tool over ssh on 192.168.213.20 and covers prompt assembly from art/style.md and art/prompts.md, attaching style references from examples/, the try loop, review records and installing a pick into web/src/assets/art/.
 ---
 
 # Image generation through Codex on the gfx machine
@@ -22,9 +22,16 @@ Run from the repo root with `K=.claude/skills/gfx-imagegen`; repo paths (`art/`,
   (the root disk, which holds Codex's transcripts and images). When the root disk is full, Codex says
   the image tool "lost" its result; ask the user to free space there, do not delete anything yourself.
 - **Real children**: the rowers on the real cards (`examples/vera-karte.png`, `kartendesign.png`) are
-  real children of a rowing club. Generate only generic, fictional characters; never attempt a
-  likeness. Attach `vera-karte.png` only as a style/backdrop reference and say so: "style only, invent a
-  completely different, fictional person; do not copy the face, hair or features".
+  real children of a rowing club. Generic art keys (`rower-*`, `trainer-*`) show only generic,
+  fictional characters. Attach `vera-karte.png` only as a style/backdrop reference and say so: "style
+  only, do not copy the face, hair or features" (plus "invent a completely different, fictional
+  person" for generic keys).
+- **Named-person portraits** (user decision 2026-11-27): a portrait of a real club member is allowed
+  **only** when the user put a reference photo of that person into `reference-rowers/`. See
+  "Named-person portraits" below. Without a photo, no likeness of a named person.
+- **`reference-rowers/` is private**: git-ignored, never committed, never copied anywhere except the
+  run's gen dir on .20 (`gen.sh` copies attachments there). Do not attach these photos to anything
+  else, do not upload or publish them.
 - No text in images unless the entry asks for it; no logos or brands. The UI overlays names and stats.
 - No Python, no ImageMagick: the helpers here are Go.
 
@@ -125,6 +132,35 @@ installed (it currently is not); keep each file under 1 MB. Then add one line to
 ```
 
 Committing is a separate step (only when asked); `art/gen/` itself stays uncommitted.
+
+## Named-person portraits
+
+For a club member with a photo in `reference-rowers/<Name>.jpg`:
+
+1. **Card id**: look the first name up in `internal/data/rowers.json` / `trainers.json` (`id`, `name`,
+   `age`, `gender`). Spellings differ ("Annabel" → `annabelle-a`, "Frau Lincke" → `frau-linke`). A
+   name with several cards (e.g. Johann in Kinder and B) is assigned by the apparent age in the photos;
+   when it stays ambiguous or the name is not in the data, skip it and tell the user. Empty or
+   unreadable photo files: skip and report.
+2. **Prompt**: copy the `person` template from `art/prompts.md` into
+   `art/gen/$GEN_DIR/people/<id>-entry.txt`, fill the placeholders (name, age group, gender, what to
+   keep from the photo after looking at it yourself: face shape, hair colour and style, glasses, skin
+   tone, age) and assemble with kind `portraits`. Group `people`, try ids `people-<card-id>01`, `…01b`.
+3. **Attachments**: image 1 the photo ("LIKENESS REFERENCE: keep this person's recognisable features;
+   do not copy the photo's background, clothing, lighting or framing"), image 2 `examples/vera-karte.png`
+   ("STYLE AND BACKDROP REFERENCE ONLY: do not copy the face, hair or features of the person in it, nor
+   the card layout, text or stat boxes").
+4. **Review**: Read the photo and the result side by side. Reject (new id, at most 3 tries per person)
+   for wrong apparent age, lost likeness, text in the image, the photo's background or clothing copied,
+   or a broken composition (person in the right half, cropped head).
+5. **Install** with `fit -bits 6 … web/src/assets/art/people/<card-id>.png 600 800` and add a manifest
+   line with artKey `people/<card-id>`. `Art.tsx` uses `people/<card id>` for a rower or trainer card
+   when it exists and falls back to the generic artKey portrait otherwise.
+
+**These files are likenesses of real minors.** `web/src/assets/art/people/` is git-ignored: never
+commit it, never publish it (GitHub Pages, a public repo, a shared artifact) and never move it
+elsewhere without the user's explicit OK. A local `pnpm build` bundles them into `web/dist/`; do not
+deploy such a build.
 
 ## Lessons
 

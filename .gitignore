@@ -8,3 +8,7 @@ art/gen/
 *.log
 /reference-rowers/
 .claude/settings.local.json
+web/public/ruderspiel.wasm
+web/public/wasm_exec.js
+# Likenesses of real club members (minors): local only until the user decides
+/web/src/assets/art/people/

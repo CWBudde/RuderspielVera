@@ -3,7 +3,8 @@
 One line per installed pick (see `.claude/skills/gfx-imagegen/SKILL.md`, "Installing a pick"). Sources
 live in `art/gen/<date>/<group>/` (git-ignored) with prompt, log and `review.md`. "thread-…" means Codex
 wrote the image itself and left no exec file; the thread id identifies the run on 192.168.213.20.
-All people are generic, fictional characters.
+All people are generic, fictional characters, except `people/<card-id>` lines: likenesses of real club
+members from private photos, git-ignored and local only (not to be published without the user's OK).
 
 | artKey | file | size | try | exec id | date | note |
 | --- | --- | --- | --- | --- | --- | --- |

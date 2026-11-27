@@ -31,7 +31,7 @@ function EventFace({ rower }: { rower: RowerView }) {
         )}
         <div className="mt-auto flex items-center gap-2 pt-3">
           <div className="size-10 shrink-0 overflow-hidden rounded-lg border-2 border-ink @[13rem]:size-12">
-            <Art artKey={rower.artKey} label={rower.name} thumb />
+            <Art artKey={rower.artKey} cardId={rower.id} label={rower.name} thumb />
           </div>
           <div>
             <p className="text-xs font-semibold text-muted-foreground">für</p>
