@@ -1,0 +1,8 @@
+/bin/
+/data/
+node_modules/
+web/dist/
+art/gen/
+.claude/skills/gfx-imagegen/bin/
+.playwright-mcp/
+*.log
