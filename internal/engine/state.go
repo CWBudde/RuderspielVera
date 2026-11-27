@@ -208,8 +208,8 @@ func (s Stats) clone() Stats {
 
 var ageOrder = []AgeGroup{AgeKinder, AgeB, AgeA}
 
-// deal distributes the starting cards (PoC: 3 rowers per age group with at least one girl and one
-// boy per age group, city boats, 2 random trainers) and builds the draft pool from the rest.
+// deal distributes the starting cards (rowers per age group by player count with at least one girl
+// and one boy per age group, city boats, 2 random trainers) and builds the draft pool from the rest.
 func (g *Game) deal() {
 	rules := g.d.Rules.Deal
 	byAge := map[AgeGroup][]*rower{}
@@ -220,7 +220,7 @@ func (g *Game) deal() {
 	}
 
 	for _, age := range ageOrder {
-		g.dealAgeGroup(slices.Clone(byAge[age]), rules.RowersPerAgeGroup, rules.MinPerGender)
+		g.dealAgeGroup(slices.Clone(byAge[age]), g.d.DealRowers(len(g.players), string(age)), rules.MinPerGender)
 	}
 
 	for _, p := range g.players {

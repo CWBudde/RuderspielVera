@@ -132,8 +132,17 @@ random walk:
 
 ### 2.5 Starting deal (any player count 2–4)
 
-- PoC assumption: 9 rowers per player – 3 per age group, at least 1 girl and 1 boy per age group,
-  otherwise random. With 3 players 28 rowers remain in the pool.
+- Starting rowers per player depend on the player count (designer rule, `deal.rowersByPlayers`), at
+  least 1 girl and 1 boy per age group, otherwise random:
+
+  | Players | Kinder | B-Junioren | A-Junioren | Per player | Left in the pool |
+  | ------: | -----: | ---------: | ---------: | ---------: | ---------------: |
+  |       2 |      6 |         13 |          7 |         26 |                3 |
+  |       3 |      4 |          9 |          5 |         18 |                1 |
+  |       4 |      3 |          4 |          3 |         10 |               15 |
+
+  With 3 players every B- and A-Junior is dealt; only one Kind remains for the draft.
+
 - City 1x/2x/4x and 2 random trainers per player. Remaining trainers (4 with 3 players) and all
   named boats go into the draft pool.
 

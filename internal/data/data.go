@@ -230,9 +230,10 @@ type Rules struct {
 	WeatherTable         []string             `json:"weatherTable"` // d6 faces
 	EventCardsPerStation []int                `json:"eventCardsPerStation"`
 	Deal                 struct {
-		RowersPerAgeGroup int `json:"rowersPerAgeGroup"`
-		MinPerGender      int `json:"minPerGender"`
-		Trainers          int `json:"trainers"`
+		// RowersByPlayers is the number of starting rowers per player and age group, by player count.
+		RowersByPlayers map[string]map[string]int `json:"rowersByPlayers"`
+		MinPerGender    int                       `json:"minPerGender"`
+		Trainers        int                       `json:"trainers"`
 	} `json:"deal"`
 	Draft struct {
 		ExtraOffer          int  `json:"extraOffer"`
@@ -438,4 +439,10 @@ func (d *Data) RacesFor(c *Competition, players int) []Race {
 	}
 
 	return c.Variants[d.Rules.JTFOVariants[strconv.Itoa(players)]]
+}
+
+// DealRowers returns the number of starting rowers per player in the given age group for the given
+// player count.
+func (d *Data) DealRowers(players int, age string) int {
+	return d.Rules.Deal.RowersByPlayers[strconv.Itoa(players)][age]
 }

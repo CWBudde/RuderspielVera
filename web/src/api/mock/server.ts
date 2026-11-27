@@ -31,6 +31,7 @@ import {
   MISSIONS,
   ROWER_NAMES,
   Rng,
+  DEAL_3_PLAYERS,
   SUM_RANGE,
   TRAINERS,
   buildCalendar,
@@ -98,11 +99,10 @@ export function createState(playerName: string, seed: number): MockState {
     { id: YOU, name: playerName || "Du", isBot: false },
     { id: "p2", name: BOT_NAMES[0], isBot: true },
     { id: "p3", name: BOT_NAMES[1], isBot: true },
-  ].map((p, idx) => {
-    const count = [10, 9, 11][idx];
+  ].map((p) => {
     const rowers: RowerView[] = [];
     for (const age of ["a", "b", "kinder"] as AgeGroup[]) {
-      const want = age === "b" ? count - 6 : 3;
+      const want = DEAL_3_PLAYERS[age];
       for (let k = 0; k < want; k++) {
         const needGender: Gender | undefined = k === 0 ? "w" : k === 1 ? "m" : undefined;
         let i = all.findIndex((r) => r.age === age && (!needGender || r.gender === needGender));

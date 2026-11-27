@@ -110,15 +110,15 @@ Das Spiel ist für zwei, drei oder vier Mitspieler ausgelegt.
 
 Die handschriftliche Spielvorbereitung nennt drei Ruderer je Altersgruppe (Kinder, B-Junioren, A-Junioren). In der mündlichen Erklärung wurden außerdem drei Mädchen und drei Jungen genannt. Die genaue gemeinsame Verteilung nach Altersgruppe und Geschlecht ist deshalb noch zu bestätigen.
 
-Die handschriftliche Rechentabelle geht von insgesamt 55 Rudererkarten und einer anfänglichen Verteilung von neun Karten je Mitspieler aus:
+Festgelegt (27. November 2026): Die Zahl der Anfangsruderer hängt von der Zahl der Mitspieler ab. Jeder Mitspieler erhält je Altersgruppe mindestens ein Mädchen und einen Jungen, sonst zufällig:
 
-| Mitspieler | Anfänglich verteilt (gesamt, Entwurf) | Pro Mitspieler | Verbleibend |
-| ---------: | ------------------------------------: | -------------: | ----------: |
-|          2 |                                    18 |              9 |          37 |
-|          3 |                                    27 |              9 |          28 |
-|          4 |                                    36 |              9 |          19 |
+| Mitspieler | Kinder | B-Junioren | A-Junioren | Pro Mitspieler | Verbleibend |
+| ---------: | -----: | ---------: | ---------: | -------------: | ----------: |
+|          2 |      6 |         13 |          7 |             26 |           3 |
+|          3 |      4 |          9 |          5 |             18 |           1 |
+|          4 |      3 |          4 |          3 |             10 |          15 |
 
-Diese Tabelle dokumentiert den älteren Rechenstand, nicht eine abschließend vereinbarte Verteilungsregel. Bei weniger Mitspielern sollen im Spiel mehr Karten pro Mitspieler zur Verfügung stehen; wie das konkret schon bei der Anfangsverteilung bzw. späteren Verteilung umgesetzt wird, bleibt offen.
+Die ältere handschriftliche Rechentabelle mit neun Karten je Mitspieler (drei je Altersgruppe) ist damit überholt.
 
 ### 4.2 Boote
 

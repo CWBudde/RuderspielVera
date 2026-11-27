@@ -3,6 +3,8 @@ package engine
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
+	"maps"
 	"math"
 	"math/rand/v2"
 	"reflect"
@@ -30,8 +32,8 @@ func TestNewDeal(t *testing.T) {
 	seen := map[string]bool{}
 
 	for _, pl := range g.players {
-		if len(pl.rowers) != 9 {
-			t.Errorf("%s: %d rowers, want 9", pl.id, len(pl.rowers))
+		if len(pl.rowers) != 18 {
+			t.Errorf("%s: %d rowers, want 18", pl.id, len(pl.rowers))
 		}
 
 		perAge := map[AgeGroup]map[Gender]int{}
@@ -50,7 +52,8 @@ func TestNewDeal(t *testing.T) {
 		}
 
 		for _, age := range ageOrder {
-			if perAge[age][GenderF]+perAge[age][GenderM] != 3 || perAge[age][GenderF] == 0 || perAge[age][GenderM] == 0 {
+			want := map[AgeGroup]int{AgeKinder: 4, AgeB: 9, AgeA: 5}[age]
+			if perAge[age][GenderF]+perAge[age][GenderM] != want || perAge[age][GenderF] == 0 || perAge[age][GenderM] == 0 {
 				t.Errorf("%s: age %s split %v", pl.id, age, perAge[age])
 			}
 		}
@@ -73,12 +76,59 @@ func TestNewDeal(t *testing.T) {
 		}
 	}
 
-	if rowers != 28 || boats != 21 || trainers != 4 {
-		t.Errorf("pool = %d rowers, %d boats, %d trainers; want 28/21/4", rowers, boats, trainers)
+	if rowers != 1 || boats != 21 || trainers != 4 {
+		t.Errorf("pool = %d rowers, %d boats, %d trainers; want 1/21/4", rowers, boats, trainers)
 	}
 
 	if g.CurrentPhase("p1").Kind != PhaseAck {
 		t.Errorf("first phase should be the setup ack")
+	}
+}
+
+func TestDealByPlayerCount(t *testing.T) {
+	t.Parallel()
+
+	for _, tc := range []struct {
+		players    int
+		perAge     map[AgeGroup]int
+		poolRowers int
+	}{
+		{2, map[AgeGroup]int{AgeKinder: 6, AgeB: 13, AgeA: 7}, 3},
+		{3, map[AgeGroup]int{AgeKinder: 4, AgeB: 9, AgeA: 5}, 1},
+		{4, map[AgeGroup]int{AgeKinder: 3, AgeB: 4, AgeA: 3}, 15},
+	} {
+		cfg := Config{Seed: 7}
+		for i := range tc.players {
+			cfg.Players = append(cfg.Players, PlayerConfig{ID: fmt.Sprintf("p%d", i+1)})
+		}
+
+		g, err := New(cfg)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		for _, pl := range g.players {
+			got := map[AgeGroup]int{}
+			for _, r := range pl.rowers {
+				got[r.age]++
+			}
+
+			if !maps.Equal(got, tc.perAge) {
+				t.Errorf("%d players, %s: rowers per age %v, want %v", tc.players, pl.id, got, tc.perAge)
+			}
+		}
+
+		rowers := 0
+
+		for _, c := range g.pool {
+			if c.kind() == "rower" {
+				rowers++
+			}
+		}
+
+		if rowers != tc.poolRowers {
+			t.Errorf("%d players: %d rowers in the pool, want %d", tc.players, rowers, tc.poolRowers)
+		}
 	}
 }
 

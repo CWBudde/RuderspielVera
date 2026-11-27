@@ -558,8 +558,56 @@ func (d *Data) validateRules(p *problems) {
 		}
 	}
 
-	if rules.Deal.RowersPerAgeGroup <= 0 || rules.Deal.Trainers <= 0 {
+	if rules.Deal.Trainers <= 0 {
 		p.addf("rules: bad deal sizes")
+	}
+
+	d.validateDealRowers(p)
+}
+
+// validateDealRowers checks the starting rowers per player count: every age group gets at least
+// one rower per gender minimum, and all players together never need more cards than the group has.
+func (d *Data) validateDealRowers(p *problems) {
+	perAge := map[string]map[string]int{}
+
+	for _, rw := range d.Rowers {
+		if perAge[rw.Age] == nil {
+			perAge[rw.Age] = map[string]int{}
+		}
+
+		perAge[rw.Age][rw.Gender]++
+	}
+
+	minG := d.Rules.Deal.MinPerGender
+
+	for players := 2; players <= 4; players++ {
+		counts, ok := d.Rules.Deal.RowersByPlayers[strconv.Itoa(players)]
+		if !ok {
+			p.addf("rules: deal.rowersByPlayers has no entry for %d players", players)
+
+			continue
+		}
+
+		for _, age := range validAges {
+			want := counts[age]
+			if want < 2*minG {
+				p.addf("rules: deal for %d players: %d %s rowers, need at least %d", players, want, age, 2*minG)
+			}
+
+			if total := perAge[age]["w"] + perAge[age]["m"]; players*want > total {
+				p.addf("rules: deal for %d players needs %d %s rowers, only %d exist", players, players*want, age, total)
+			}
+
+			for _, g := range validGenders {
+				if players*minG > perAge[age][g] {
+					p.addf("rules: deal for %d players needs %d %s rowers of gender %s", players, players*minG, age, g)
+				}
+			}
+		}
+
+		if len(counts) != len(validAges) {
+			p.addf("rules: deal for %d players: unexpected age groups %v", players, counts)
+		}
 	}
 }
 

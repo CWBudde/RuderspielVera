@@ -210,6 +210,9 @@ export const ROWER_NAMES: Record<string, [string, Gender][]> = {
   ],
 };
 
+/** Starting rowers per player and age group in a 3-player game (rules.json deal.rowersByPlayers). */
+export const DEAL_3_PLAYERS: Record<AgeGroup, number> = { kinder: 4, b: 9, a: 5 };
+
 export const SUM_RANGE: Record<string, [number, number]> = { a: [84, 100], b: [58, 93], kinder: [46, 59] };
 
 /** Archetypes split a stat sum; weights per stat in display order. */

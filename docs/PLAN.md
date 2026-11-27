@@ -91,8 +91,9 @@ as JSON and hand-editable. Gender per name from a table in the generator (unknow
 flagged in docs for the family to confirm). Duplicates (Matilda ×2, Johann, Justus, Sophia, Hannah, Lea,
 Johanna) get unique IDs and an age suffix in the UI.
 
-**Deal (3 players).** 9 rowers each: 3 per age group, at least 1 girl and 1 boy per age group where the
-pool allows, random. Remaining 28 rowers form the pool. Each player: city 1x/2x/4x (value 3) and 2
+**Deal (3 players).** 18 rowers each: 4 Kinder, 9 B-, 5 A-Junioren (2 players: 6/13/7, 4 players:
+3/4/3; `rules.json` `deal.rowersByPlayers`), at least 1 girl and 1 boy per age group, random. The
+remaining rower(s) form the pool. Each player: city 1x/2x/4x (value 3) and 2
 random trainers. Remaining trainers (4) and the 22 named boats are distributed via **draft**: after
 every scored competition each player picks 1 card from an open offer of (players+1) cards (mix of
 rowers, boats, and trainers from section 5 on); pick order = fewest medal points first (catch-up). Boat
