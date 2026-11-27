@@ -78,7 +78,49 @@ func (g *Game) sponsorPicks() int {
 func (g *Game) activeEreignisse() []string {
 	out := []string{}
 	for _, e := range g.pending {
+		if !g.ereignisAhead(e.Effect) {
+			continue // no station left that would consume it
+		}
 		out = append(out, fmt.Sprintf("%s: %s", e.Name, e.Description))
 	}
 	return out
+}
+
+// ereignisAhead reports whether a station after the current one would still consume a pending
+// Ereignis with this effect. Pending modifiers without such a station stay in the state (replay
+// compatibility) but are no longer shown as active.
+func (g *Game) ereignisAhead(effect string) bool {
+	if g.over {
+		return false
+	}
+	cal := g.d.Calendar
+	for i := g.station + 1; i < len(cal); i++ {
+		st := cal[i]
+		var comp *data.Competition
+		if c, ok := g.d.Competitions[st.Competition]; ok {
+			comp = c
+		}
+		switch effect {
+		case data.EffTrainingPoints:
+			if StationType(st.Type) == StationTraining {
+				return true
+			}
+		case data.EffSponsorPick:
+			// Consumed by the draft after a competition; there is none after the last station.
+			if comp != nil && i < len(cal)-1 {
+				return true
+			}
+		case data.EffForceWeather, data.EffKrebsChance, data.EffCityBoatMod:
+			if comp != nil && comp.Water {
+				return true
+			}
+		case data.EffErgoKraftWeight:
+			if StationType(st.Type) == StationErgoCup {
+				return true
+			}
+		default:
+			return true
+		}
+	}
+	return false
 }

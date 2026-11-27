@@ -49,6 +49,8 @@ resolves and opens the next phase.
   (`rules.json` `boatValuePerSeat`/`boatValueFactor`, `trainerPerSeat`), `fixedBoatValue` is the base
   value without own boat (shared eight, loan boat) and `guestScore` the guest crew's total. Entry
   total = round(Σ weight·stat) + boat·boatScale + trainer·trainerScale + event bonus − penalty.
+- `activeEreignisse` lists pending Ereignisse that a later station will still apply (a modifier
+  with no matching station left, e.g. an ergo modifier after the last Ergo-Cup, is not shown).
 - **No nulls**: every non-`omitempty` slice/map in a view is serialized as `[]`/`{}` (e.g. a race
   without entries has `"entries": []`); fields marked optional in the TS types may be absent.
 - Bots: `internal/bot.Decide(g, playerID, personality, rng)` (`Taktiker` / `Bauchgefuehl`,

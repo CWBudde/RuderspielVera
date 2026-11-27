@@ -441,7 +441,9 @@ function LineupBuilder({
                 const best = you.boats
                   .filter((b) => b.class === activeRace.class && (!boatUsedIn.has(b.id) || boatUsedIn.get(b.id) === activeRace.id))
                   .sort((a, b) => b.value - a.value)[0];
-                const boatId = d.boatId ?? (needsBoat(activeRace) && !activeRace.loanBoat ? best?.id : undefined);
+                const beatsLoan = !activeRace.loanBoat || (best?.value ?? 0) > (activeRace.fixedBoatValue ?? 0);
+                const first = !d.seats.some(Boolean);
+                const boatId = d.boatId ?? (first && needsBoat(activeRace) && beatsLoan ? best?.id : undefined);
                 setDraft(activeRace.id, { ...d, seats, boatId });
                 // Advance to the next empty seat in this race, or close.
                 const nextEmpty = seats.findIndex((s) => !s);

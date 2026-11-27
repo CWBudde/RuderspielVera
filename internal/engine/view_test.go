@@ -72,6 +72,9 @@ func TestPhaseViewHints(t *testing.T) {
 			t.Errorf("stage %q never seen", s)
 		}
 	}
+	if a := g.View("p1").ActiveEreignisse; len(a) != 0 {
+		t.Errorf("active Ereignisse at game over: %v", a)
+	}
 	if !sawDraft || !sawEvents || !sawRaces {
 		t.Errorf("draft %v, events %v, races %v", sawDraft, sawEvents, sawRaces)
 	}
