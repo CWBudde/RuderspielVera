@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"slices"
+	"strconv"
 )
 
 var (
@@ -11,6 +12,7 @@ var (
 	validGenders  = []string{"w", "m"}
 	validWeather  = []string{"regen", "hitze", "wind", "kaelte", "normal"}
 	validContexts = []string{"", "ergo", "sprint", "langstrecke"}
+	validScopes   = []string{ScopeWater, ScopeErgo, ScopeAny}
 	stationTypes  = []string{
 		"setup", "training", "event", "ereignis", "regatta", kindErgoCup, "selection", "camp", kindJTFO,
 	}
@@ -52,6 +54,7 @@ func (d *Data) Validate() error {
 	d.validateCalendar(&p)
 	d.validateCompetitions(&p)
 	d.validateRules(&p)
+	d.validateTrainerMood(&p)
 
 	return errors.Join(p...)
 }
@@ -166,18 +169,19 @@ func (d *Data) validateTrainers(p *problems, ids, boatIDs map[string]bool) {
 
 // validateEvents checks the event cards and the Ereignisse.
 func (d *Data) validateEvents(p *problems) {
-	if len(d.Events) != 12 {
-		p.addf("events: want 12, got %d", len(d.Events))
+	if len(d.Events) < 12 {
+		p.addf("events: want at least 12, got %d", len(d.Events))
 	}
 
+	types := map[string]bool{}
 	for _, e := range d.Events {
-		if e.Weight <= 0 {
-			p.addf("event %s: weight must be > 0", e.Type)
+		if types[e.Type] {
+			p.addf("event %s: duplicate type", e.Type)
 		}
 
-		if e.Stat != "" && !slices.Contains(StatNames, e.Stat) {
-			p.addf("event %s: bad stat %q", e.Type, e.Stat)
-		}
+		types[e.Type] = true
+
+		d.validateEventType(p, e)
 	}
 
 	for _, t := range []string{"wetter", "wachstum", "phoenix", "tausch", "verdopplung", "seelenzwilling", "mission"} {
@@ -186,17 +190,148 @@ func (d *Data) validateEvents(p *problems) {
 		}
 	}
 
+	d.validateEreignisse(p)
+}
+
+// validateEventType checks one event card type, in particular its scope and data-driven effects.
+func (d *Data) validateEventType(p *problems, card EventType) {
+	if card.Weight <= 0 {
+		p.addf("event %s: weight must be > 0", card.Type)
+	}
+
+	if card.Stat != "" && !slices.Contains(StatNames, card.Stat) {
+		p.addf("event %s: bad stat %q", card.Type, card.Stat)
+	}
+
+	if !slices.Contains(validScopes, card.Scope) {
+		p.addf("event %s: bad scope %q", card.Type, card.Scope)
+	}
+
+	for s := range card.Stats {
+		if !slices.Contains(StatNames, s) {
+			p.addf("event %s: bad stat %q", card.Type, s)
+		}
+	}
+
+	validateEventBonus(p, card)
+}
+
+// validateEventBonus checks the condition of an event card's entry bonus.
+func validateEventBonus(p *problems, card EventType) {
+	for _, w := range card.Weathers {
+		if !slices.Contains(validWeather, w) {
+			p.addf("event %s: bad weather %q", card.Type, w)
+		}
+	}
+
+	if len(card.Weathers) > 0 && card.Scope != ScopeWater {
+		p.addf("event %s: weather bonus needs scope water", card.Type)
+	}
+
+	if !slices.Contains(validContexts, card.Context) {
+		p.addf("event %s: bad context %q", card.Type, card.Context)
+	}
+
+	if card.Bonus != 0 && card.Scope == ScopeAny && card.Context == "" && len(card.Weathers) == 0 {
+		p.addf("event %s: an entry bonus needs a scope, context or weather", card.Type)
+	}
+}
+
+// validateEreignisse checks the Ereignis deck: effects, scopes and that some card is always
+// drawable (a "none" card with scope any).
+func (d *Data) validateEreignisse(p *problems) {
 	if len(d.Ereignisse) == 0 {
 		p.addf("ereignisse: empty")
 	}
 
-	for _, e := range d.Ereignisse {
-		if e.Weight <= 0 || !ereignisEffects[e.Effect] {
-			p.addf("ereignis %s: bad weight or effect %q", e.ID, e.Effect)
+	fallback := false
+	ids := map[string]bool{}
+
+	for _, card := range d.Ereignisse {
+		if ids[card.ID] {
+			p.addf("ereignis %s: duplicate id", card.ID)
 		}
 
-		if e.Effect == EffForceWeather && !slices.Contains(validWeather, e.Weather) {
-			p.addf("ereignis %s: bad weather %q", e.ID, e.Weather)
+		ids[card.ID] = true
+
+		validateEreignis(p, card)
+
+		if card.Effect == EffNone && card.Scope == ScopeAny {
+			fallback = true
+		}
+	}
+
+	if len(d.Ereignisse) > 0 && !fallback {
+		p.addf("ereignisse: need a card with effect none and scope any (always drawable)")
+	}
+}
+
+// validateEreignis checks one Ereignis card.
+func validateEreignis(p *problems, card Ereignis) {
+	if card.Weight <= 0 || !ereignisEffects[card.Effect] {
+		p.addf("ereignis %s: bad weight or effect %q", card.ID, card.Effect)
+	}
+
+	if !slices.Contains(validScopes, card.Scope) {
+		p.addf("ereignis %s: bad scope %q", card.ID, card.Scope)
+	}
+
+	if waterOnlyEffects[card.Effect] && card.Scope != ScopeWater {
+		p.addf("ereignis %s: effect %s needs scope water", card.ID, card.Effect)
+	}
+
+	switch card.Effect {
+	case EffForceWeather:
+		if !slices.Contains(validWeather, card.Weather) {
+			p.addf("ereignis %s: bad weather %q", card.ID, card.Weather)
+		}
+	case EffAllStat, EffRandomRowerStat:
+		if !slices.Contains(StatNames, card.Stat) {
+			p.addf("ereignis %s: bad stat %q", card.ID, card.Stat)
+		}
+	case EffWeightMod:
+		if len(card.Weights) == 0 {
+			p.addf("ereignis %s: weight_mod without weights", card.ID)
+		}
+
+		for s, w := range card.Weights {
+			if !slices.Contains(StatNames, s) || w == 0 {
+				p.addf("ereignis %s: bad weight %q: %v", card.ID, s, w)
+			}
+		}
+	}
+}
+
+// validateTrainerMood checks the trainer mood random walk.
+func (d *Data) validateTrainerMood(p *problems) {
+	m := d.Rules.TrainerMood
+	if m.Min > 0 || m.Max < 0 || m.Start < m.Min || m.Start > m.Max {
+		p.addf("rules: trainerMood needs min <= start <= max and min <= 0 <= max")
+	}
+
+	if len(m.Steps) == 0 {
+		p.addf("rules: trainerMood has no steps")
+	}
+
+	for mood := m.Min; mood <= m.Max; mood++ {
+		w, ok := m.Weights[strconv.Itoa(mood)]
+		if !ok || len(w) != len(m.Steps) {
+			p.addf("rules: trainerMood needs %d weights for mood %d", len(m.Steps), mood)
+			continue
+		}
+
+		sum := 0
+
+		for _, x := range w {
+			if x < 0 {
+				p.addf("rules: trainerMood weights must be >= 0 (mood %d)", mood)
+			}
+
+			sum += x
+		}
+
+		if sum <= 0 {
+			p.addf("rules: trainerMood weights for mood %d sum to 0", mood)
 		}
 	}
 }
@@ -414,25 +549,29 @@ func (d *Data) validateRules(p *problems) {
 }
 
 // validateIncidents checks the per-mille incident probabilities: a capsize value for every boat
-// size, and Kentern + Material + Krebs (also with a Krebs Ereignis) must fit into one d1000.
+// size, and Kentern + Material + Krebs (also with Krebs / Material Ereignisse) must fit into one d1000.
 func (d *Data) validateIncidents(p *problems) {
 	inc := d.Rules.Incidents
 	if inc.Material < 0 || inc.Krebs < 0 {
 		p.addf("rules: incident probabilities must be >= 0")
 	}
 
-	krebs := inc.Krebs
+	krebs, material := inc.Krebs, inc.Material
 
 	for _, e := range d.Ereignisse {
-		if e.Effect != EffKrebsChance {
+		if e.Effect != EffKrebsChance && e.Effect != EffMaterialChance {
 			continue
 		}
 
 		if e.Value < 0 || e.Value > 1000 {
-			p.addf("ereignis %s: krebs_chance %d ‰ outside 0..1000", e.ID, e.Value)
+			p.addf("ereignis %s: %s %d ‰ outside 0..1000", e.ID, e.Effect, e.Value)
 		}
 
-		krebs = max(krebs, e.Value)
+		if e.Effect == EffKrebsChance {
+			krebs = max(krebs, e.Value)
+		} else {
+			material = max(material, e.Value)
+		}
 	}
 
 	for seats := range inc.KenternBySeats {
@@ -447,7 +586,7 @@ func (d *Data) validateIncidents(p *problems) {
 			p.addf("rules: kenternBySeats needs a value >= 0 for %d seats", seats)
 		}
 
-		if k+inc.Material+krebs > 1000 {
+		if k+material+krebs > 1000 {
 			p.addf("rules: incident probabilities for %d seats exceed 1000 ‰", seats)
 		}
 	}

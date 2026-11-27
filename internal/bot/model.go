@@ -127,12 +127,22 @@ func (b *brain) expectedTrainer(tm *team, c *compModel) float64 {
 		}
 	}
 
+	// The mood is known for a competition of the current section; later it has drifted (and
+	// reverts towards 0), so it is left out.
+	sameSection := b.d.Calendar[c.station].Section == b.d.Calendar[b.view.Current].Section
+
 	sum := 0.0
 
 	for _, w := range weathers {
 		best := math.MinInt
+
 		for _, tr := range tm.trainers {
-			best = max(best, trainerEffect(tr, w, c.def.Context))
+			v := trainerEffect(tr, w, c.def.Context)
+			if sameSection {
+				v += tr.Mood
+			}
+
+			best = max(best, v)
 		}
 
 		sum += float64(best)
@@ -141,12 +151,12 @@ func (b *brain) expectedTrainer(tm *team, c *compModel) float64 {
 	return sum / float64(len(weathers))
 }
 
-// bestTrainer returns the trainer with the best effect at the open competition (or "").
+// bestTrainer returns the trainer with the best effect plus mood at the open competition (or "").
 func (b *brain) bestTrainer(t *team, c *compModel, jitter float64) string {
 	best, bestV := "", math.Inf(-1)
 
 	for _, tr := range t.trainers {
-		v := float64(trainerEffect(tr, c.weather, c.def.Context))
+		v := float64(trainerEffect(tr, c.weather, c.def.Context) + tr.Mood)
 		if jitter > 0 {
 			v += b.rng.NormFloat64() * jitter
 		}
@@ -272,6 +282,11 @@ func (b *brain) estimateField(c *compModel) *field {
 func (b *brain) guestScore(c *compModel, race engine.RaceSpec) (float64, bool) {
 	if c.team() {
 		return 0, false
+	}
+
+	if c.current {
+		// The view's value includes Ereignis guest modifiers.
+		return float64(race.GuestScore), race.GuestScore > 0
 	}
 
 	return engine.GuestScore(b.d, c.def, c.station, race)

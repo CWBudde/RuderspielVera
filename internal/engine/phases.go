@@ -76,6 +76,10 @@ func (g *Game) enterStation(i int) {
 	st := g.currentStation()
 	if i > 0 {
 		g.addLog("station", "", st.Name)
+
+		if st.Section != g.d.Calendar[i-1].Section {
+			g.driftMood()
+		}
 	}
 
 	all := g.allPlayerIDs()

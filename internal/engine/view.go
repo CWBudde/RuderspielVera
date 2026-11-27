@@ -45,7 +45,7 @@ func (g *Game) View(playerID string) GameView {
 		}
 
 		for _, t := range pl.trainers {
-			ps.Trainers = append(ps.Trainers, trainerView(t.def))
+			ps.Trainers = append(ps.Trainers, g.trainerView(t.def))
 		}
 
 		gv.Players = append(gv.Players, ps)
@@ -93,7 +93,7 @@ func (g *Game) CurrentPhase(playerID string) PhaseView {
 
 	if p.kind == PhaseDraft && g.draft != nil {
 		for _, c := range g.draft.offer {
-			pv.DraftOffer = append(pv.DraftOffer, draftCardView(c))
+			pv.DraftOffer = append(pv.DraftOffer, g.draftCardView(c))
 		}
 
 		pv.DraftOrder = slices.Clone(g.draft.order)
@@ -137,7 +137,7 @@ func (g *Game) raceViews(cs *compState) []RaceSpec {
 			r.FixedBoatValue = g.boatValue(cs, *r, nil)
 		}
 
-		if gs, ok := GuestScore(g.d, cs.def, cs.station, *r); ok && !cs.team() {
+		if gs, ok := guestScore(g.d, cs.def, cs.station, *r, cs.guestMod); ok && !cs.team() {
 			r.GuestScore = int(gs)
 		}
 	}
@@ -168,6 +168,16 @@ func boatView(b *boat) BoatView {
 	return BoatView{ID: b.id, Name: b.name, Class: b.class, Value: b.value, City: b.city, ArtKey: b.artKey}
 }
 
+// trainerView is a trainer card with its current mood (Laune) in this game.
+func (g *Game) trainerView(t *data.Trainer) TrainerView {
+	v := trainerView(t)
+	v.Mood = g.mood[t.ID]
+	v.MoodTrend = g.mood[t.ID] - g.prevMood[t.ID]
+
+	return v
+}
+
+// trainerView is the static trainer card (mood 0, e.g. in the catalog).
 func trainerView(t *data.Trainer) TrainerView {
 	v := TrainerView{
 		ID: t.ID, Name: t.Name, Ability: t.Ability, Description: t.Description, ArtKey: t.ArtKey,
@@ -180,7 +190,7 @@ func trainerView(t *data.Trainer) TrainerView {
 	return v
 }
 
-func draftCardView(c poolCard) DraftCard {
+func (g *Game) draftCardView(c poolCard) DraftCard {
 	dc := DraftCard{ID: c.id(), Kind: c.kind()}
 	switch {
 	case c.rower != nil:
@@ -190,7 +200,7 @@ func draftCardView(c poolCard) DraftCard {
 		bv := boatView(c.boat)
 		dc.Boat = &bv
 	default:
-		tv := trainerView(c.trainer.def)
+		tv := g.trainerView(c.trainer.def)
 		dc.Trainer = &tv
 	}
 

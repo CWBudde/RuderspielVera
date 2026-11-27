@@ -98,6 +98,16 @@ export interface TrainerView {
   description: string; // German text for the card
   effects: TrainerEffect[];
   artKey: string;
+  /**
+   * Mood (Laune, public) is added to the trainer's per-seat effect in every entry, like an
+   * effect (× RaceSpec.trainerScale). It drifts between rules.json trainerMood min and max at
+   * every new section. 0 in the catalog.
+   */
+  mood: number /* int */;
+  /**
+   * MoodTrend is the change of Mood at the last section start (negative = got grumpier).
+   */
+  moodTrend: number /* int */;
 }
 export interface EventCardView {
   type: string; // e.g. "phoenix", "verdopplung", "mission"

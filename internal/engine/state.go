@@ -131,6 +131,8 @@ type Game struct {
 	eventStations int                 // event stations entered so far
 	swapQueue     map[string][]string // player ID -> rower IDs with an unresolved Tausch card
 	draft         *draftState
+	mood          map[string]int // trainer ID -> current mood (Laune)
+	prevMood      map[string]int // trainer ID -> mood before the last drift
 }
 
 // Config errors returned by New.
@@ -173,6 +175,7 @@ func New(cfg Config) (*Game, error) {
 		g.players = append(g.players, &player{id: pc.ID, name: name, isBot: pc.IsBot, seat: i})
 	}
 
+	g.initMood()
 	g.deal()
 	g.enterStation(0)
 

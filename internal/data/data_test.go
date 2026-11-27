@@ -25,8 +25,8 @@ func TestLoad(t *testing.T) {
 		t.Errorf("trainers = %d, want 10", len(d.Trainers))
 	}
 
-	if len(d.Events) != 12 {
-		t.Errorf("event types = %d, want 12", len(d.Events))
+	if len(d.Events) < 12 {
+		t.Errorf("event types = %d, want at least 12", len(d.Events))
 	}
 }
 

@@ -61,16 +61,38 @@ func eventEligible(pl *player) []*rower {
 	return out
 }
 
+// drawEventType draws a card type among those that can still matter (eventDrawable).
 func (g *Game) drawEventType() *data.EventType {
 	weights := make([]int, len(g.d.Events))
-	for i, e := range g.d.Events {
-		weights[i] = e.Weight
-		if e.Type == "mission" && len(g.possibleMissions()) == 0 {
-			weights[i] = 0
+	for i := range g.d.Events {
+		if e := &g.d.Events[i]; g.eventDrawable(e) {
+			weights[i] = e.Weight
 		}
 	}
 
 	return &g.d.Events[pickWeighted(g.rng, weights)]
+}
+
+// eventDrawable reports whether an event card type may be dealt now: a mission only while one is
+// achievable, a water / ergo / context card only while a matching competition is still ahead
+// (no Ergo-Bestzeit-Fieber after the last Ergo-Cup).
+func (g *Game) eventDrawable(e *data.EventType) bool {
+	if e.Type == "mission" {
+		return len(g.possibleMissions()) > 0
+	}
+
+	if e.Scope == data.ScopeAny && e.Context == "" {
+		return true
+	}
+
+	for j := g.station + 1; j < len(g.d.Calendar); j++ {
+		c := g.d.Competitions[g.d.Calendar[j].Competition]
+		if c != nil && data.ScopeMatches(e.Scope, c) && (e.Context == "" || e.Context == c.Context) {
+			return true
+		}
+	}
+
+	return false
 }
 
 // applyEvent attaches the card to the rower and applies its immediate effect.
@@ -112,7 +134,17 @@ func (g *Game) applyEvent(pl *player, rw *rower, def *data.EventType) string {
 		card.mission = &missionState{def: m, text: strings.ReplaceAll(m.Text, "{name}", rw.name)}
 
 		return fmt.Sprintf("Geheime Mission: %s (Belohnung: %s)", card.mission.text, m.RewardText)
-	case "wetter", "wachstum":
+	case "wachstum":
+		return fmt.Sprintf("%s: %s – %s", def.Name, rw.name, def.Description)
+	}
+
+	if len(def.Stats) > 0 || def.Bonus != 0 {
+		for _, s := range AllStats {
+			if v, ok := def.Stats[string(s)]; ok {
+				rw.addStat(s, v)
+			}
+		}
+
 		return fmt.Sprintf("%s: %s – %s", def.Name, rw.name, def.Description)
 	}
 

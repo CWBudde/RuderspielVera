@@ -17,10 +17,13 @@ export function crewScore(rowers: RowerView[], weights: CompetitionView["weights
   return Math.round(rowers.reduce((acc, r) => acc + rowerScore(r, weights), 0));
 }
 
-/** Trainer effect per seat under the competition's weather and context (TrainerEffect.context). */
+/**
+ * Trainer effect per seat under the competition's weather and context (TrainerEffect.context),
+ * plus the trainer's current mood (Laune), which the engine adds per seat as well.
+ */
 export function trainerBonus(trainer: TrainerView | undefined, comp: CompetitionView): number {
   if (!trainer) return 0;
-  let total = 0;
+  let total = trainer.mood ?? 0;
   for (const e of trainer.effects ?? []) {
     const weatherOk = !e.weather || e.weather === comp.weather;
     const contextOk = !e.context || e.context === (comp.context ?? "");

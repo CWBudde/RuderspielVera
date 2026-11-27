@@ -49,14 +49,23 @@ resolves and opens the next phase.
   `boatScale` and `trainerScale` multiply the boat value and the per-seat trainer effect
   (`rules.json` `boatValuePerSeat`/`boatValueFactor`, `trainerPerSeat`), `fixedBoatValue` is the base
   value without own boat (shared eight, loan boat) and `guestScore` the guest crew's total. Entry
-  total = round(Σ weight·stat) + boat·boatScale + trainer·trainerScale + event bonus − penalty.
-- `activeEreignisse` lists pending Ereignisse that a later station will still apply (a modifier
-  with no matching station left, e.g. an ergo modifier after the last Ergo-Cup, is not shown).
+  total = round(Σ weight·stat) + boat·boatScale + (trainer effect + trainer.mood)·trainerScale +
+  event bonus − penalty.
+- **Trainer mood**: every `TrainerView` (team cards, draft offer) carries `mood` (Laune, public,
+  rules.json `trainerMood`, −2…+2) and `moodTrend` (change at the last section start, for a trend
+  arrow). The mood is added to the per-seat trainer effect of every entry with that trainer, also
+  when no effect matches; it changes only when a new section begins. Catalog trainers have 0/0.
+- `activeEreignisse` lists pending Ereignisse that a later station will still apply. The engine
+  no longer draws water / ergo cards whose next competition is of the other kind, nor modifiers
+  without a consuming station; the filter here stays as a fallback. Competition modifiers
+  (weights, Krebs / Materialschaden chance, city boats, guest strength) appear in
+  `competition.notes`; guest modifiers are already part of `race.guestScore`.
 - **No nulls**: every non-`omitempty` slice/map in a view is serialized as `[]`/`{}` (e.g. a race
   without entries has `"entries": []`); fields marked optional in the TS types may be absent.
 - Saved games (`gameservice.Snapshot`: server files, WASM localStorage) carry a `version`. It is
   bumped when a rule change makes old decision logs replay differently (2: per-mille incidents, no
-  Motivation training, Hildesheim loan boats). Importing an older version fails with a German
+  Motivation training, Hildesheim loan boats; 3: season-aware Ereignisse, larger event and Ereignis
+  decks, trainer mood). Importing an older version fails with a German
   message ("Dieser Spielstand stammt aus einer älteren Spielversion …").
 - Bots: `internal/bot.Decide(g, playerID, personality, rng)` (`Taktiker` / `Bauchgefuehl`,
   `bot.PersonalityFor(seat)`); the bot RNG is separate from the game RNG.

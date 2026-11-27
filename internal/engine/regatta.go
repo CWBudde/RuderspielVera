@@ -3,6 +3,7 @@ package engine
 import (
 	"fmt"
 	"slices"
+	"strconv"
 	"strings"
 
 	"ruderspiel/internal/data"
@@ -17,7 +18,9 @@ type compState struct {
 	weights     map[Stat]float64
 	weather     Weather // "" for ergo cups
 	krebs       int     // Krebs probability in per mille
+	material    int     // Materialschaden probability in per mille
 	cityBoatMod int
+	guestMod    float64 // added to every guest stat level
 	notes       []string
 }
 
@@ -58,7 +61,7 @@ func (g *Game) openCompetition() {
 
 	cs := &compState{
 		def: def, station: g.station, name: st.Name, weights: map[Stat]float64{},
-		krebs: g.d.Rules.Incidents.Krebs, notes: slices.Clone(def.Notes),
+		krebs: g.d.Rules.Incidents.Krebs, material: g.d.Rules.Incidents.Material, notes: slices.Clone(def.Notes),
 	}
 	for _, r := range g.d.RacesFor(def, len(g.players)) {
 		cs.races = append(cs.races, raceSpec(r))
@@ -70,34 +73,7 @@ func (g *Game) openCompetition() {
 		}
 	}
 
-	if def.Water {
-		if forced := g.takePending(data.EffForceWeather); len(forced) > 0 {
-			e := forced[len(forced)-1]
-			cs.weather = Weather(e.Weather)
-			cs.notes = append(cs.notes, e.Name+": Das Wetter steht fest.")
-		} else {
-			cs.weather = Weather(g.d.Rules.WeatherTable[rollD(g.rng, 6)-1])
-		}
-
-		for _, e := range g.takePending(data.EffKrebsChance) {
-			cs.krebs = e.Value
-			cs.notes = append(cs.notes, fmt.Sprintf("%s: Krebs-Wahrscheinlichkeit %s %%.", e.Name, perMilleText(e.Value)))
-		}
-
-		for _, e := range g.takePending(data.EffCityBoatMod) {
-			cs.cityBoatMod += e.Value
-			cs.notes = append(cs.notes, fmt.Sprintf("%s: Städtische Boote %+d.", e.Name, e.Value))
-		}
-
-		g.addLog("info", "", fmt.Sprintf("Wetter bei %s: %s.", st.Name, weatherNames[cs.weather]))
-	}
-
-	if def.Kind == string(StationErgoCup) {
-		for _, e := range g.takePending(data.EffErgoKraftWeight) {
-			cs.weights[StatKraft] = float64(e.Value)
-			cs.notes = append(cs.notes, fmt.Sprintf("%s: Kraft zählt %d-fach.", e.Name, e.Value))
-		}
-	}
+	g.applyCompetitionEreignisse(cs)
 
 	prompt := "Wähle einen Trainer und melde deine Mannschaften. Jeder Ruderer und jedes Boot darf nur einmal starten."
 	if cs.weather != "" {
@@ -106,6 +82,86 @@ func (g *Game) openCompetition() {
 
 	p := g.newPhase(PhaseRegatta, stageNone, g.allPlayerIDs(), st.Name, prompt)
 	p.comp = cs
+}
+
+// applyCompetitionEreignisse consumes every pending competition modifier whose scope matches this
+// competition (oldest first) and rolls the weather of a water competition unless an Ereignis
+// forces it (the most recent one wins). RNG: at most one d6 for the weather.
+func (g *Game) applyCompetitionEreignisse(cs *compState) {
+	var mods []*data.Ereignis
+
+	kept := g.pending[:0:0]
+	for _, e := range g.pending {
+		if data.CompetitionEffect(e.Effect) && data.ScopeMatches(e.Scope, cs.def) {
+			mods = append(mods, e)
+		} else {
+			kept = append(kept, e)
+		}
+	}
+
+	g.pending = kept
+
+	if cs.def.Water {
+		var forced *data.Ereignis
+
+		for _, e := range mods {
+			if e.Effect == data.EffForceWeather {
+				forced = e
+			}
+		}
+
+		if forced != nil {
+			cs.weather = Weather(forced.Weather)
+			cs.notes = append(cs.notes, forced.Name+": Das Wetter steht fest.")
+		} else {
+			cs.weather = Weather(g.d.Rules.WeatherTable[rollD(g.rng, 6)-1])
+		}
+
+		g.addLog("info", "", fmt.Sprintf("Wetter bei %s: %s.", cs.name, weatherNames[cs.weather]))
+	}
+
+	for _, mod := range mods {
+		switch mod.Effect {
+		case data.EffKrebsChance:
+			cs.krebs = mod.Value
+			cs.notes = append(cs.notes, fmt.Sprintf("%s: Krebs-Wahrscheinlichkeit %s %%.", mod.Name, perMilleText(mod.Value)))
+		case data.EffMaterialChance:
+			cs.material = mod.Value
+			cs.notes = append(cs.notes, fmt.Sprintf("%s: Materialschaden-Wahrscheinlichkeit %s %%.",
+				mod.Name, perMilleText(mod.Value)))
+		case data.EffCityBoatMod:
+			cs.cityBoatMod += mod.Value
+			cs.notes = append(cs.notes, fmt.Sprintf("%s: Städtische Boote %+d.", mod.Name, mod.Value))
+		case data.EffGuestMod:
+			cs.guestMod += float64(mod.Value)
+			cs.notes = append(cs.notes, fmt.Sprintf("%s: Gastmannschaften %+d auf jede Eigenschaft.", mod.Name, mod.Value))
+		case data.EffWeightMod:
+			cs.notes = append(cs.notes, mod.Name+": "+g.applyWeightMod(cs, mod.Weights))
+		}
+	}
+}
+
+// applyWeightMod adds Ereignis weight deltas to the competition weights (in stat display order)
+// and returns a German note like "Kraft zählt 3-fach.".
+func (g *Game) applyWeightMod(cs *compState, deltas map[string]float64) string {
+	var parts []string
+
+	for _, s := range AllStats {
+		d, ok := deltas[string(s)]
+		if !ok {
+			continue
+		}
+
+		cs.weights[s] = max(cs.weights[s]+d, 0)
+		parts = append(parts, fmt.Sprintf("%s zählt %s-fach", statName(s), weightText(cs.weights[s])))
+	}
+
+	return strings.Join(parts, ", ") + "."
+}
+
+// weightText formats a weight German style: 3 → "3", 1.5 → "1,5".
+func weightText(w float64) string {
+	return strings.Replace(strconv.FormatFloat(w, 'f', -1, 64), ".", ",", 1)
 }
 
 func (g *Game) validateEntries(pl *player, cs *compState, trainerID string, entries []Entry) error {
@@ -322,7 +378,7 @@ func (g *Game) scoreRace(p *phase, race RaceSpec) RaceResult {
 		if cs.def.Water {
 			inc := g.d.Rules.Incidents
 
-			er.Incident = rollIncident(g.rng, inc.Kentern(race.Seats), inc.Material, cs.krebs)
+			er.Incident = rollIncident(g.rng, inc.Kentern(race.Seats), cs.material, cs.krebs)
 			if er.Incident == IncidentKrebs {
 				er.Penalty = g.d.Rules.KrebsPenalty
 				er.Total -= er.Penalty

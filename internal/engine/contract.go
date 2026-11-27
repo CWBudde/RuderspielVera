@@ -137,6 +137,12 @@ type TrainerView struct {
 	Description string          `json:"description"` // German text for the card
 	Effects     []TrainerEffect `json:"effects"`
 	ArtKey      string          `json:"artKey"`
+	// Mood (Laune, public) is added to the trainer's per-seat effect in every entry, like an
+	// effect (× RaceSpec.trainerScale). It drifts between rules.json trainerMood min and max at
+	// every new section. 0 in the catalog.
+	Mood int `json:"mood"`
+	// MoodTrend is the change of Mood at the last section start (negative = got grumpier).
+	MoodTrend int `json:"moodTrend"`
 }
 
 type EventCardView struct {

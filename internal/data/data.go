@@ -60,7 +60,11 @@ type Trainer struct {
 	ArtKey      string          `json:"artKey"`
 }
 
-// EventType is one of the 12 personal event card types (Regelwerk §12.2).
+// EventType is a personal event card type (Regelwerk §12.2 plus PoC additions).
+//
+// Besides the hard-wired types (phoenix, tausch, …) a card can be fully data-driven: Stats are
+// applied once when the card is dealt, Bonus is added to the rower's entry at every competition
+// that matches Scope, Context and (if set) one of Weathers.
 type EventType struct {
 	Type        string `json:"type"`
 	Name        string `json:"name"`
@@ -68,6 +72,13 @@ type EventType struct {
 	Weight      int    `json:"weight"`
 	Stat        string `json:"stat,omitempty"` // stat events only
 	Value       int    `json:"value"`
+	// Scope says where the card can still matter: "water", "ergo" or "any". A water or ergo card is
+	// only dealt while a matching competition (and Context, if set) is still ahead.
+	Scope    string         `json:"scope"`
+	Stats    map[string]int `json:"stats,omitempty"`    // immediate stat changes
+	Bonus    int            `json:"bonus,omitempty"`    // per-rower entry bonus at matching competitions
+	Weathers []string       `json:"weathers,omitempty"` // bonus only in one of these weathers
+	Context  string         `json:"context,omitempty"`  // bonus only at competitions with this context
 }
 
 // Ereignis is a global modifier card.
@@ -77,26 +88,68 @@ type Ereignis struct {
 	Description string `json:"description"`
 	Weight      int    `json:"weight"`
 	Effect      string `json:"effect"`
-	Weather     string `json:"weather,omitempty"`
-	Value       int    `json:"value"`
+	// Scope ("water", "ergo", "any") says which competition the card is meant for: a water or ergo
+	// card is only drawn when the next competition is of that kind, and its competition modifier
+	// is consumed by the next competition of that kind.
+	Scope   string             `json:"scope"`
+	Weather string             `json:"weather,omitempty"` // force_weather
+	Stat    string             `json:"stat,omitempty"`    // all_stat, random_rower_stat
+	Weights map[string]float64 `json:"weights,omitempty"` // weight_mod: added to the competition weights
+	Value   int                `json:"value"`
 }
 
 // Ereignis effect kinds.
 const (
 	EffTrainingPoints  = "training_points"
-	EffKrebsChance     = "krebs_chance" // value: Krebs probability in per mille (‰)
-	EffRandomRowerMot  = "random_rower_motivation"
-	EffAllMotivation   = "all_motivation"
-	EffErgoKraftWeight = "ergo_kraft_weight"
+	EffKrebsChance     = "krebs_chance"    // value: Krebs probability in per mille (‰)
+	EffMaterialChance  = "material_chance" // value: Materialschaden probability in per mille (‰)
+	EffRandomRowerStat = "random_rower_stat"
+	EffAllStat         = "all_stat"
+	EffWeightMod       = "weight_mod"
+	EffGuestMod        = "guest_mod" // value: added to every guest stat level
 	EffSponsorPick     = "sponsor_pick"
 	EffForceWeather    = "force_weather"
 	EffNone            = "none"
 	EffCityBoatMod     = "city_boat_mod"
+	ScopeWater         = "water"
+	ScopeErgo          = "ergo"
+	ScopeAny           = "any"
 )
 
 var ereignisEffects = map[string]bool{
-	EffTrainingPoints: true, EffKrebsChance: true, EffRandomRowerMot: true, EffAllMotivation: true,
-	EffErgoKraftWeight: true, EffSponsorPick: true, EffForceWeather: true, EffNone: true, EffCityBoatMod: true,
+	EffTrainingPoints: true, EffKrebsChance: true, EffMaterialChance: true, EffRandomRowerStat: true,
+	EffAllStat: true, EffWeightMod: true, EffGuestMod: true, EffSponsorPick: true, EffForceWeather: true,
+	EffNone: true, EffCityBoatMod: true,
+}
+
+// waterOnlyEffects are Ereignis effects that only exist at water regattas (weather, incidents,
+// boats); their cards must have scope water.
+var waterOnlyEffects = map[string]bool{
+	EffKrebsChance: true, EffMaterialChance: true, EffForceWeather: true, EffCityBoatMod: true,
+}
+
+// CompetitionEffect reports whether an Ereignis effect is a modifier that the next matching
+// competition consumes (as opposed to immediate effects and training / draft modifiers).
+func CompetitionEffect(effect string) bool {
+	return waterOnlyEffects[effect] || effect == EffWeightMod || effect == EffGuestMod
+}
+
+// ImmediateEffect reports whether an Ereignis effect is applied when the card is drawn.
+func ImmediateEffect(effect string) bool {
+	return effect == EffNone || effect == EffAllStat || effect == EffRandomRowerStat
+}
+
+// ScopeMatches reports whether a competition is of the kind a scope names: water regattas (incl.
+// JTFO) for "water", Ergo-Cups for "ergo", every competition for "any".
+func ScopeMatches(scope string, c *Competition) bool {
+	switch scope {
+	case ScopeWater:
+		return c.Water
+	case ScopeErgo:
+		return c.Kind == kindErgoCup
+	default:
+		return true
+	}
 }
 
 type MissionCondition struct {
@@ -198,9 +251,22 @@ type Rules struct {
 	// TrainerPerSeat: a trainer effect counts once per seat instead of once per boat.
 	TrainerPerSeat bool `json:"trainerPerSeat"`
 	// BoatValueFactor and TrainerFactor multiply boat values and trainer effects (0 means 1).
-	BoatValueFactor int    `json:"boatValueFactor"`
-	TrainerFactor   int    `json:"trainerFactor"`
-	Guests          Guests `json:"guests"`
+	BoatValueFactor int         `json:"boatValueFactor"`
+	TrainerFactor   int         `json:"trainerFactor"`
+	Guests          Guests      `json:"guests"`
+	TrainerMood     TrainerMood `json:"trainerMood"`
+}
+
+// TrainerMood is the bounded random walk of every trainer's mood (Laune). At the start of every
+// section from the second on, each trainer (catalog order) draws one step from Steps with the
+// weights of its current mood (Weights["-1"] etc.; this is where mean reversion lives), and the
+// result is clamped to [Min, Max]. The mood is added to the trainer's per-seat effect.
+type TrainerMood struct {
+	Start   int              `json:"start"`
+	Min     int              `json:"min"`
+	Max     int              `json:"max"`
+	Steps   []int            `json:"steps"`
+	Weights map[string][]int `json:"weights"` // current mood -> weight per step
 }
 
 // Incidents are the probabilities of the mutually exclusive water incidents in per mille (‰).

@@ -3,6 +3,7 @@
     "id": "trainerstreik",
     "name": "Trainerstreik",
     "weight": 10,
+    "scope": "any",
     "effect": "training_points",
     "value": 5,
     "description": "Das nächste Training bringt nur 5 Trainingspunkte."
@@ -11,23 +12,54 @@
     "id": "doppeltraining",
     "name": "Doppeltraining",
     "weight": 10,
+    "scope": "any",
     "effect": "training_points",
     "value": 15,
     "description": "Das nächste Training bringt 15 Trainingspunkte."
   },
   {
+    "id": "ehemalige-helfen",
+    "name": "Ehemalige helfen aus",
+    "weight": 10,
+    "scope": "any",
+    "effect": "training_points",
+    "value": 12,
+    "description": "Alte Vereinsmitglieder stehen am Steg: Das nächste Training bringt 12 Trainingspunkte."
+  },
+  {
     "id": "maschsee-monster",
     "name": "Maschsee-Monster",
     "weight": 10,
+    "scope": "water",
     "effect": "krebs_chance",
     "value": 300,
     "description": "Bei der nächsten Wasserregatta liegt die Krebs-Wahrscheinlichkeit bei 30 %."
   },
   {
+    "id": "spiegelglatter-see",
+    "name": "Spiegelglatter See",
+    "weight": 10,
+    "scope": "water",
+    "effect": "krebs_chance",
+    "value": 50,
+    "description": "Kein Lüftchen, keine Welle: Bei der nächsten Wasserregatta liegt die Krebs-Wahrscheinlichkeit nur bei 5 %."
+  },
+  {
+    "id": "treibgut",
+    "name": "Treibgut auf der Strecke",
+    "weight": 10,
+    "scope": "water",
+    "effect": "material_chance",
+    "value": 100,
+    "description": "Äste und ein verlorenes Tretboot treiben im Wasser: Bei der nächsten Wasserregatta liegt die Materialschaden-Wahrscheinlichkeit bei 10 %."
+  },
+  {
     "id": "grippewelle",
     "name": "Grippewelle",
     "weight": 10,
-    "effect": "random_rower_motivation",
+    "scope": "any",
+    "effect": "random_rower_stat",
+    "stat": "motivation",
     "value": -5,
     "description": "Sofort: Je Team verliert eine zufällige Person 5 Motivation."
   },
@@ -35,22 +67,77 @@
     "id": "vereinsfest",
     "name": "Vereinsfest",
     "weight": 10,
-    "effect": "all_motivation",
+    "scope": "any",
+    "effect": "all_stat",
+    "stat": "motivation",
     "value": 1,
     "description": "Sofort: Alle Ruderer aller Teams erhalten +1 Motivation."
+  },
+  {
+    "id": "zeitungsbericht",
+    "name": "Zeitungsbericht",
+    "weight": 10,
+    "scope": "any",
+    "effect": "all_stat",
+    "stat": "motivation",
+    "value": 2,
+    "description": "Die Lokalzeitung berichtet über die Jugendabteilung. Sofort: Alle Ruderer aller Teams erhalten +2 Motivation."
   },
   {
     "id": "neue-ergometer",
     "name": "Neue Ergometer",
     "weight": 10,
-    "effect": "ergo_kraft_weight",
-    "value": 3,
+    "scope": "ergo",
+    "effect": "weight_mod",
+    "weights": { "kraft": 1 },
+    "value": 0,
     "description": "Beim nächsten Ergo-Cup zählt Kraft dreifach."
+  },
+  {
+    "id": "livestream-publikum",
+    "name": "Livestream-Publikum",
+    "weight": 10,
+    "scope": "ergo",
+    "effect": "weight_mod",
+    "weights": { "motivation": 1 },
+    "value": 0,
+    "description": "Der nächste Ergo-Cup wird live übertragen und alle Eltern schauen zu: Motivation zählt doppelt."
+  },
+  {
+    "id": "hallenluft",
+    "name": "Hallenluft",
+    "weight": 10,
+    "scope": "ergo",
+    "effect": "weight_mod",
+    "weights": { "ausdauer": 1 },
+    "value": 0,
+    "description": "Stickige Turnhalle: Beim nächsten Ergo-Cup zählt auch Ausdauer (einfach)."
+  },
+  {
+    "id": "rudermaschine-kaputt",
+    "name": "Rudermaschine kaputt",
+    "weight": 10,
+    "scope": "ergo",
+    "effect": "random_rower_stat",
+    "stat": "kraft",
+    "value": -4,
+    "description": "Das Vereinsergometer quietscht nur noch. Sofort: Je Team verliert eine zufällige Person 4 Kraft."
+  },
+  {
+    "id": "bestzeit-fieber",
+    "name": "Ergo-Bestzeit-Fieber",
+    "weight": 10,
+    "scope": "ergo",
+    "effect": "all_stat",
+    "stat": "kraft",
+    "value": 2,
+    "description": "Alle jagen ihre 2000-Meter-Bestzeit. Sofort: Alle Ruderer aller Teams erhalten +2 Kraft."
   },
   {
     "id": "sponsor",
     "name": "Sponsor",
     "weight": 10,
+    "scope": "any",
     "effect": "sponsor_pick",
     "value": 1,
     "description": "Bei der nächsten Kartenauswahl darf das Team mit den wenigsten Medaillenpunkten eine Karte mehr wählen."
@@ -59,15 +146,57 @@
     "id": "hitzewelle",
     "name": "Hitzewelle",
     "weight": 10,
+    "scope": "water",
     "effect": "force_weather",
     "weather": "hitze",
     "value": 0,
     "description": "Bei der nächsten Wasserregatta herrscht garantiert Hitze."
   },
   {
+    "id": "herbststurm",
+    "name": "Sturmwarnung",
+    "weight": 10,
+    "scope": "water",
+    "effect": "force_weather",
+    "weather": "wind",
+    "value": 0,
+    "description": "Bei der nächsten Wasserregatta weht garantiert kräftiger Wind."
+  },
+  {
+    "id": "dauerregen",
+    "name": "Dauerregen",
+    "weight": 10,
+    "scope": "water",
+    "effect": "force_weather",
+    "weather": "regen",
+    "value": 0,
+    "description": "Bei der nächsten Wasserregatta regnet es garantiert."
+  },
+  {
+    "id": "kaiserwetter",
+    "name": "Kaiserwetter",
+    "weight": 10,
+    "scope": "water",
+    "effect": "force_weather",
+    "weather": "normal",
+    "value": 0,
+    "description": "Bei der nächsten Wasserregatta ist das Wetter garantiert ganz normal."
+  },
+  {
+    "id": "rueckenwind",
+    "name": "Rückenwind auf der Regattastrecke",
+    "weight": 10,
+    "scope": "water",
+    "effect": "weight_mod",
+    "weights": { "geschwindigkeit": 1 },
+    "value": 0,
+    "description": "Bei der nächsten Wasserregatta schiebt der Wind von hinten: Geschwindigkeit zählt einfach mehr."
+  },
+  {
     "id": "ruhige-woche",
     "name": "Ruhige Woche",
     "weight": 10,
+    "scope": "any",
     "effect": "none",
     "value": 0,
     "description": "Nichts Besonderes passiert."
@@ -76,8 +205,27 @@
     "id": "bootshaus-renovierung",
     "name": "Bootshaus-Renovierung",
     "weight": 10,
+    "scope": "water",
     "effect": "city_boat_mod",
     "value": -1,
     "description": "Bei der nächsten Wasserregatta haben städtische Boote 1 Punkt weniger."
+  },
+  {
+    "id": "starke-gaeste",
+    "name": "Starke Gäste",
+    "weight": 10,
+    "scope": "any",
+    "effect": "guest_mod",
+    "value": 2,
+    "description": "Ein Leistungszentrum hat gemeldet: Beim nächsten Wettkampf sind die Gastmannschaften stärker (+2 auf jede Eigenschaft)."
+  },
+  {
+    "id": "gaeste-im-stau",
+    "name": "Gäste im Stau",
+    "weight": 10,
+    "scope": "any",
+    "effect": "guest_mod",
+    "value": -2,
+    "description": "Der Bus der Gäste stand stundenlang auf der A2: Beim nächsten Wettkampf sind die Gastmannschaften schwächer (−2 auf jede Eigenschaft)."
   }
 ]

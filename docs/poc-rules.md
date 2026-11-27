@@ -104,6 +104,31 @@ pass (section 10) so that a trainer matters against crew scores.
 | Josef      | Nordlicht            | Wind +6, Regen +6, Hitze −12                              |
 | Clara      | Schönwettertrainerin | Hitze +6, Normal +6, Wind −8                              |
 
+### 2.4.1 Trainer mood (Laune)
+
+Designer rule, PoC numbers (`rules.json` `trainerMood`). Every trainer has a public mood, a bounded
+random walk:
+
+- It starts at 0 for all ten trainers (also those still in the draft pool).
+- Whenever the calendar figure enters a new section (sections 2–12, i.e. 11 times per season; the
+  mood is fixed for the whole section, so it is known before the section's competition), every
+  trainer draws one step from −2/−1/0/+1/+2. The weights depend on the current mood, which gives a
+  mild pull back to 0, and the result is clamped to [−2, +2]:
+
+  | Mood now |  −2 |  −1 |   0 |  +1 |  +2 |
+  | -------- | --: | --: | --: | --: | --: |
+  | −2       |   0 |   0 |   6 |   6 |   1 |
+  | −1       |   0 |   4 |   8 |   6 |   1 |
+  | 0        |   1 |   5 |   8 |   5 |   1 |
+  | +1       |   1 |   6 |   8 |   4 |   0 |
+  | +2       |   1 |   6 |   6 |   0 |   0 |
+
+- The mood is added to the trainer's per-seat effect, so it counts like an effect: once per seat
+  (a 4x with a +2 trainer gets +8, an ergo start +2), whether or not one of the trainer's weather or
+  context effects applies.
+- The cards show the mood and an arrow for the change since the previous section; the bots include
+  it in their trainer choice.
+
 ### 2.5 Starting deal (any player count 2–4)
 
 - PoC assumption: 9 rowers per player – 3 per age group, at least 1 girl and 1 boy per age group,
@@ -119,7 +144,9 @@ pass (section 10) so that a trainer matters against crew scores.
   stats.
 - **Motivation cannot be trained** (designer rule), neither at training nor in a camp; the engine
   rejects it. Motivation comes only from selections (WR5, Basketball, Wanderfahrt), gold medals,
-  events (Motivations-Event, Phönix, Verdopplung, Seelenzwilling, mission rewards) and Ereignisse.
+  events (Motivations-Event, Phönix, Verdopplung, Seelenzwilling, Livestream-Liebling,
+  Maschseelauf, mission rewards; Nachtschicht im Kraftraum and Liebeskummer cost Motivation) and
+  Ereignisse.
 - WR5 and Basketballturnier (§9.3/9.4): choose exactly 5 rowers, each +10 Motivation.
 - Wanderfahrt: choose exactly 5 rowers, each +4 Ausdauer and +3 Motivation (PoC assumption).
 
@@ -134,7 +161,7 @@ pass (section 10) so that a trainer matters against crew scores.
   enters at least one race.
 - Score per entry (§10.1 working model, PoC weights):
   `crew = Σ over rowers Σ weight·stat` (rounded at the end),
-  `total = crew + boat value × 2 × seats + trainer effect × seats + event bonuses − Krebs penalty`.
+  `total = crew + boat value × 2 × seats + (trainer effect + trainer mood) × seats + event bonuses − Krebs penalty`.
 - PoC assumption: per competition each player enters **at most one crew per race**; every rower
   starts **at most once** per competition and every boat is used **at most once** per competition.
   Races may be left empty.
@@ -227,18 +254,37 @@ index + guestOffset of the competition` (Kinder 15, B 19, A 23, growth 0.3 per s
 - PoC assumption: Event stations 1–6 give 1 card per player, 7–11 give 2 cards (at most 16 per
   player), each limited by the player's rowers without an event.
 - The rower is drawn uniformly among own rowers without an event card (twins never get one); the
-  type is drawn from a weighted deck:
+  type is drawn from a weighted deck (`events.json`).
+- **Scope** (`scope`: `water`, `ergo` or `any`): a card whose bonus only works at water regattas,
+  at Ergo-Cups or in a context (sprint) is only dealt while such a competition is still ahead, so
+  nobody gets Ergo-Bestzeit-Fieber after the Osnabrücker Ergo-Cup. Water cards may be dealt in the
+  winter: they stay on the rower and pay off from Bremen on.
+- Entry bonuses (`bonus`) count once per rower with the card in the boat or on the ergometer, at
+  every competition that matches the card's scope, context and weathers.
 
-| Event                                                     |  Weight | Effect                                                                                                       |
-| --------------------------------------------------------- | ------: | ------------------------------------------------------------------------------------------------------------ |
-| Wetter-Event                                              |       8 | The rower's boat +4 at water regattas when the weather is not Normal                                         |
-| Wachstum                                                  |       8 | Best stat except Motivation (current; ties → first in display order) +2 at every training and camp           |
-| Phönix                                                    |      10 | Weakest stat +5 immediately (ties drawn at random)                                                           |
-| Tausch                                                    |       8 | The player may swap two stat values (not Motivation) of this rower once (or skip)                            |
-| Verdopplung                                               |       5 | Current best stat doubled once, permanent (ties drawn at random)                                             |
-| Kraft/Ausdauer/Geschwindigkeits/Technik/Motivations-Event | 10 each | +8 on that stat                                                                                              |
-| Seelenzwilling                                            |       5 | New rower card "<Name> (Zwilling)", same age/gender, 80 % of the current stats (rounded); can't get an event |
-| Geheime Mission                                           |       8 | Random mission from the catalog (only missions still achievable)                                             |
+| Event                                                     |  Weight | Scope | Effect                                                                                                       |
+| --------------------------------------------------------- | ------: | ----- | ------------------------------------------------------------------------------------------------------------ |
+| Wetter-Event                                              |       8 | water | The rower's boat +4 at water regattas when the weather is not Normal                                         |
+| Wachstum                                                  |       8 | any   | Best stat except Motivation (current; ties → first in display order) +2 at every training and camp           |
+| Phönix                                                    |      10 | any   | Weakest stat +5 immediately (ties drawn at random)                                                           |
+| Tausch                                                    |       8 | any   | The player may swap two stat values (not Motivation) of this rower once (or skip)                            |
+| Verdopplung                                               |       5 | any   | Current best stat doubled once, permanent (ties drawn at random)                                             |
+| Kraft/Ausdauer/Geschwindigkeits/Technik/Motivations-Event | 10 each | any   | +8 on that stat                                                                                              |
+| Seelenzwilling                                            |       5 | any   | New rower card "<Name> (Zwilling)", same age/gender, 80 % of the current stats (rounded); can't get an event |
+| Geheime Mission                                           |       8 | any   | Random mission from the catalog (only missions still achievable)                                             |
+| Regenjacke                                                |       5 | water | +8 at water regattas in Regen                                                                                |
+| Sonnenhut                                                 |       5 | water | +8 at water regattas in Hitze                                                                                |
+| Sturmerprobt                                              |       5 | water | +8 at water regattas in Wind                                                                                 |
+| Eisbaden im Maschsee                                      |       5 | water | +8 at water regattas in Kälte                                                                                |
+| Maschsee-Kenner                                           |       6 | water | +3 at every water regatta (incl. JTFO)                                                                       |
+| Spurtstark                                                |       5 | water | +6 at sprint regattas (RVH, RVB)                                                                             |
+| Ergo-Bestzeit-Fieber                                      |       6 | ergo  | +6 at every Ergo-Cup                                                                                         |
+| Livestream-Liebling                                       |       5 | ergo  | Motivation +3 immediately, +3 at every Ergo-Cup                                                              |
+| Klappen-Tüftelei                                          |       5 | ergo  | Technik +2 immediately, +4 at every Ergo-Cup                                                                 |
+| Nachtschicht im Kraftraum                                 |       6 | any   | Kraft +10, Motivation −2                                                                                     |
+| Liebeskummer                                              |       5 | any   | Ausdauer +10, Motivation −3                                                                                  |
+| Techniklehrgang                                           |       6 | any   | Technik +5, Geschwindigkeit +3                                                                               |
+| Maschseelauf                                              |       6 | any   | Ausdauer +6, Motivation +2                                                                                   |
 
 ### 5.1 Mission catalog (Geheime Mission)
 
@@ -262,20 +308,50 @@ after each competition; a mission fails as soon as it can no longer be fulfilled
 PoC assumption: one card per Ereignis station, drawn with replacement (all weights equal), shown to
 everyone. Immediate effects apply at once; the others wait until the next matching station.
 
-| Ereignis              | Effect                                                                   |
-| --------------------- | ------------------------------------------------------------------------ |
-| Trainerstreik         | Next regular training: 5 points                                          |
-| Doppeltraining        | Next regular training: 15 points                                         |
-| Maschsee-Monster      | Next water regatta: Krebs probability 30 % (`value` 300 ‰)               |
-| Grippewelle           | Immediately: one random rower per team −5 Motivation                     |
-| Vereinsfest           | Immediately: every rower +1 Motivation                                   |
-| Neue Ergometer        | Next Ergo-Cup: Kraft weight 3                                            |
-| Sponsor               | Next draft: the player with the fewest medal points picks one extra card |
-| Hitzewelle            | Next water regatta: weather is Hitze                                     |
-| Ruhige Woche          | Nothing                                                                  |
-| Bootshaus-Renovierung | Next water regatta: city boats −1                                        |
+**Season-aware deck** (designer rule). Every card has a `scope` (`water`, `ergo` or `any`):
 
-If several training modifiers are pending, the most recent one wins.
+- A `water` card is only drawn when the **next competition** is a water regatta (incl. JTFO), an
+  `ergo` card only when it is an Ergo-Cup. In the Ergo-Cup winter (the Ereignisse before
+  Mindor-Cup, DRC-Ergo-Cup and Osnabrücker Ergo-Cup) there is therefore no Maschsee-Monster,
+  Hitzewelle or Treibgut; from the Ereignis before Bremen on there are no ergo cards.
+- A competition modifier is consumed by the next competition of its scope, which with this rule is
+  always the next competition. `any` modifiers (Gastmannschaften) apply at the next competition of
+  any kind.
+- A modifier that no later station would consume is not drawn either (no Trainerstreik after the
+  last training, no Sponsor before the RVB-Endspurt). The deck always has Ruhige Woche as a
+  fallback. Pending modifiers without a station left are still hidden from the active list.
+- Data rules: Krebs, Materialschaden, weather and city-boat cards must have scope `water`.
+
+| Ereignis                          | Scope | Effect                                                                   |
+| --------------------------------- | ----- | ------------------------------------------------------------------------ |
+| Trainerstreik                     | any   | Next regular training: 5 points                                          |
+| Doppeltraining                    | any   | Next regular training: 15 points                                         |
+| Ehemalige helfen aus              | any   | Next regular training: 12 points                                         |
+| Grippewelle                       | any   | Immediately: one random rower per team −5 Motivation                     |
+| Vereinsfest                       | any   | Immediately: every rower +1 Motivation                                   |
+| Zeitungsbericht                   | any   | Immediately: every rower +2 Motivation                                   |
+| Sponsor                           | any   | Next draft: the player with the fewest medal points picks one extra card |
+| Starke Gäste                      | any   | Next competition: guest crews +2 on every stat                           |
+| Gäste im Stau                     | any   | Next competition: guest crews −2 on every stat                           |
+| Ruhige Woche                      | any   | Nothing                                                                  |
+| Maschsee-Monster                  | water | Next water regatta: Krebs probability 30 % (`value` 300 ‰)               |
+| Spiegelglatter See                | water | Next water regatta: Krebs probability 5 %                                |
+| Treibgut auf der Strecke          | water | Next water regatta: Materialschaden probability 10 %                     |
+| Hitzewelle                        | water | Next water regatta: weather is Hitze                                     |
+| Sturmwarnung                      | water | Next water regatta: weather is Wind                                      |
+| Dauerregen                        | water | Next water regatta: weather is Regen                                     |
+| Kaiserwetter                      | water | Next water regatta: weather is Normal                                    |
+| Rückenwind auf der Regattastrecke | water | Next water regatta: Geschwindigkeit weight +1                            |
+| Bootshaus-Renovierung             | water | Next water regatta: city boats −1                                        |
+| Neue Ergometer                    | ergo  | Next Ergo-Cup: Kraft weight +1 (3)                                       |
+| Livestream-Publikum               | ergo  | Next Ergo-Cup: Motivation weight +1 (2)                                  |
+| Hallenluft                        | ergo  | Next Ergo-Cup: Ausdauer weight +1 (1)                                    |
+| Rudermaschine kaputt              | ergo  | Immediately: one random rower per team −4 Kraft                          |
+| Ergo-Bestzeit-Fieber              | ergo  | Immediately: every rower +2 Kraft                                        |
+
+If several training modifiers are pending, the most recent one wins; so does the most recent forced
+weather. Weight modifiers add up. Weight modifiers change only the clubs' crews: guest crews keep
+the competition's own weights (they bring their own ergometers).
 
 ## 7. Draft (new cards during the season)
 
@@ -294,6 +370,11 @@ If several training modifiers are pending, the most recent one wins.
 
 - All randomness comes from one seeded generator drawn in a fixed order; a game is fully defined by
   its seed and decision log.
+- Draw order per station: entering a new section first draws the trainer moods (one draw per
+  trainer, catalog order), then the station draws: event stations per card round and player the
+  rower then the type (then mission or tie draws), Ereignis stations the card (then one rower per
+  player for Grippewelle-like cards), competitions the weather (d6, unless forced) and at
+  resolution one d1000 per water entry in race and player order.
 - Opponents' lineups and trainer choices stay hidden until the competition is resolved; all cards on
   the table (rowers, boats, trainers, event cards) are public, mission texts excepted.
 
@@ -367,3 +448,32 @@ entries. The guests got weaker overall: the higher Motivation weight helps the p
 Motivation from WR5 and Basketball. Only at the Ergo-Cups (Motivation weight unchanged, but no
 longer trainable) they got stronger, which the lower offsets undo. 2-player
 games now average 47 points (before 42), 4-player games 32 (before 30).
+
+### 10.2 Season-aware Ereignisse, bigger decks, trainer mood
+
+Designer rules: the Ereignis deck grows from 10 to 24 cards and the event deck from 12 to 25 types,
+both with a `scope` so that nothing is drawn that can no longer apply (sections 5 and 6); every
+trainer has a mood (2.4.1). No other numbers changed.
+
+Sim numbers, 1000 games, seed 1, 3 players (default personalities):
+
+| Metric                                              | Before                 | After                  |
+| --------------------------------------------------- | ---------------------- | ---------------------- |
+| Final points mean (sd)                              | 37.6 (5.3)             | 38.4 (5.5)             |
+| Final points min / p10 / median / p90 / max         | 19 / 31 / 37 / 45 / 57 | 19 / 32 / 38 / 45 / 60 |
+| Share of final scores in 15..40                     | 71.6 %                 | 66.0 %                 |
+| Winner minus last                                   | 10.1                   | 10.3                   |
+| Win rate Taktiker (1 vs 2 Bauchgefühl)              | 41.8 %                 | 44.8 %                 |
+| Max seat win rate, all seats Taktiker (500 games)   | 38.7 %                 | 34.4 %                 |
+| Guest crew 1st in contested races                   | 46.0 %                 | 43.6 %                 |
+| Guest crew 1st at the Ergo-Cups (Mindor/DRC/Osnab.) | 47.5 / 45.0 / 39.1 %   | 41.5 / 39.8 / 35.0 %   |
+| Krebs per water entry                               | 16.7 %                 | 15.1 %                 |
+| Score share trainer / events                        | 3.6 / 0.1 %            | 3.7 / 0.3 %            |
+| 2 / 4 players: final points mean (500 games)        | 47.1 / 32.1            | 48.2 / 32.7            |
+
+The mood alone changes almost nothing in the aggregate (a run without mood steps: mean 38.3,
+Taktiker 44.3 %); the rise of the Taktiker edge comes from the larger decks: more conditional
+bonuses and weight modifiers reward the better lineup optimiser. The seat balance with equal bots
+improved. The Ergo-Cups got a little easier against the guests (ergo bonuses, Neue Ergometer,
+Livestream-Publikum, Ergo-Bestzeit-Fieber) – if that is unwanted, raise their `guestOffset` by
+about 0.5.

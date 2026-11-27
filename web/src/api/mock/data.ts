@@ -289,6 +289,8 @@ export function namedBoats(): BoatView[] {
 export const TRAINERS: TrainerView[] = [
   {
     id: "tr-sack",
+    mood: 0,
+    moodTrend: 0,
     name: "Herr Sack",
     ability: "Sonnenanbeter",
     artKey: "trainer-m",
@@ -300,6 +302,8 @@ export const TRAINERS: TrainerView[] = [
   },
   {
     id: "tr-linke",
+    mood: 0,
+    moodTrend: 0,
     name: "Frau Linke",
     ability: "Regenjacke",
     artKey: "trainer-w",
@@ -311,6 +315,8 @@ export const TRAINERS: TrainerView[] = [
   },
   {
     id: "tr-caro",
+    mood: 0,
+    moodTrend: 0,
     name: "Caro",
     ability: "Rückenwind",
     artKey: "trainer-w",
@@ -322,6 +328,8 @@ export const TRAINERS: TrainerView[] = [
   },
   {
     id: "tr-hannah",
+    mood: 0,
+    moodTrend: 0,
     name: "Hannah",
     ability: "Ergo-Expertin",
     artKey: "trainer-w",
@@ -330,6 +338,8 @@ export const TRAINERS: TrainerView[] = [
   },
   {
     id: "tr-julian",
+    mood: 0,
+    moodTrend: 0,
     name: "Julian",
     ability: "Sprintcoach",
     artKey: "trainer-m",
@@ -338,6 +348,8 @@ export const TRAINERS: TrainerView[] = [
   },
   {
     id: "tr-aron",
+    mood: 0,
+    moodTrend: 0,
     name: "Aron",
     ability: "Langer Atem",
     artKey: "trainer-m",
@@ -346,6 +358,8 @@ export const TRAINERS: TrainerView[] = [
   },
   {
     id: "tr-salim",
+    mood: 0,
+    moodTrend: 0,
     name: "Salim",
     ability: "Eisbader",
     artKey: "trainer-m",
@@ -357,6 +371,8 @@ export const TRAINERS: TrainerView[] = [
   },
   {
     id: "tr-friedjof",
+    mood: 0,
+    moodTrend: 0,
     name: "Friedjof",
     ability: "Ruhige Hand",
     artKey: "trainer-m",
@@ -365,6 +381,8 @@ export const TRAINERS: TrainerView[] = [
   },
   {
     id: "tr-josef",
+    mood: 0,
+    moodTrend: 0,
     name: "Josef",
     ability: "Allwetter",
     artKey: "trainer-m",
@@ -376,6 +394,8 @@ export const TRAINERS: TrainerView[] = [
   },
   {
     id: "tr-clara",
+    mood: 0,
+    moodTrend: 0,
     name: "Clara",
     ability: "Windflüsterin",
     artKey: "trainer-w",

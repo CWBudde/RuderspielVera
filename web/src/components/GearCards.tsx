@@ -1,4 +1,4 @@
-import { Building2, Star } from "lucide-react";
+import { ArrowDownRight, ArrowUpRight, Building2, Frown, Meh, Smile, Star } from "lucide-react";
 import type { BoatView, TrainerEffect, TrainerView, Weather } from "@/api/types.gen";
 import { Art } from "@/components/Art";
 import { ShellIcon, WeatherIcon } from "@/components/icons";
@@ -43,7 +43,48 @@ export function effectText(e: TrainerEffect): string {
   return `${sign} ${parts.join(" ") || "immer"}`;
 }
 
-/** Trainer card: portrait, effects as chips, special-ability box. */
+const MOOD_LABEL: Record<number, string> = {
+  [-2]: "mies gelaunt",
+  [-1]: "mürrisch",
+  0: "ausgeglichen",
+  1: "gut gelaunt",
+  2: "bestens gelaunt",
+};
+
+function signed(n: number): string {
+  return n > 0 ? `+${n}` : n < 0 ? `−${-n}` : "±0";
+}
+
+/** Trainer mood (Laune): face, value per seat and a trend arrow against the previous section. */
+export function MoodChip({ trainer, className }: { trainer: TrainerView; className?: string }) {
+  const mood = trainer.mood ?? 0;
+  const trend = trainer.moodTrend ?? 0;
+  const Face = mood > 0 ? Smile : mood < 0 ? Frown : Meh;
+  const label = MOOD_LABEL[mood] ?? (mood > 0 ? "bestens gelaunt" : "mies gelaunt");
+  return (
+    <span
+      className={cn(
+        "inline-flex items-center gap-1 rounded-lg border-2 px-2 py-0.5 text-sm font-semibold",
+        mood > 0
+          ? "border-leaf bg-white text-leaf"
+          : mood < 0
+            ? "border-destructive bg-white text-destructive"
+            : "border-transparent bg-cream-2",
+        className,
+      )}
+      title={`Laune: ${label} (${signed(mood)} pro Ruderplatz)${
+        trend !== 0 ? `, seit dem letzten Abschnitt ${signed(trend)}` : ""
+      }`}
+    >
+      <Face className="size-4 shrink-0" />
+      <span className="truncate">Laune {signed(mood)}</span>
+      {trend > 0 && <ArrowUpRight className="size-4 shrink-0" aria-label="besser gelaunt" />}
+      {trend < 0 && <ArrowDownRight className="size-4 shrink-0" aria-label="schlechter gelaunt" />}
+    </span>
+  );
+}
+
+/** Trainer card: portrait, effects as chips, mood, special-ability box. */
 export function TrainerCard({
   trainer,
   className,
@@ -53,7 +94,7 @@ export function TrainerCard({
   trainer: TrainerView;
   className?: string;
   weather?: Weather;
-  /** If set, highlights the bonus that applies today. */
+  /** If set, highlights the bonus that applies today (effects plus mood). */
   todayBonus?: number;
 }) {
   return (
@@ -88,6 +129,9 @@ export function TrainerCard({
               </li>
             );
           })}
+          <li className="flex">
+            <MoodChip trainer={trainer} />
+          </li>
           <li className="px-1 text-xs font-semibold text-muted-foreground">je Ruderplatz im Boot</li>
         </ul>
       </div>

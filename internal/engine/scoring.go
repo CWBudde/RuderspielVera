@@ -8,7 +8,8 @@ import (
 )
 
 // scoreEntry computes an entry without incident:
-// total = round(Σ weight·stat over the crew) + boat + trainer effect + event bonuses.
+// total = round(Σ weight·stat over the crew) + boat + (trainer effect + trainer mood) × scale +
+// event bonuses.
 func (g *Game) scoreEntry(cs *compState, race RaceSpec, re raceEntry) EntryResult {
 	er := EntryResult{PlayerID: re.pl.id}
 	crew := 0.0
@@ -19,9 +20,8 @@ func (g *Game) scoreEntry(cs *compState, race RaceSpec, re raceEntry) EntryResul
 			crew += cs.weights[s] * float64(r.stats[s])
 		}
 
-		if r.event != nil && r.event.def.Type == "wetter" && cs.def.Water &&
-			cs.weather != "" && cs.weather != WeatherNormal {
-			er.EventBonus += r.event.def.Value
+		if r.event != nil {
+			er.EventBonus += eventBonus(r.event.def, cs)
 		}
 	}
 
@@ -34,12 +34,30 @@ func (g *Game) scoreEntry(cs *compState, race RaceSpec, re raceEntry) EntryResul
 
 	if re.trainer != nil {
 		er.TrainerID = re.trainer.def.ID
-		er.Trainer = trainerEffect(re.trainer, cs) * g.d.Rules.TrainerScale(race.Seats)
+		er.Trainer = (trainerEffect(re.trainer, cs) + g.mood[re.trainer.def.ID]) * g.d.Rules.TrainerScale(race.Seats)
 	}
 
 	er.Total = er.Crew + er.BoatValue + er.Trainer + er.EventBonus
 
 	return er
+}
+
+// eventBonus is a rower's event card bonus at a competition: the card's Bonus when the competition
+// matches its scope, context and (if any) weathers.
+func eventBonus(def *data.EventType, cs *compState) int {
+	if def.Bonus == 0 || !data.ScopeMatches(def.Scope, cs.def) {
+		return 0
+	}
+
+	if def.Context != "" && def.Context != cs.def.Context {
+		return 0
+	}
+
+	if len(def.Weathers) > 0 && !slices.Contains(def.Weathers, string(cs.weather)) {
+		return 0
+	}
+
+	return def.Bonus
 }
 
 func (g *Game) boatValue(cs *compState, race RaceSpec, bt *boat) int {
@@ -186,6 +204,11 @@ var ageRank = map[AgeGroup]int{AgeKinder: 0, AgeB: 1, AgeA: 2}
 // allowed age group plus season growth; its boat is valued like a player boat. The score is
 // deterministic, so bots and the UI can compute it in advance.
 func GuestScore(d *data.Data, comp *data.Competition, station int, race RaceSpec) (float64, bool) {
+	return guestScore(d, comp, station, race, 0)
+}
+
+// guestScore is GuestScore with an extra stat level offset (Ereignis guest modifiers).
+func guestScore(d *data.Data, comp *data.Competition, station int, race RaceSpec, mod float64) (float64, bool) {
 	gc := d.Rules.Guests
 	if !gc.Enabled || len(race.Ages) == 0 {
 		return 0, false
@@ -198,7 +221,7 @@ func GuestScore(d *data.Data, comp *data.Competition, station int, race RaceSpec
 		}
 	}
 
-	level := gc.StatLevel[string(oldest)] + gc.GrowthPerStation*float64(station) + comp.GuestOffset
+	level := gc.StatLevel[string(oldest)] + gc.GrowthPerStation*float64(station) + comp.GuestOffset + mod
 
 	wsum := 0.0
 	for _, st := range data.StatNames {
@@ -223,7 +246,7 @@ func GuestScore(d *data.Data, comp *data.Competition, station int, race RaceSpec
 
 // guestEntry builds the result row of a race's guest crew.
 func (g *Game) guestEntry(cs *compState, race RaceSpec) (EntryResult, bool) {
-	total, ok := GuestScore(g.d, cs.def, cs.station, race)
+	total, ok := guestScore(g.d, cs.def, cs.station, race, cs.guestMod)
 	if !ok {
 		return EntryResult{}, false
 	}

@@ -3,13 +3,17 @@
     "type": "wetter",
     "name": "Wetter-Event",
     "weight": 8,
-    "value": 4,
+    "scope": "water",
+    "value": 0,
+    "bonus": 4,
+    "weathers": ["regen", "hitze", "wind", "kaelte"],
     "description": "Bei Wasserregatten mit Regen, Hitze, Wind oder Kälte bekommt das Boot dieser Person +4."
   },
   {
     "type": "wachstum",
     "name": "Wachstum",
     "weight": 8,
+    "scope": "any",
     "value": 2,
     "description": "Bei jedem Training und Trainingslager wächst die beste Eigenschaft dieser Person (außer Motivation) automatisch um 2."
   },
@@ -17,6 +21,7 @@
     "type": "phoenix",
     "name": "Phönix",
     "weight": 10,
+    "scope": "any",
     "value": 5,
     "description": "Die schwächste Eigenschaft dieser Person steigt sofort um 5."
   },
@@ -24,6 +29,7 @@
     "type": "tausch",
     "name": "Tausch",
     "weight": 8,
+    "scope": "any",
     "value": 0,
     "description": "Du darfst einmal zwei Eigenschaftswerte dieser Person miteinander tauschen (Motivation ausgenommen)."
   },
@@ -31,6 +37,7 @@
     "type": "verdopplung",
     "name": "Verdopplung",
     "weight": 5,
+    "scope": "any",
     "value": 2,
     "description": "Die aktuell beste Eigenschaft dieser Person wird einmalig verdoppelt."
   },
@@ -38,6 +45,7 @@
     "type": "kraft",
     "name": "Kraft-Event",
     "weight": 10,
+    "scope": "any",
     "stat": "kraft",
     "value": 8,
     "description": "Kraft dieser Person +8."
@@ -46,6 +54,7 @@
     "type": "ausdauer",
     "name": "Ausdauer-Event",
     "weight": 10,
+    "scope": "any",
     "stat": "ausdauer",
     "value": 8,
     "description": "Ausdauer dieser Person +8."
@@ -54,6 +63,7 @@
     "type": "geschwindigkeit",
     "name": "Geschwindigkeits-Event",
     "weight": 10,
+    "scope": "any",
     "stat": "geschwindigkeit",
     "value": 8,
     "description": "Geschwindigkeit dieser Person +8."
@@ -62,6 +72,7 @@
     "type": "technik",
     "name": "Technik-Event",
     "weight": 10,
+    "scope": "any",
     "stat": "technik",
     "value": 8,
     "description": "Technik dieser Person +8."
@@ -70,6 +81,7 @@
     "type": "motivation",
     "name": "Motivations-Event",
     "weight": 10,
+    "scope": "any",
     "stat": "motivation",
     "value": 8,
     "description": "Motivation dieser Person +8."
@@ -78,6 +90,7 @@
     "type": "seelenzwilling",
     "name": "Seelenzwilling",
     "weight": 5,
+    "scope": "any",
     "value": 80,
     "description": "Eine neue Rudererkarte kommt ins Team: der Zwilling mit 80 % der aktuellen Werte. Der Zwilling kann kein Event erhalten."
   },
@@ -85,7 +98,148 @@
     "type": "mission",
     "name": "Geheime Mission",
     "weight": 8,
+    "scope": "any",
     "value": 0,
     "description": "Diese Person erhält eine geheime Mission. Wird sie erfüllt, gibt es eine Belohnung."
+  },
+  {
+    "type": "regenjacke",
+    "name": "Regenjacke",
+    "weight": 5,
+    "scope": "water",
+    "value": 0,
+    "bonus": 8,
+    "weathers": ["regen"],
+    "description": "Bei Wasserregatten mit Regen bekommt das Boot dieser Person +8."
+  },
+  {
+    "type": "sonnenhut",
+    "name": "Sonnenhut",
+    "weight": 5,
+    "scope": "water",
+    "value": 0,
+    "bonus": 8,
+    "weathers": ["hitze"],
+    "description": "Bei Wasserregatten mit Hitze bekommt das Boot dieser Person +8."
+  },
+  {
+    "type": "sturmerprobt",
+    "name": "Sturmerprobt",
+    "weight": 5,
+    "scope": "water",
+    "value": 0,
+    "bonus": 8,
+    "weathers": ["wind"],
+    "description": "Bei Wasserregatten mit Wind bekommt das Boot dieser Person +8."
+  },
+  {
+    "type": "eisbaden",
+    "name": "Eisbaden im Maschsee",
+    "weight": 5,
+    "scope": "water",
+    "value": 0,
+    "bonus": 8,
+    "weathers": ["kaelte"],
+    "description": "Wer im Januar im Maschsee badet, friert nie: Bei Wasserregatten mit Kälte bekommt das Boot dieser Person +8."
+  },
+  {
+    "type": "maschsee-kenner",
+    "name": "Maschsee-Kenner",
+    "weight": 6,
+    "scope": "water",
+    "value": 0,
+    "bonus": 3,
+    "description": "Kennt jede Welle und jede Boje: Bei jeder Wasserregatta bekommt das Boot dieser Person +3."
+  },
+  {
+    "type": "spurtstark",
+    "name": "Spurtstark",
+    "weight": 5,
+    "scope": "water",
+    "value": 0,
+    "bonus": 6,
+    "context": "sprint",
+    "description": "Bei Sprintregatten (RVH, RVB) bekommt das Boot dieser Person +6."
+  },
+  {
+    "type": "bestzeit-fieber",
+    "name": "Ergo-Bestzeit-Fieber",
+    "weight": 6,
+    "scope": "ergo",
+    "value": 0,
+    "bonus": 6,
+    "description": "Diese Person will den Vereinsrekord: Bei jedem Ergo-Cup bekommt sie +6."
+  },
+  {
+    "type": "livestream-liebling",
+    "name": "Livestream-Liebling",
+    "weight": 5,
+    "scope": "ergo",
+    "value": 0,
+    "stats": {
+      "motivation": 3
+    },
+    "bonus": 3,
+    "description": "Die Kamera liebt diese Person: sofort +3 Motivation und bei jedem Ergo-Cup +3."
+  },
+  {
+    "type": "klappen-tueftelei",
+    "name": "Klappen-Tüftelei",
+    "weight": 5,
+    "scope": "ergo",
+    "value": 0,
+    "stats": {
+      "technik": 2
+    },
+    "bonus": 4,
+    "description": "Stellt die Luftklappe am Ergometer perfekt ein: sofort +2 Technik und bei jedem Ergo-Cup +4."
+  },
+  {
+    "type": "kraftraum",
+    "name": "Nachtschicht im Kraftraum",
+    "weight": 6,
+    "scope": "any",
+    "value": 0,
+    "stats": {
+      "kraft": 10,
+      "motivation": -2
+    },
+    "description": "Kraft dieser Person +10, aber vom Muskelkater Motivation −2."
+  },
+  {
+    "type": "liebeskummer",
+    "name": "Liebeskummer",
+    "weight": 5,
+    "scope": "any",
+    "value": 0,
+    "stats": {
+      "ausdauer": 10,
+      "motivation": -3
+    },
+    "description": "Diese Person rudert ihren Kummer weg: Ausdauer +10, Motivation −3."
+  },
+  {
+    "type": "techniklehrgang",
+    "name": "Techniklehrgang",
+    "weight": 6,
+    "scope": "any",
+    "value": 0,
+    "stats": {
+      "technik": 5,
+      "geschwindigkeit": 3
+    },
+    "description": "Ein Wochenende beim Landesverband: Technik +5, Geschwindigkeit +3."
+  },
+  {
+    "type": "maschseelauf",
+    "name": "Maschseelauf",
+    "weight": 6,
+    "scope": "any",
+    "value": 0,
+    "stats": {
+      "ausdauer": 6,
+      "motivation": 2
+    },
+    "description": "Einmal um den Maschsee (6 km) mit der ganzen Familie: Ausdauer +6, Motivation +2."
   }
 ]
