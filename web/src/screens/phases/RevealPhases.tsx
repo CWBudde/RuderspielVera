@@ -46,13 +46,11 @@ function EventFace({ rower }: { rower: RowerView }) {
 export function EventReveal() {
   const { view, you, submit, submitting } = useGame();
   const here = view.log.filter((e) => e.stationIndex === view.current && e.kind === "event");
-  const mine = useMemo(
-    () =>
-      you.rowers.filter(
-        (r) => r.event && here.some((e) => e.playerId === you.id && e.text.includes(r.name) && e.text.includes(r.event?.name ?? "")),
-      ),
-    [you, here],
-  );
+  // phase.newEvents lists exactly the cards dealt to you at this station.
+  const mine = useMemo(() => {
+    const ids = new Set((view.phase.newEvents ?? []).map((ev) => ev.rowerId));
+    return you.rowers.filter((r) => ids.has(r.id) && r.event);
+  }, [you, view.phase.newEvents]);
   const [revealed, setRevealed] = useState<Set<string>>(new Set());
   const allRevealed = mine.every((r) => revealed.has(r.id));
   const others = here.filter((e) => e.playerId !== you.id);
@@ -60,7 +58,7 @@ export function EventReveal() {
   return (
     <PhaseFrame
       title={view.phase.title}
-      prompt={mine.length ? "Du hast neue Eventkarten bekommen. Deck sie auf!" : view.phase.prompt}
+      prompt={mine.length && !allRevealed ? "Du hast neue Eventkarten bekommen. Deck sie auf!" : view.phase.prompt}
       footer={
         allRevealed ? (
           <Button size="lg" className="w-full" onClick={() => submit({})} disabled={submitting}>
@@ -108,12 +106,8 @@ export function EventReveal() {
 
 export function EreignisReveal() {
   const { view, submit, submitting } = useGame();
-  const entry = [...view.log].reverse().find((e) => e.stationIndex === view.current && e.kind === "ereignis");
-  const [name, text] = useMemo(() => {
-    if (!entry) return ["Ereignis", view.phase.prompt];
-    const i = entry.text.indexOf(": ");
-    return i > 0 ? [entry.text.slice(0, i), entry.text.slice(i + 2)] : ["Ereignis", entry.text];
-  }, [entry, view.phase.prompt]);
+  const name = view.phase.ereignis?.name ?? "Ereignis";
+  const text = view.phase.ereignis?.description ?? view.phase.prompt;
   const [revealed, setRevealed] = useState(false);
 
   return (

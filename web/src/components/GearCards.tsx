@@ -80,6 +80,7 @@ export function TrainerCard({
               </li>
             );
           })}
+          <li className="px-1 text-xs font-semibold text-muted-foreground">je Ruderplatz im Boot</li>
         </ul>
       </div>
       <div className="mx-2 mb-2 rounded-[10px] bg-[#dbe8f3] px-3 py-2">

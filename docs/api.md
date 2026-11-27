@@ -38,5 +38,18 @@ resolves and opens the next phase.
   `EntryResult` with `playerId: ""` and `guest: "<name>"`. It is ranked like a player entry (it
   can take gold or silver away) but never scores points; it has no incident. At JTFO the guest
   appears only in the `team` row.
+- **Phase hints** (no client-side guessing): `phase.stage` refines ack phases (`setup`, `event`,
+  `ereignis`, `result`; on `result` the view's `lastResult` is this station's result).
+  `phase.newEvents` lists the viewer's event cards dealt at this event station, `phase.ereignis`
+  (`{name, description}`) the drawn Ereignis. `phase.draftTurn` is the index into `draftOrder` of the
+  open pick (omitted = 0; `draftOrder` can name a player twice after a Sponsor Ereignis).
+- **Scoring hints** for lineup estimates: `competition.context` is matched against
+  `TrainerEffect.context`, `competition.cityBoatMod` is added to städtische Boote. Per race:
+  `boatScale` and `trainerScale` multiply the boat value and the per-seat trainer effect
+  (`rules.json` `boatValuePerSeat`/`boatValueFactor`, `trainerPerSeat`), `fixedBoatValue` is the base
+  value without own boat (shared eight, loan boat) and `guestScore` the guest crew's total. Entry
+  total = round(Σ weight·stat) + boat·boatScale + trainer·trainerScale + event bonus − penalty.
+- **No nulls**: every non-`omitempty` slice/map in a view is serialized as `[]`/`{}` (e.g. a race
+  without entries has `"entries": []`); fields marked optional in the TS types may be absent.
 - Bots: `internal/bot.Decide(g, playerID, personality, rng)` (`Taktiker` / `Bauchgefuehl`,
   `bot.PersonalityFor(seat)`); the bot RNG is separate from the game RNG.

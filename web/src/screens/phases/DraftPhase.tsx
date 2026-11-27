@@ -20,8 +20,8 @@ export function DraftPhase() {
   const order = phase.draftOrder ?? [];
   const offer = phase.draftOffer ?? [];
   const [pick, setPick] = useState<string | undefined>();
-  // Whose turn: the first player in order who hasn't decided yet.
-  const onTurn = order.find((id) => !view.players.find((p) => p.id === id)?.decided);
+  const turn = phase.draftTurn ?? 0;
+  const onTurn = order[turn];
   const waiting = phase.waiting;
   const picked = offer.find((c) => c.id === pick);
 
@@ -33,11 +33,11 @@ export function DraftPhase() {
         <ol className="mt-3 flex flex-wrap items-center gap-1.5" aria-label="Wahlreihenfolge">
           {order.map((id, i) => {
             const p = view.players.find((x) => x.id === id);
-            const done = !!p?.decided;
-            const now = id === onTurn;
+            const done = i < turn;
+            const now = i === turn;
             return (
               <li
-                key={id}
+                key={`${id}-${i}`}
                 className={cn(
                   "inline-flex h-9 items-center gap-1.5 rounded-full border-2 border-ink px-2.5 text-sm font-bold",
                   now ? "bg-navy text-white" : done ? "bg-white/50 text-ink/55 line-through" : "bg-white",

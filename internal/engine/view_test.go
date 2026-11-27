@@ -45,8 +45,8 @@ func TestPhaseViewHints(t *testing.T) {
 			t.Fatalf("ack phase at %s (%s) without stage", st.Name, st.Type)
 		}
 		if pv.Kind == PhaseDraft {
-			if pv.DraftTurn == "" || pv.DraftTurn != g.Pending()[0] {
-				t.Fatalf("draft turn %q, pending %v", pv.DraftTurn, g.Pending())
+			if pv.DraftTurn >= len(pv.DraftOrder) || pv.DraftOrder[pv.DraftTurn] != g.Pending()[0] {
+				t.Fatalf("draft turn %d, pending %v", pv.DraftTurn, g.Pending())
 			}
 			sawDraft = true
 		}
@@ -112,7 +112,7 @@ func TestViewsHaveNoNull(t *testing.T) {
 			}
 			for _, pid := range g.Pending() {
 				d := autoDecision(g, pid, rng)
-				if d.Kind == PhaseRegatta && pid == "p1" && seed == 1 {
+				if d.Kind == PhaseRegatta && (seed == 1 || pid == "p1" && seed == 2) {
 					d.Entries, d.TrainerID = nil, "" // races without any entry
 				}
 				if err := g.Submit(pid, d); err != nil {

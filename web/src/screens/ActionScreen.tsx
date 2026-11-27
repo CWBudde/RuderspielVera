@@ -1,7 +1,6 @@
 import { Check, Loader2 } from "lucide-react";
 import { useGame } from "@/hooks/game";
 import { PhaseFrame } from "@/components/PhaseFrame";
-import { isCompetition } from "@/lib/labels";
 import type { Tab } from "@/screens/AppShell";
 import { AckPhase } from "@/screens/phases/AckPhase";
 import { EventReveal, EreignisReveal } from "@/screens/phases/RevealPhases";
@@ -16,17 +15,13 @@ import { GameOver } from "@/screens/phases/GameOver";
 export function ActionScreen({ onShowTab }: { onShowTab: (t: Tab) => void }) {
   const { view } = useGame();
   const { phase } = view;
-  const station = view.calendar[view.current];
-
   if (phase.waiting && phase.kind !== "draft") return <Waiting />;
 
   switch (phase.kind) {
     case "ack":
-      if (view.lastResult && view.lastResult.stationIndex === view.current && isCompetition(station?.type ?? "")) {
-        return <ResultAck key={phase.id} />;
-      }
-      if (station?.type === "event") return <EventReveal key={phase.id} />;
-      if (station?.type === "ereignis") return <EreignisReveal key={phase.id} />;
+      if (phase.stage === "result" && view.lastResult) return <ResultAck key={phase.id} />;
+      if (phase.stage === "event") return <EventReveal key={phase.id} />;
+      if (phase.stage === "ereignis") return <EreignisReveal key={phase.id} />;
       return <AckPhase key={phase.id} onShowTab={onShowTab} />;
     case "training":
       return <TrainingPhase key={phase.id} />;

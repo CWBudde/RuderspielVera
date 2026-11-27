@@ -775,7 +775,7 @@ function phaseFor(s: MockState): PhaseView {
       prompt: "Wähle eine Karte aus der offenen Auslage. Wer weniger Medaillenpunkte hat, wählt zuerst.",
       draftOffer: s.draftOffer,
       draftOrder: s.draftOrder,
-      draftTurn: onTurn,
+      draftTurn: s.draftTurn,
       waiting: onTurn !== YOU,
     };
   }

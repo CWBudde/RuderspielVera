@@ -211,9 +211,10 @@ export interface PhaseView {
    */
   ereignis?: EreignisView;
   /**
-   * DraftTurn: player ID whose pick it is (draft phases).
+   * DraftTurn: index into DraftOrder of the pick that is open now (draft phases; 0 is omitted).
+   * DraftOrder may name a player twice (Sponsor extra pick), so this is an index, not an ID.
    */
-  draftTurn?: string;
+  draftTurn?: number /* int */;
 }
 export type PhaseStage = string;
 export const StageNone: PhaseStage = "";

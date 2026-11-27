@@ -238,8 +238,9 @@ type PhaseView struct {
 	NewEvents []EventCardView `json:"newEvents,omitempty"`
 	// Ereignis: the drawn global event (stage "ereignis").
 	Ereignis *EreignisView `json:"ereignis,omitempty"`
-	// DraftTurn: player ID whose pick it is (draft phases).
-	DraftTurn string `json:"draftTurn,omitempty"`
+	// DraftTurn: index into DraftOrder of the pick that is open now (draft phases; 0 is omitted).
+	// DraftOrder may name a player twice (Sponsor extra pick), so this is an index, not an ID.
+	DraftTurn int `json:"draftTurn,omitempty"`
 }
 
 type PhaseStage string

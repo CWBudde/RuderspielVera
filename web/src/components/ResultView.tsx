@@ -45,7 +45,7 @@ export function WeatherChip({ weather, className }: { weather?: string; classNam
 function rowerNames(players: PlayerSummary[], e: EntryResult): string {
   if (e.guest) return "Gastmannschaft";
   const p = players.find((x) => x.id === e.playerId);
-  return e.rowerIds.map((id) => p?.rowers.find((r) => r.id === id)?.name ?? "?").join(", ");
+  return (e.rowerIds ?? []).map((id) => p?.rowers.find((r) => r.id === id)?.name ?? "?").join(", ");
 }
 
 function boatName(players: PlayerSummary[], e: EntryResult): string | undefined {
@@ -77,13 +77,14 @@ function Breakdown({ e }: { e: EntryResult }) {
 
 function RaceCard({ race, players, you, index }: { race: RaceResult; players: PlayerSummary[]; you: string; index: number }) {
   const [open, setOpen] = useState(false);
-  const max = Math.max(1, ...race.entries.map((e) => e.total));
-  const mine = race.entries.some((e) => e.playerId === you);
+  const entries = race.entries ?? []; // tolerate null from older engines
+  const max = Math.max(1, ...entries.map((e) => e.total));
+  const mine = entries.some((e) => e.playerId === you);
   return (
     <section className={cn("rounded-[16px] bg-cream p-3 cut", mine && "ring-4 ring-lake/25")}>
       <header className="flex items-center justify-between gap-2">
         <h3 className="min-w-0 truncate num text-xl leading-tight">{race.name}</h3>
-        {race.entries.length > 0 && (
+        {entries.length > 0 && (
           <button
             type="button"
             onClick={() => setOpen((v) => !v)}
@@ -94,11 +95,11 @@ function RaceCard({ race, players, you, index }: { race: RaceResult; players: Pl
           </button>
         )}
       </header>
-      {race.entries.length === 0 ? (
+      {entries.length === 0 ? (
         <p className="mt-1 text-sm text-muted-foreground">Keine Meldungen.</p>
       ) : (
         <ol className="mt-2 flex flex-col gap-2">
-          {race.entries.map((e, i) => {
+          {entries.map((e, i) => {
             const p = players.find((x) => x.id === e.playerId);
             const color = e.guest ? "#9aa3ad" : playerColor(players, e.playerId);
             const dnf = e.place === 0;
@@ -155,7 +156,8 @@ function RaceCard({ race, players, you, index }: { race: RaceResult; players: Pl
 }
 
 export function ResultView({ result, players, you }: { result: CompetitionResult; players: PlayerSummary[]; you: string }) {
-  const mine = result.races.flatMap((r) => r.entries.filter((e) => e.playerId === you));
+  const races = result.races ?? [];
+  const mine = races.flatMap((r) => (r.entries ?? []).filter((e) => e.playerId === you));
   const golds = mine.filter((e) => e.medal === "gold").length;
   const silvers = mine.filter((e) => e.medal === "silber").length;
   return (
@@ -169,7 +171,7 @@ export function ResultView({ result, players, you }: { result: CompetitionResult
         </span>
       </div>
       <div className="grid gap-3 lg:grid-cols-2">
-        {result.races.map((r, i) => (
+        {races.map((r, i) => (
           <RaceCard key={r.raceId} race={r} players={players} you={you} index={i} />
         ))}
       </div>

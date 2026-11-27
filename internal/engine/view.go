@@ -82,9 +82,7 @@ func (g *Game) CurrentPhase(playerID string) PhaseView {
 			pv.DraftOffer = append(pv.DraftOffer, draftCardView(c))
 		}
 		pv.DraftOrder = slices.Clone(g.draft.order)
-		if g.draft.turn < len(g.draft.order) {
-			pv.DraftTurn = g.draft.order[g.draft.turn]
-		}
+		pv.DraftTurn = g.draft.turn
 	}
 	pv.Stage = stageNames[p.stage]
 	if pl := g.playerByID(playerID); pl != nil {
