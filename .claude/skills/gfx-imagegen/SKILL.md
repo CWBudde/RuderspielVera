@@ -118,17 +118,16 @@ Pick: rowers-kw01 -> rower-kinder-w.
 Web sizes: portraits 600×800, boats 900×600, board 1600×1067, title 1600×900.
 
 ```sh
-$K/bin/fit -bits 6 art/gen/<date>/<group>/<id>.png web/src/assets/art/<artKey>.png 600 800 [cx cy]
+$K/bin/fit -q 78 art/gen/<date>/<group>/<id>.png web/src/assets/art/<artKey>.jpg 600 800 [cx cy]
 ```
 
-`-bits 6` rounds each channel to 6 bits: about a third smaller as PNG with no visible change on
-watercolour (a 600×800 portrait drops from ~910 KB to ~630 KB). The large, dense board and title stay
-over 2 MB as PNG even at `-bits 5`: write them as JPEG (`fit -q 85 … web/src/assets/art/board-bg.jpg
-1600 1067`, ~760 KB); `Art.tsx` globs `*.{webp,png,jpg}`. Use WebP (`cwebp -q 82`) only if `cwebp` is
-installed (it currently is not); keep each file under 1 MB. Then add one line to `art/manifest.md`:
+Opaque art is installed as JPEG quality 78 (a 600×800 portrait is ~140 KB, the whole set stays under
+3 MB); keep PNG (`fit -bits 6 … .png`) only for images with transparency. `go run ./tools/artconv`
+converts any opaque PNG left in `web/src/assets/art/` (not `people/`). `Art.tsx` globs
+`*.{webp,png,jpg}`. Use WebP (`cwebp -q 82`) only if `cwebp` is installed (it currently is not). Then add one line to `art/manifest.md`:
 
 ```markdown
-| <artKey> | web/src/assets/art/<artKey>.png | 600x800 | <id> | exec-<uuid> | <date> | <note> |
+| <artKey> | web/src/assets/art/<artKey>.jpg | 600x800 | <id> | exec-<uuid> | <date> | <note> |
 ```
 
 Committing is a separate step (only when asked); `art/gen/` itself stays uncommitted.
