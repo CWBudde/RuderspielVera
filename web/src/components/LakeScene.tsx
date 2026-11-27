@@ -6,12 +6,21 @@ import { cn } from "@/lib/utils";
  * Maschsee mood illustration: sky, Neues Rathaus silhouette, tree line, water and a gliding
  * four. Replaced by `assets/art/title.jpg` when present.
  */
-export function LakeScene({ className, children }: { className?: string; children?: ReactNode }) {
+export function LakeScene({
+  className,
+  imgClassName,
+  children,
+}: {
+  className?: string;
+  /** Extra classes for the splash image, e.g. an `object-position` that keeps the boat in view. */
+  imgClassName?: string;
+  children?: ReactNode;
+}) {
   const splash = artUrl("title");
   return (
     <div className={cn("relative overflow-hidden", className)}>
       {splash ? (
-        <img src={splash} alt="" className="absolute inset-0 size-full object-cover" />
+        <img src={splash} alt="" className={cn("absolute inset-0 size-full object-cover", imgClassName)} />
       ) : (
         <svg
           viewBox="0 0 400 260"
