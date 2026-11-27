@@ -6,3 +6,5 @@ art/gen/
 .claude/skills/gfx-imagegen/bin/
 .playwright-mcp/
 *.log
+/reference-rowers/
+.claude/settings.local.json
