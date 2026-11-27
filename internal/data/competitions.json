@@ -3,7 +3,7 @@
     "name": "Regatta Bremen",
     "kind": "regatta",
     "water": true,
-    "guestOffset": -2.5,
+    "guestOffset": -1.0,
     "weights": {
       "geschwindigkeit": 1,
       "motivation": 1,
@@ -25,22 +25,6 @@
         "ages": ["b"],
         "genders": ["m"],
         "seats": 1
-      },
-      {
-        "id": "2x-a-w",
-        "name": "Juniorinnen A Zweier",
-        "class": "2x",
-        "ages": ["a", "b"],
-        "genders": ["w"],
-        "seats": 2
-      },
-      {
-        "id": "2x-a-m",
-        "name": "Junioren A Zweier",
-        "class": "2x",
-        "ages": ["a", "b"],
-        "genders": ["m"],
-        "seats": 2
       },
       {
         "id": "4x-b-w",
@@ -65,7 +49,7 @@
     "kind": "ergocup",
     "context": "ergo",
     "water": false,
-    "guestOffset": 5,
+    "guestOffset": 5.5,
     "weights": {
       "kraft": 2,
       "motivation": 1
@@ -213,6 +197,7 @@
     "name": "Jugend trainiert für Olympia",
     "kind": "jtfo",
     "water": true,
+    "guestOffset": -1.25,
     "weights": {
       "geschwindigkeit": 1,
       "motivation": 1,
@@ -316,28 +301,13 @@
     "name": "Kasselregatta",
     "kind": "regatta",
     "water": true,
+    "guestOffset": -1.5,
     "weights": {
       "geschwindigkeit": 1,
       "kraft": 1,
       "motivation": 1
     },
     "races": [
-      {
-        "id": "1x-a-w",
-        "name": "Juniorinnen A Einer",
-        "class": "1x",
-        "ages": ["a"],
-        "genders": ["w"],
-        "seats": 1
-      },
-      {
-        "id": "1x-a-m",
-        "name": "Junioren A Einer",
-        "class": "1x",
-        "ages": ["a"],
-        "genders": ["m"],
-        "seats": 1
-      },
       {
         "id": "2x-kinder-w",
         "name": "Mädchen Zweier",
@@ -377,7 +347,7 @@
     "kind": "ergocup",
     "context": "ergo",
     "water": false,
-    "guestOffset": 1,
+    "guestOffset": 1.0,
     "weights": {
       "kraft": 2,
       "motivation": 1
@@ -438,7 +408,7 @@
     "kind": "ergocup",
     "context": "ergo",
     "water": false,
-    "guestOffset": 5.5,
+    "guestOffset": 7.0,
     "weights": {
       "kraft": 2,
       "motivation": 1
@@ -499,6 +469,7 @@
     "kind": "regatta",
     "context": "sprint",
     "water": true,
+    "guestOffset": -3.5,
     "weights": {
       "geschwindigkeit": 2,
       "motivation": 1,
@@ -534,7 +505,7 @@
     "kind": "regatta",
     "context": "sprint",
     "water": true,
-    "guestOffset": -1.5,
+    "guestOffset": -3.5,
     "weights": {
       "geschwindigkeit": 2,
       "kraft": 1,
@@ -596,6 +567,7 @@
     "name": "Regatta Schillerschule",
     "kind": "regatta",
     "water": true,
+    "guestOffset": 1.0,
     "weights": {
       "geschwindigkeit": 1,
       "motivation": 1,
@@ -619,22 +591,6 @@
         "seats": 1
       },
       {
-        "id": "2x-kinder-w",
-        "name": "Mädchen Zweier",
-        "class": "2x",
-        "ages": ["kinder"],
-        "genders": ["w"],
-        "seats": 2
-      },
-      {
-        "id": "2x-kinder-m",
-        "name": "Jungen Zweier",
-        "class": "2x",
-        "ages": ["kinder"],
-        "genders": ["m"],
-        "seats": 2
-      },
-      {
         "id": "4x-kinder-mix",
         "name": "Kinder Vierer (gemischt)",
         "class": "4x",
@@ -656,7 +612,7 @@
     "name": "Verbandsregatta I",
     "kind": "regatta",
     "water": true,
-    "guestOffset": -3.5,
+    "guestOffset": 2.5,
     "weights": {
       "geschwindigkeit": 1,
       "motivation": 1,
@@ -694,22 +650,6 @@
         "ages": ["b", "kinder"],
         "genders": ["m"],
         "seats": 2
-      },
-      {
-        "id": "4x-a-w",
-        "name": "Juniorinnen A Vierer",
-        "class": "4x",
-        "ages": ["a", "b"],
-        "genders": ["w"],
-        "seats": 4
-      },
-      {
-        "id": "4x-a-m",
-        "name": "Junioren A Vierer",
-        "class": "4x",
-        "ages": ["a", "b"],
-        "genders": ["m"],
-        "seats": 4
       }
     ]
   },
@@ -723,22 +663,6 @@
       "technik": 1.5
     },
     "races": [
-      {
-        "id": "1x-b-w",
-        "name": "Juniorinnen B Einer",
-        "class": "1x",
-        "ages": ["b"],
-        "genders": ["w"],
-        "seats": 1
-      },
-      {
-        "id": "1x-b-m",
-        "name": "Junioren B Einer",
-        "class": "1x",
-        "ages": ["b"],
-        "genders": ["m"],
-        "seats": 1
-      },
       {
         "id": "2x-a-w",
         "name": "Juniorinnen A Zweier",

@@ -41,7 +41,7 @@ type outlook struct {
 }
 
 func (b *brain) outlook(n int) *outlook {
-	ol := &outlook{comps: b.upcoming(n, false), starts: map[string][]start{}}
+	ol := &outlook{comps: b.upcoming(n), starts: map[string][]start{}}
 
 	me := teamOf(b.me)
 	for ci, c := range ol.comps {
@@ -234,7 +234,7 @@ func (b *brain) swap(rowerID string) *[2]engine.Stat {
 		return nil
 	}
 
-	comps := b.upcoming(len(b.d.Calendar), false)
+	comps := b.upcoming(len(b.d.Calendar))
 	value := func(st engine.Stats) float64 {
 		v := 0.0
 		for k, c := range comps {
@@ -267,7 +267,7 @@ func (b *brain) swap(rowerID string) *[2]engine.Stat {
 
 // draft picks the card that adds the most expected medal points over the next competitions.
 func (b *brain) draft(offer []engine.DraftCard) string {
-	comps := b.upcoming(4, false)
+	comps := b.upcoming(4)
 
 	fields := make([]*field, len(comps))
 	for k, c := range comps {

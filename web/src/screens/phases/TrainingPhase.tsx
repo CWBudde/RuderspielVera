@@ -4,7 +4,7 @@ import type { RowerView, Stat, TrainingAlloc } from "@/api/types.gen";
 import { useGame } from "@/hooks/game";
 import { PhaseFrame } from "@/components/PhaseFrame";
 import { Art } from "@/components/Art";
-import { AgeBadge, GenderMark, MiniStats, SumTag } from "@/components/RowerCard";
+import { AgeBadge, GenderMark, MiniStats, SumTag, winMotivationText } from "@/components/RowerCard";
 import { StatBadge } from "@/components/icons";
 import { Button } from "@/components/ui/button";
 import { ALL_STATS, CORE_STATS, STAT_LABEL } from "@/lib/labels";
@@ -214,7 +214,9 @@ function TrainRow({
           <StatBadge stat="motivation" className="size-7" />
           <span className="min-w-0 flex-1 text-sm font-semibold">
             {STAT_LABEL.motivation}
-            <span className="block text-xs font-normal text-muted-foreground">nicht trainierbar</span>
+            <span className="block text-xs font-normal text-muted-foreground">
+              nicht trainierbar{rower.winMotivation ? ` · ${winMotivationText(rower)}` : ""}
+            </span>
           </span>
           <span className="w-14 text-right num text-xl tabular-nums">{rower.stats.motivation ?? 0}</span>
           <span className="w-[5.75rem]" aria-hidden />

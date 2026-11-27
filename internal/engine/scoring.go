@@ -17,7 +17,7 @@ func (g *Game) scoreEntry(cs *compState, race RaceSpec, re raceEntry) EntryResul
 	for _, r := range re.rowers {
 		er.RowerIDs = append(er.RowerIDs, r.id)
 		for _, s := range AllStats {
-			crew += cs.weights[s] * float64(r.stats[s])
+			crew += cs.weights[s] * float64(r.stat(s))
 		}
 
 		if r.event != nil {

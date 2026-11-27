@@ -108,11 +108,17 @@ type RowerView struct {
 	Name   string         `json:"name"`
 	Age    AgeGroup       `json:"age"`
 	Gender Gender         `json:"gender"`
-	Stats  Stats          `json:"stats"`  // current effective values (base + training + effects)
+	Stats  Stats          `json:"stats"`  // current effective values (base + training + effects + winMotivation)
 	Base   Stats          `json:"base"`   // starting values, for "+N trained" display
 	ArtKey string         `json:"artKey"` // portrait key, e.g. "rower-b-w"
 	Event  *EventCardView `json:"event,omitempty"`
 	IsTwin bool           `json:"isTwin,omitempty"`
+	// WinMotivation (Siegesmotivation) is the temporary Motivation bonus after a gold or silver
+	// placement; it is already included in stats.motivation. It is not trainable or swappable.
+	WinMotivation int `json:"winMotivation,omitempty"`
+	// WinMotivationLeft is the number of scored competitions (regatta, Ergo-Cup, JTFO) the bonus
+	// still counts in, the next one included; it expires after the last of them.
+	WinMotivationLeft int `json:"winMotivationLeft,omitempty"`
 }
 
 type BoatView struct {

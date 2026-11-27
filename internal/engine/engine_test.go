@@ -181,26 +181,15 @@ func TestRankEntries(t *testing.T) {
 	}
 }
 
-func TestGoldMotivation(t *testing.T) {
+func TestAwardMedal(t *testing.T) {
 	t.Parallel()
 
 	g := newGame(t, 2)
 	pl := g.players[0]
 	crew := []string{pl.rowers[0].id, pl.rowers[1].id}
 	before := []int{pl.rowers[0].stats[StatMotivation], pl.rowers[1].stats[StatMotivation]}
-	other := pl.rowers[2].stats[StatMotivation]
 	out := map[string]rowerOutcome{}
 	g.awardMedal(EntryResult{PlayerID: pl.id, RowerIDs: crew, Medal: MedalGold}, Boat2x, out)
-
-	for i := range crew {
-		if got := pl.rowers[i].stats[StatMotivation]; got != before[i]+1 {
-			t.Errorf("crew %d motivation %d, want %d", i, got, before[i]+1)
-		}
-	}
-
-	if pl.rowers[2].stats[StatMotivation] != other {
-		t.Errorf("non-crew rower changed")
-	}
 
 	if pl.gold != 1 || g.points(pl) != 2 {
 		t.Errorf("gold %d points %d, want 1/2", pl.gold, g.points(pl))
@@ -208,12 +197,196 @@ func TestGoldMotivation(t *testing.T) {
 
 	g.awardMedal(EntryResult{PlayerID: pl.id, RowerIDs: crew[:1], Medal: MedalSilver}, Boat1x, out)
 
-	if pl.silver != 1 || g.points(pl) != 3 || pl.rowers[0].stats[StatMotivation] != before[0]+1 {
-		t.Errorf("silver must add 1 point and no motivation")
+	if pl.silver != 1 || g.points(pl) != 3 {
+		t.Errorf("silver must add 1 point")
+	}
+
+	for i := range crew {
+		if got := pl.rowers[i].stats[StatMotivation]; got != before[i] {
+			t.Errorf("crew %d: medal changed the permanent motivation %d -> %d", i, before[i], got)
+		}
 	}
 
 	if out[crew[0]].medal != MedalSilver || out[crew[1]].class != Boat2x {
 		t.Errorf("outcomes not recorded: %v", out)
+	}
+}
+
+// TestWinMotivation plays sequences of competitions (the rower's medal at each, "" = no winning
+// placement or no start) and checks the Siegesmotivation afterwards.
+func TestWinMotivation(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name      string
+		medals    []Medal
+		wantBonus int
+		wantLeft  int
+	}{
+		{"gold gives +1 for 3 competitions", []Medal{MedalGold}, 1, 3},
+		{"silver also triggers", []Medal{MedalSilver}, 1, 3},
+		{"no medal, no bonus", []Medal{MedalNone}, 0, 0},
+		{"two golds do not stack", []Medal{MedalGold, MedalGold}, 1, 3},
+		{"gold then silver does not stack", []Medal{MedalGold, MedalSilver}, 1, 3},
+		{"one competition used", []Medal{MedalGold, MedalNone}, 1, 2},
+		{"two competitions used", []Medal{MedalGold, MedalNone, MedalNone}, 1, 1},
+		{"expires after 3 competitions", []Medal{MedalGold, MedalNone, MedalNone, MedalNone}, 0, 0},
+		{"stays expired", []Medal{MedalSilver, MedalNone, MedalNone, MedalNone, MedalNone}, 0, 0},
+		{"win while active refreshes", []Medal{MedalGold, MedalNone, MedalNone, MedalSilver}, 1, 3},
+		{"refresh restarts the countdown", []Medal{MedalGold, MedalNone, MedalGold, MedalNone, MedalNone}, 1, 1},
+		{"refreshed bonus expires too", []Medal{MedalGold, MedalNone, MedalGold, MedalNone, MedalNone, MedalNone}, 0, 0},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			g := newGame(t, 3)
+			rw, other := g.players[0].rowers[0], g.players[0].rowers[1]
+			base := rw.stats[StatMotivation]
+
+			for _, m := range tt.medals {
+				out := map[string]rowerOutcome{}
+				if m != MedalNone {
+					out[rw.id] = rowerOutcome{medal: m, class: Boat1x}
+				}
+
+				g.updateWinMotivation(out)
+			}
+
+			if rw.winBonus != tt.wantBonus || rw.winLeft != tt.wantLeft {
+				t.Errorf("bonus %d left %d, want %d / %d", rw.winBonus, rw.winLeft, tt.wantBonus, tt.wantLeft)
+			}
+
+			if rw.stats[StatMotivation] != base {
+				t.Errorf("permanent motivation changed: %d -> %d", base, rw.stats[StatMotivation])
+			}
+
+			if got, want := rw.stat(StatMotivation), base+tt.wantBonus; got != want {
+				t.Errorf("effective motivation %d, want %d", got, want)
+			}
+
+			v := rowerView(rw, true)
+			if v.Stats[StatMotivation] != base+tt.wantBonus || v.WinMotivation != tt.wantBonus ||
+				v.WinMotivationLeft != tt.wantLeft {
+				t.Errorf("view motivation %d (+%d, %d left), want %d (+%d, %d left)", v.Stats[StatMotivation],
+					v.WinMotivation, v.WinMotivationLeft, base+tt.wantBonus, tt.wantBonus, tt.wantLeft)
+			}
+
+			if other.winBonus != 0 || other.winLeft != 0 {
+				t.Errorf("rower without a medal got a bonus")
+			}
+		})
+	}
+}
+
+// TestWinMotivationScoring checks that an active Siegesmotivation counts in scoring and in
+// EstimateEntry exactly like Motivation (weight × bonus).
+func TestWinMotivationScoring(t *testing.T) {
+	t.Parallel()
+
+	g := newGame(t, 4)
+	pl := g.players[0]
+	cs := compFor(g, "rvh", WeatherNormal)
+	race := cs.race("1x-open-w")
+
+	var rw *rower
+
+	for _, x := range pl.rowers {
+		if x.gender == GenderF {
+			rw = x
+			break
+		}
+	}
+
+	if rw == nil {
+		t.Fatal("no girl")
+	}
+
+	tests := []struct {
+		name  string
+		bonus int
+		left  int
+	}{
+		{"inactive", 0, 0},
+		{"active", 1, 2},
+	}
+
+	totals := make([]int, 0, len(tests))
+
+	for _, tt := range tests {
+		rw.winBonus, rw.winLeft = tt.bonus, tt.left
+		totals = append(totals, g.scoreEntry(cs, *race, raceEntry{pl: pl, rowers: []*rower{rw}}).Crew)
+	}
+
+	if want := totals[0] + int(cs.weights[StatMotivation]); totals[1] != want {
+		t.Errorf("crew with Siegesmotivation %d, want %d (without: %d)", totals[1], want, totals[0])
+	}
+
+	// EstimateEntry (bots, UI preview) sees the bonus of the open competition.
+	g.phase = &phase{comp: cs}
+	rw.winBonus, rw.winLeft = 0, 0
+	plain := EstimateEntry(g, pl.id, race.ID, []string{rw.id}, pl.boats[0].id, "")
+	rw.winBonus, rw.winLeft = 1, 1
+
+	if got := EstimateEntry(g, pl.id, race.ID, []string{rw.id}, pl.boats[0].id, ""); got != plain+1 {
+		t.Errorf("EstimateEntry with Siegesmotivation %d, want %d", got, plain+1)
+	}
+}
+
+// TestWinMotivationInSeason plays a season with bots and checks that a crew with a winning
+// placement carries the bonus afterwards and that it is never above the rule value.
+func TestWinMotivationInSeason(t *testing.T) {
+	t.Parallel()
+
+	g := newGame(t, 11)
+	wm := g.d.Rules.WinMotivation
+	rng := rand.New(rand.NewPCG(11, 77))
+	seen := false
+
+	for steps := 0; !g.Over() && steps < 5000; steps++ {
+		done := len(g.results)
+
+		for _, pid := range g.Pending() {
+			err := g.Submit(pid, autoDecision(g, pid, rng))
+			if err != nil {
+				t.Fatal(err)
+			}
+		}
+
+		if len(g.results) == done {
+			continue
+		}
+
+		// At JTFO only the team row awards medals; its rows per boat carry none.
+		for _, rr := range g.results[done].Races {
+			for _, e := range rr.Entries {
+				pl := g.playerByID(e.PlayerID)
+				if pl == nil || e.Medal == MedalNone {
+					continue
+				}
+
+				for _, id := range e.RowerIDs {
+					if r := pl.rower(id); r.winBonus != wm.Value || r.winLeft != wm.Competitions {
+						t.Errorf("%s: %s has bonus %d left %d after %s", g.results[done].Name, id, r.winBonus, r.winLeft, e.Medal)
+					}
+
+					seen = true
+				}
+			}
+		}
+
+		for _, pl := range g.players {
+			for _, r := range pl.rowers {
+				if r.winBonus > wm.Value || r.winLeft > wm.Competitions || (r.winBonus > 0) != (r.winLeft > 0) {
+					t.Fatalf("%s: bad Siegesmotivation +%d / %d", r.id, r.winBonus, r.winLeft)
+				}
+			}
+		}
+	}
+
+	if !seen {
+		t.Error("no winning placement in a whole season")
 	}
 }
 
@@ -309,7 +482,7 @@ func TestValidateEntries(t *testing.T) {
 	rvb := compFor(g, "rvb", WeatherNormal)
 	ergo := compFor(g, "mindor", "")
 	jtfo := compFor(g, "jtfo", WeatherNormal)
-	kassel := compFor(g, "kassel", WeatherNormal)
+	schiller := compFor(g, "schillerschule", WeatherNormal)
 
 	tests := []struct {
 		name    string
@@ -344,7 +517,7 @@ func TestValidateEntries(t *testing.T) {
 			{RaceID: "1x-a-w", RowerIDs: []string{"aw2"}, BoatID: b1},
 		}, "nur eine Meldung"},
 		{"wrong boat class", hild, tr, []Entry{{RaceID: "1x-a-w", RowerIDs: []string{"aw1"}, BoatID: b2}}, "Klasse 1x"},
-		{"missing boat", kassel, tr, []Entry{{RaceID: "1x-a-w", RowerIDs: []string{"aw1"}}}, "Wähle ein Boot"},
+		{"missing boat", schiller, tr, []Entry{{RaceID: "1x-a-w", RowerIDs: []string{"aw1"}}}, "Wähle ein Boot"},
 		{"hildesheim loan boats", hild, tr, []Entry{
 			{RaceID: "1x-a-w", RowerIDs: []string{"aw1"}, BoatID: b1},
 			{RaceID: "1x-a-m", RowerIDs: []string{"am1"}},

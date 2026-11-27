@@ -399,7 +399,8 @@ func (g *Game) scoreRace(p *phase, race RaceSpec) RaceResult {
 	return rr
 }
 
-// resolveCompetition scores all entries, rolls incidents, ranks, awards medals and Gold motivation.
+// resolveCompetition scores all entries, rolls incidents, ranks, awards medals and updates the
+// Siegesmotivation (count down first, then grant the new wins).
 func (g *Game) resolveCompetition(p *phase) {
 	cs := p.comp
 	res := CompetitionResult{StationIndex: cs.station, Name: cs.name, Weather: cs.weather}
@@ -449,11 +450,35 @@ func (g *Game) resolveCompetition(p *phase) {
 
 	g.results = append(g.results, res)
 	g.logResult(res)
+	g.updateWinMotivation(outcomes)
 	g.checkMissions(cs, outcomes)
 }
 
-// awardMedal credits the medal to the player, applies Gold motivation to every crew member and
-// records rower outcomes for missions.
+// updateWinMotivation counts the Siegesmotivation of every rower down by one competition (it was
+// just used in scoring) and then grants it to every rower of a crew with a winning placement:
+// winBonus = value (never more, no stacking) and the full duration again (refresh).
+func (g *Game) updateWinMotivation(outcomes map[string]rowerOutcome) {
+	wm := g.d.Rules.WinMotivation
+
+	for _, pl := range g.players {
+		for _, r := range pl.rowers {
+			if r.winLeft > 0 {
+				r.winLeft--
+			}
+
+			if r.winLeft == 0 {
+				r.winBonus = 0
+			}
+
+			if out, ok := outcomes[r.id]; ok && wm.Value > 0 && slices.Contains(wm.Medals, string(out.medal)) {
+				r.winBonus, r.winLeft = wm.Value, wm.Competitions
+			}
+		}
+	}
+}
+
+// awardMedal credits the medal to the player and records rower outcomes for missions and the
+// Siegesmotivation.
 func (g *Game) awardMedal(er EntryResult, class BoatClass, outcomes map[string]rowerOutcome) {
 	pl := g.playerByID(er.PlayerID)
 	if pl == nil {
@@ -463,9 +488,6 @@ func (g *Game) awardMedal(er EntryResult, class BoatClass, outcomes map[string]r
 	switch er.Medal {
 	case MedalGold:
 		pl.gold++
-		for _, id := range er.RowerIDs {
-			pl.rower(id).addStat(StatMotivation, g.d.Rules.GoldMotivation)
-		}
 	case MedalSilver:
 		pl.silver++
 	}

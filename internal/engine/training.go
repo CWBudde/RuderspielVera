@@ -9,7 +9,8 @@ import (
 func validStat(s Stat) bool { return slices.Contains(AllStats, s) }
 
 // TrainableStats are the stats that training and camps may raise and that Tausch may swap.
-// Motivation is not trainable: it comes only from selections, gold medals, events and Ereignisse.
+// Motivation is not trainable: it comes only from selections, events, Ereignisse and the
+// temporary Siegesmotivation.
 //
 //nolint:gochecknoglobals // read-only stat list, like AllStats
 var TrainableStats = []Stat{StatKraft, StatAusdauer, StatSpeed, StatTechnik}
@@ -32,7 +33,7 @@ func (g *Game) validateTraining(pl *player, p *phase, allocs []TrainingAlloc) er
 
 		if !Trainable(alloc.Stat) {
 			return invalid("Motivation kann man nicht trainieren. " +
-				"Sie steigt nur durch Auswahlen, Goldmedaillen, Events und Ereignisse.")
+				"Sie steigt nur durch Auswahlen, Events, Ereignisse und (befristet) durch Siege.")
 		}
 
 		if alloc.Points <= 0 {

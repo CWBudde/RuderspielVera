@@ -51,6 +51,7 @@ func (d *Data) Validate() error {
 	d.validateEvents(&p)
 	d.validateMissions(&p)
 	d.validateBalancing(&p)
+	d.validateWinMotivation(&p)
 	d.validateCalendar(&p)
 	d.validateCompetitions(&p)
 	d.validateRules(&p)
@@ -364,6 +365,20 @@ func (d *Data) validateMissions(p *problems) {
 
 		if ms.Reward.Type != "stat" && ms.Reward.Type != "points" {
 			p.addf("mission %s: bad reward type %q", ms.ID, ms.Reward.Type)
+		}
+	}
+}
+
+// validateWinMotivation checks the Siegesmotivation rule.
+func (d *Data) validateWinMotivation(p *problems) {
+	wm := d.Rules.WinMotivation
+	if wm.Value < 0 || (wm.Value > 0 && (wm.Competitions < 1 || len(wm.Medals) == 0)) {
+		p.addf("rules: winMotivation needs value >= 0 and, if > 0, competitions >= 1 and medals")
+	}
+
+	for _, m := range wm.Medals {
+		if m != "gold" && m != "silber" {
+			p.addf("rules: winMotivation: bad medal %q", m)
 		}
 	}
 }

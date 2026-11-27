@@ -72,11 +72,21 @@ export interface RowerView {
   name: string;
   age: AgeGroup;
   gender: Gender;
-  stats: Stats; // current effective values (base + training + effects)
+  stats: Stats; // current effective values (base + training + effects + winMotivation)
   base: Stats; // starting values, for "+N trained" display
   artKey: string; // portrait key, e.g. "rower-b-w"
   event?: EventCardView;
   isTwin?: boolean;
+  /**
+   * WinMotivation (Siegesmotivation) is the temporary Motivation bonus after a gold or silver
+   * placement; it is already included in stats.motivation. It is not trainable or swappable.
+   */
+  winMotivation?: number /* int */;
+  /**
+   * WinMotivationLeft is the number of scored competitions (regatta, Ergo-Cup, JTFO) the bonus
+   * still counts in, the next one included; it expires after the last of them.
+   */
+  winMotivationLeft?: number /* int */;
 }
 export interface BoatView {
   id: string;

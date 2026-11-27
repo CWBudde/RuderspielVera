@@ -73,8 +73,38 @@ export function SumTag({ rower, add = 0, className }: { rower: RowerView; add?: 
   );
 }
 
+/** Permanent change against the starting value; the temporary Siegesmotivation is left out. */
 export function gain(r: RowerView, s: Stat): number {
-  return (r.stats[s] ?? 0) - (r.base?.[s] ?? r.stats[s] ?? 0);
+  const win = s === "motivation" ? (r.winMotivation ?? 0) : 0;
+  return (r.stats[s] ?? 0) - win - (r.base?.[s] ?? r.stats[s] ?? 0);
+}
+
+/** "noch 1 Regatta" / "noch 3 Regatten": competitions the Siegesmotivation still counts in. */
+function regattenLeft(n: number): string {
+  return n === 1 ? "noch 1 Regatta" : `noch ${n} Regatten`;
+}
+
+/** German text of an active Siegesmotivation, e.g. "+1 Sieg, noch 2 Regatten"; "" if none. */
+export function winMotivationText(r: RowerView): string {
+  if (!r.winMotivation) return "";
+  return `+${r.winMotivation} Sieg, ${regattenLeft(r.winMotivationLeft ?? 0)}`;
+}
+
+/** Small "+1 Sieg" tag with the remaining competitions in the tooltip. */
+export function WinTag({ rower, className }: { rower: RowerView; className?: string }) {
+  if (!rower.winMotivation) return null;
+  const left = rower.winMotivationLeft ?? 0;
+  return (
+    <span
+      className={cn(
+        "inline-flex shrink-0 items-center gap-0.5 rounded-full border border-ink bg-gold px-1.5 text-[10px] leading-4 font-bold whitespace-nowrap text-ink",
+        className,
+      )}
+      title={`Siegesmotivation: +${rower.winMotivation} Motivation (nicht trainierbar), zählt ${regattenLeft(left)}.`}
+    >
+      +{rower.winMotivation} Sieg · {left}
+    </span>
+  );
 }
 
 function Gain({ n, className }: { n: number; className?: string }) {
@@ -159,6 +189,14 @@ export function RowerCard({ rower, className, preview }: RowerCardProps) {
             <Gain n={g("motivation")} />
             {val("motivation")}
           </div>
+          {!!rower.winMotivation && (
+            <div
+              className="truncate border-t-2 border-ink bg-gold px-2 text-right text-[10px] leading-4 font-bold @[15rem]:text-xs"
+              title="Siegesmotivation nach Gold oder Silber: zählt wie Motivation, ist aber nicht trainierbar und läuft ab."
+            >
+              {winMotivationText(rower)}
+            </div>
+          )}
         </div>
 
         <div className="absolute bottom-2 left-0 max-w-[52%] -skew-x-6 rounded-r-[12px] border-y-2 border-r-2 border-ink bg-cream py-0.5 pr-2.5 pl-2">
@@ -206,6 +244,7 @@ export function RowerRow({
           <AgeBadge age={rower.age} short className="h-5 px-1.5 text-xs" />
           <GenderMark gender={rower.gender} className="size-5 text-[11px]" />
           {rower.event && <Sparkles className="size-4 shrink-0 text-[#c2507a]" aria-label={rower.event.name} />}
+          <WinTag rower={rower} />
           <SumTag rower={rower} className="ml-auto" />
         </div>
         <MiniStats rower={rower} highlight={highlight} />
@@ -237,7 +276,11 @@ export function MiniStats({
               hot ? "bg-ink/10" : "",
               highlight && !hot ? "opacity-55" : "",
             )}
-            title={STAT_LABEL[s]}
+            title={
+              s === "motivation" && rower.winMotivation
+                ? `${STAT_LABEL[s]} ${rower.stats[s] ?? 0} (${winMotivationText(rower)})`
+                : STAT_LABEL[s]
+            }
           >
             <span className={cn("size-2.5 shrink-0 rounded-full border border-ink", statDot(s))} />
             {rower.stats[s] ?? 0}

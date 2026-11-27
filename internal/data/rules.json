@@ -13,7 +13,7 @@
   "deal": { "rowersPerAgeGroup": 3, "minPerGender": 1, "trainers": 2 },
   "draft": { "extraOffer": 1, "trainersFromSection": 5, "atLeastOneBoat": true },
   "medalPoints": { "gold": 2, "silver": 1 },
-  "goldMotivation": 1,
+  "winMotivation": { "value": 1, "competitions": 3, "medals": ["gold", "silber"] },
   "loanBoatValue": 2,
   "jtfoVariants": { "2": "C", "3": "B", "4": "A" },
   "boatValuePerSeat": true,
@@ -23,8 +23,8 @@
   "guests": {
     "enabled": true,
     "name": "Gastmannschaft",
-    "statLevel": { "kinder": 15, "b": 19, "a": 23 },
-    "growthPerStation": 0.3,
+    "statLevel": { "kinder": 14, "b": 18, "a": 22 },
+    "growthPerStation": 0.2,
     "boatValue": 5
   },
   "trainerMood": {

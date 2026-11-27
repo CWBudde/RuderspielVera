@@ -243,9 +243,9 @@ type Rules struct {
 		Gold   int `json:"gold"`
 		Silver int `json:"silver"`
 	} `json:"medalPoints"`
-	GoldMotivation int               `json:"goldMotivation"`
-	LoanBoatValue  int               `json:"loanBoatValue"`
-	JTFOVariants   map[string]string `json:"jtfoVariants"` // player count -> variant key
+	WinMotivation WinMotivation     `json:"winMotivation"`
+	LoanBoatValue int               `json:"loanBoatValue"`
+	JTFOVariants  map[string]string `json:"jtfoVariants"` // player count -> variant key
 	// BoatValuePerSeat: a boat's value counts once per seat (1x ×1, 2x ×2, 4x ×4) instead of once.
 	BoatValuePerSeat bool `json:"boatValuePerSeat"`
 	// TrainerPerSeat: a trainer effect counts once per seat instead of once per boat.
@@ -255,6 +255,16 @@ type Rules struct {
 	TrainerFactor   int         `json:"trainerFactor"`
 	Guests          Guests      `json:"guests"`
 	TrainerMood     TrainerMood `json:"trainerMood"`
+}
+
+// WinMotivation is the temporary Motivation bonus (Siegesmotivation) of every rower of a crew
+// that wins one of Medals. It never stacks: a new win while it is active only resets the
+// duration to Competitions. Every scored competition of the calendar (regatta, Ergo-Cup, JTFO)
+// counts down one, whether or not the rower started.
+type WinMotivation struct {
+	Value        int      `json:"value"`
+	Competitions int      `json:"competitions"`
+	Medals       []string `json:"medals"` // "gold", "silber"
 }
 
 // TrainerMood is the bounded random walk of every trainer's mood (Laune). At the start of every

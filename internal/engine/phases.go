@@ -164,7 +164,7 @@ func (g *Game) afterPhase(p *phase) {
 func (g *Game) openResultAck() {
 	res := g.results[len(g.results)-1]
 	g.newPhase(PhaseAck, stageResult, g.allPlayerIDs(), "Ergebnis: "+res.Name,
-		"Die Ergebnisse stehen fest. Medaillen und Motivationspunkte wurden vergeben.")
+		"Die Ergebnisse stehen fest. Medaillen und Siegesmotivation wurden vergeben.")
 }
 
 func (g *Game) gameOver() {

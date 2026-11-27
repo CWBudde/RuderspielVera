@@ -55,6 +55,11 @@ resolves and opens the next phase.
   rules.json `trainerMood`, −2…+2) and `moodTrend` (change at the last section start, for a trend
   arrow). The mood is added to the per-seat trainer effect of every entry with that trainer, also
   when no effect matches; it changes only when a new section begins. Catalog trainers have 0/0.
+- **Siegesmotivation**: every `RowerView` (own and opponents' cards) carries `winMotivation` (the
+  temporary Motivation bonus after a gold or silver placement, rules.json `winMotivation`, 0/absent
+  when inactive) and `winMotivationLeft` (scored competitions it still counts in, the next one
+  included). `stats.motivation` already includes it, so lineup estimates need no extra term; `base`
+  does not. It is neither trainable nor swappable and never stacks (a new win resets the duration).
 - `activeEreignisse` lists pending Ereignisse that a later station will still apply. The engine
   no longer draws water / ergo cards whose next competition is of the other kind, nor modifiers
   without a consuming station; the filter here stays as a fallback. Competition modifiers
@@ -65,7 +70,8 @@ resolves and opens the next phase.
 - Saved games (`gameservice.Snapshot`: server files, WASM localStorage) carry a `version`. It is
   bumped when a rule change makes old decision logs replay differently (2: per-mille incidents, no
   Motivation training, Hildesheim loan boats; 3: season-aware Ereignisse, larger event and Ereignis
-  decks, trainer mood). Importing an older version fails with a German
+  decks, trainer mood; 4: temporary Siegesmotivation, weaker guest crews, shorter regular regattas).
+  Importing an older version fails with a German
   message ("Dieser Spielstand stammt aus einer älteren Spielversion …").
 - Bots: `internal/bot.Decide(g, playerID, personality, rng)` (`Taktiker` / `Bauchgefuehl`,
   `bot.PersonalityFor(seat)`); the bot RNG is separate from the game RNG.

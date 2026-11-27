@@ -18,6 +18,7 @@ import (
 	"sync"
 
 	"ruderspiel/internal/bot"
+	"ruderspiel/internal/data"
 	"ruderspiel/internal/engine"
 )
 
@@ -290,7 +291,7 @@ func reportPoints(out []gameStats) {
 
 // compAgg aggregates one competition (calendar station) over all games.
 type compAgg struct {
-	name                string
+	name, kind          string
 	total, entries, gst agg
 }
 
@@ -394,19 +395,44 @@ func (st *raceStats) addDecidedBy(ps []engine.EntryResult) {
 	}
 }
 
+// compKind groups a competition for the guest report: Ergo-Cups, Hildesheim (Langstrecke), JTFO
+// and the other water regattas.
+func compKind(d *data.Data, station int) string {
+	c := d.Competitions[d.Calendar[station].Competition]
+
+	switch {
+	case c.Kind == "ergocup":
+		return "Ergo-Cups"
+	case c.Kind == "jtfo":
+		return "JTFO (team)"
+	case c.Context == "langstrecke":
+		return "Hildesheim"
+	default:
+		return "water regattas"
+	}
+}
+
 func reportRaces(out []gameStats) {
 	st := &raceStats{byCount: map[int]float64{}, comps: map[int]*compAgg{}}
+
+	d, err := data.Load()
+	if err != nil {
+		fmt.Fprintln(os.Stderr, err)
+		os.Exit(1)
+	}
 
 	for _, gs := range out {
 		for _, cr := range gs.results {
 			ca := st.comps[cr.StationIndex]
 			if ca == nil {
-				ca = &compAgg{name: cr.Name}
+				ca = &compAgg{name: cr.Name, kind: compKind(d, cr.StationIndex)}
 				st.comps[cr.StationIndex] = ca
 			}
 
 			for _, rr := range cr.Races {
-				if rr.RaceID != "team" {
+				if rr.RaceID == "team" {
+					ca.addTeamGuest(rr)
+				} else {
 					st.addRace(cr, rr, ca)
 				}
 			}
@@ -444,6 +470,47 @@ func reportRaces(out []gameStats) {
 	for _, k := range keys {
 		ca := st.comps[k]
 		fmt.Printf("  %-30s %6.1f  %.2f  %s\n", ca.name, ca.total.mean(), ca.entries.mean(), pct(ca.gst.sum, ca.gst.n))
+	}
+
+	reportGuestKinds(st.comps)
+}
+
+// reportGuestKinds prints the guest crew's 1st-place rate per competition type.
+func reportGuestKinds(comps map[int]*compAgg) {
+	kinds := map[string]*agg{}
+
+	for _, ca := range comps {
+		if kinds[ca.kind] == nil {
+			kinds[ca.kind] = &agg{}
+		}
+
+		kinds[ca.kind].n += ca.gst.n
+		kinds[ca.kind].sum += ca.gst.sum
+	}
+
+	fmt.Print("Guest crew 1st by type:")
+
+	for _, k := range []string{"Ergo-Cups", "water regattas", "Hildesheim", "JTFO (team)"} {
+		if a := kinds[k]; a != nil {
+			fmt.Printf(" %s %s;", k, pct(a.sum, a.n))
+		}
+	}
+
+	fmt.Println()
+}
+
+// addTeamGuest counts whether the guest team won a team ranking (JTFO).
+func (ca *compAgg) addTeamGuest(rr engine.RaceResult) {
+	for _, e := range rr.Entries {
+		if e.Guest == "" {
+			continue
+		}
+
+		if e.Place == 1 {
+			ca.gst.add(1)
+		} else {
+			ca.gst.add(0)
+		}
 	}
 }
 

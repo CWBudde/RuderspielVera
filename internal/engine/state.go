@@ -32,6 +32,11 @@ type rower struct {
 	stats    Stats // current values
 	event    *eventCard
 	isTwin   bool
+	// Siegesmotivation: temporary Motivation bonus after a winning placement (rules.json
+	// winMotivation). It is not part of stats, so training, Tausch and stat-based events never
+	// see it; winLeft is the number of competitions it still lasts (0 = inactive).
+	winBonus int
+	winLeft  int
 }
 
 type eventCard struct {
@@ -429,6 +434,24 @@ func (g *Game) addLog(kind, playerID, text string) {
 }
 
 func (g *Game) currentStation() *data.Station { return &g.d.Calendar[g.station] }
+
+// stat is the value a stat counts with in scoring: the current value plus the Siegesmotivation
+// on Motivation.
+func (r *rower) stat(s Stat) int {
+	if s == StatMotivation {
+		return r.stats[s] + r.winBonus
+	}
+
+	return r.stats[s]
+}
+
+// effectiveStats returns all stats as they count in scoring.
+func (r *rower) effectiveStats() Stats {
+	c := r.stats.clone()
+	c[StatMotivation] = r.stat(StatMotivation)
+
+	return c
+}
 
 // addStat changes a stat; stats never drop below 0.
 func (r *rower) addStat(s Stat, delta int) {

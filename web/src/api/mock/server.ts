@@ -564,16 +564,35 @@ function resolveCompetition(s: MockState, yours: Lineup) {
     scored = [...races, { raceId: "jtfo-team", name: "Teamwertung", entries: rankEntries(team) }];
   }
 
+  // Siegesmotivation (engine updateWinMotivation): count down, then +1 for 3 competitions after gold
+  // or silver, never stacking. stats.motivation includes it, like in the engine's views.
+  for (const p of s.players) {
+    for (const r of p.rowers) {
+      if (!r.winMotivation) continue;
+      r.winMotivationLeft = (r.winMotivationLeft ?? 1) - 1;
+      if (r.winMotivationLeft <= 0) {
+        addStat(r, "motivation", -r.winMotivation);
+        r.winMotivation = undefined;
+        r.winMotivationLeft = undefined;
+      }
+    }
+  }
+
   for (const r of comp.teamEvent ? scored.slice(-1) : scored) {
     for (const e of r.entries) {
+      if (!e.playerId) continue;
       const p = player(s, e.playerId);
-      if (e.medal === "gold") {
-        p.gold++;
+      if (e.medal === "gold") p.gold++;
+      else if (e.medal === "silber") p.silver++;
+      if (e.medal) {
         for (const id of e.rowerIds) {
           const rower = p.rowers.find((x) => x.id === id);
-          if (rower) addStat(rower, "motivation", 1);
+          if (!rower) continue;
+          if (!rower.winMotivation) addStat(rower, "motivation", 1);
+          rower.winMotivation = 1;
+          rower.winMotivationLeft = 3;
         }
-      } else if (e.medal === "silber") p.silver++;
+      }
       p.points = 2 * p.gold + p.silver;
     }
   }

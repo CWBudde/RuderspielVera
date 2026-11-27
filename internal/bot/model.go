@@ -1,7 +1,9 @@
 package bot
 
 import (
+	"maps"
 	"math"
+	"slices"
 
 	"ruderspiel/internal/data"
 	"ruderspiel/internal/engine"
@@ -24,6 +26,37 @@ type compModel struct {
 	weights map[engine.Stat]float64
 	weather engine.Weather
 	current bool
+	ahead   int // future only: competitions between now and this one
+}
+
+// at returns the team as it will be at c: a rower's Siegesmotivation (part of the view's
+// motivation) is left out where it will have expired. The open competition uses the view as is.
+func (c *compModel) at(tm *team) *team {
+	if c.current {
+		return tm
+	}
+
+	var rowers []engine.RowerView
+
+	for i, rw := range tm.rowers {
+		if rw.WinMotivation == 0 || rw.WinMotivationLeft > c.ahead {
+			continue
+		}
+
+		if rowers == nil {
+			rowers = slices.Clone(tm.rowers)
+		}
+
+		st := maps.Clone(rw.Stats)
+		st[engine.StatMotivation] -= rw.WinMotivation
+		rowers[i].Stats = st
+	}
+
+	if rowers == nil {
+		return tm
+	}
+
+	return &team{id: tm.id, rowers: rowers, boats: tm.boats, trainers: tm.trainers}
 }
 
 func (c *compModel) team() bool { return c.def.Kind == string(engine.StationJTFO) }
@@ -227,7 +260,7 @@ func (b *brain) estimateField(c *compModel) *field {
 	fd := &field{race: make([][]float64, len(c.races))}
 
 	for _, op := range b.opps {
-		t := teamOf(op)
+		t := c.at(teamOf(op))
 		pr := newProblem(c.races, t, c.weights, nil)
 
 		trainer := ""
@@ -343,6 +376,7 @@ func (b *brain) objective(c *compModel, fd *field) func(pl *plan) float64 {
 
 // lineup optimises team t at competition c against field f.
 func (b *brain) lineup(t *team, c *compModel, f *field, trainerID string, passes int) (*problem, *plan) {
+	t = c.at(t)
 	pr := newProblem(c.races, t, c.weights, b.noise)
 	pr.score = b.scorer(pr, t, c, trainerID, b.noise)
 	pr.value = b.objective(c, f)

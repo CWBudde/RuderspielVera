@@ -40,7 +40,7 @@ func PersonalityFor(seat int) Personality {
 
 func (p Personality) noise() float64 {
 	if p == Taktiker {
-		return 0.02
+		return 0.06
 	}
 
 	return 0.07
@@ -145,21 +145,18 @@ func teamOf(ps *engine.PlayerSummary) *team {
 }
 
 // upcoming returns the competitions strictly after the current station (at most n).
-func (b *brain) upcoming(n int, includeCurrent bool) []*compModel {
+func (b *brain) upcoming(n int) []*compModel {
 	var out []*compModel
 
-	start := b.view.Current + 1
-	if includeCurrent {
-		start = b.view.Current
-	}
-
-	for i := start; i < len(b.d.Calendar) && len(out) < n; i++ {
-		st := b.d.Calendar[i]
-		if st.Competition == "" {
+	for i := b.view.Current + 1; i < len(b.d.Calendar) && len(out) < n; i++ {
+		if b.d.Calendar[i].Competition == "" {
 			continue
 		}
 
-		out = append(out, b.futureComp(i))
+		c := b.futureComp(i)
+		// The competitions before this one each use up one competition of a Siegesmotivation.
+		c.ahead = len(out)
+		out = append(out, c)
 	}
 
 	return out

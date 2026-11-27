@@ -147,8 +147,8 @@ func (g *Game) raceViews(cs *compState) []RaceSpec {
 
 func rowerView(r *rower, owner bool) RowerView {
 	v := RowerView{
-		ID: r.id, Name: r.name, Age: r.age, Gender: r.gender, Stats: r.stats.clone(), Base: r.base.clone(),
-		ArtKey: r.artKey, IsTwin: r.isTwin,
+		ID: r.id, Name: r.name, Age: r.age, Gender: r.gender, Stats: r.effectiveStats(), Base: r.base.clone(),
+		ArtKey: r.artKey, IsTwin: r.isTwin, WinMotivation: r.winBonus, WinMotivationLeft: r.winLeft,
 	}
 	if r.event != nil {
 		ev := &EventCardView{

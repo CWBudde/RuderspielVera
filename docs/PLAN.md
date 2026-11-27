@@ -105,7 +105,8 @@ training ≈ a 10–20 % boost to one rower in one discipline.
 **Race scoring.** `rowerScore = Σ weight_s · stat_s`; `crew = Σ rowerScore`; `race = crew + boat +
 trainerEffect + eventEffects − crabPenalty`. Rounded to integers → ties are real and kept. Medals:
 competition ranking (1,1,3): two golds → next is 3rd (no silver). One medal **per race entry** (not per
-crew member). Gold: +1 Motivation to **every crew member** immediately. Season tie: shared win.
+crew member). Gold or silver: +1 temporary Motivation (Siegesmotivation) to **every crew member** for
+the next 3 competitions, no stacking (docs/poc-rules.md 4.1). Season tie: shared win.
 
 **Competition weights.**
 
@@ -113,9 +114,9 @@ crew member). Gold: +1 Motivation to **every crew member** immediately. Season t
 | ---------------------- | ---------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | Hildesheim (long)      | Ausdauer 2, Motivation 1                       | 1x and 2x for A and B, girls/boys → 8 races                                                                                                                        |
 | Ergo-Cups ×3           | Kraft 2, Motivation 1                          | single, 3 age groups × 2 genders → 6 races; no boat, no incidents, no weather                                                                                      |
-| Bremen, Schillerschule | Geschwindigkeit 1, Technik 1, Motivation 0.5   | 6 races per regatta, chosen from the 18-class matrix (1x/2x/4x × age × gender), fixed list in competitions.json, rotating so every class appears during the season |
-| Kasselregatta          | Geschwindigkeit 1, Kraft 1, Motivation 0.5     | 6 races                                                                                                                                                            |
-| Verbandsregatta I/II   | Technik 1.5, Geschwindigkeit 1, Motivation 0.5 | 6 races each                                                                                                                                                       |
+| Bremen, Schillerschule | Geschwindigkeit 1, Technik 1, Motivation 0.5   | 4 races per regatta, chosen from the 18-class matrix (1x/2x/4x × age × gender), fixed list in competitions.json, rotating so every class appears during the season |
+| Kasselregatta          | Geschwindigkeit 1, Kraft 1, Motivation 0.5     | 4 races                                                                                                                                                            |
+| Verbandsregatta I/II   | Technik 1.5, Geschwindigkeit 1, Motivation 0.5 | 4 races each                                                                                                                                                       |
 | JTFO                   | Geschwindigkeit 1, Technik 1                   | team competition: 2 players → var. C, 3 → var. B (2x+4x+2x), 4 → var. A; team score = sum of the 3 boats, one medal for the team                                   |
 | RVH-Herbstsprint       | Geschwindigkeit 2, Kraft 1                     | 1x/2x/4x per gender, ages mixed → 6 races                                                                                                                          |
 | RVB-Endspurt           | Geschwindigkeit 2, Technik 1, Motivation 0.5   | Mixed-4x (≥1 girl, ≥1 boy, ≥2 age groups) and Mixed-8x (same rule, shared identical eight, boat value 0)                                                           |
