@@ -39,7 +39,7 @@ import {
   namedBoats,
   splitStats,
 } from "./data";
-import { boatContribution, competitionContext, crewScore, isEligible, needsBoat, trainerBonus } from "@/lib/score";
+import { boatPart, crewScore, isEligible, needsBoat, trainerBonus, trainerPart } from "@/lib/score";
 import { ALL_STATS, STAT_LABEL } from "@/lib/labels";
 
 export type Step = "main" | "swap" | "result" | "draft" | "gameover";
@@ -61,6 +61,9 @@ export interface MockState {
   activeEreignisse: string[];
   weather?: Weather;
   swapRowerId?: string;
+  /** Your event cards dealt at the current event station. */
+  newEvents?: EventCardView[];
+  ereignis?: { name: string; description: string };
   draftOffer: DraftCard[];
   draftOrder: string[];
   draftTurn: number;
@@ -278,6 +281,7 @@ function drawEvent(s: MockState, rng: Rng, p: PlayerSummary): EventCardView | un
     }
   }
   log(s, "event", `${p.name}: ${rower.name} erhält „${def.name}“.`, p.id);
+  if (p.id === YOU) s.newEvents = [...(s.newEvents ?? []), card];
   if (def.type === "tausch" && p.id === YOU) s.swapRowerId = rower.id;
   return card;
 }
@@ -287,6 +291,8 @@ function enterStation(s: MockState) {
   const st = station(s);
   s.step = "main";
   s.weather = undefined;
+  s.newEvents = undefined;
+  s.ereignis = undefined;
   s.swapRowerId = undefined;
   log(s, "station", `Station ${st.index + 1}: ${st.name}`);
   withRng(s, (rng) => {
@@ -296,6 +302,7 @@ function enterStation(s: MockState) {
     } else if (st.type === "ereignis") {
       const e = rng.pick(EREIGNISSE);
       log(s, "ereignis", `${e.name}: ${e.text}`);
+      s.ereignis = { name: e.name, description: e.text };
       if (e.active) s.activeEreignisse.push(e.active);
       if (e.name === "Vereinsfest") for (const p of s.players) for (const r of p.rowers) addStat(r, "motivation", 1);
       if (e.name === "Grippewelle") for (const p of s.players) addStat(rng.pick(p.rowers), "motivation", -5);
@@ -379,9 +386,8 @@ interface Lineup {
 }
 
 function botLineup(p: PlayerSummary, comp: CompetitionView): Lineup {
-  const context = competitionContext(comp);
   const trainer = [...p.trainers].sort(
-    (a, b) => trainerBonus(b, comp.weather, context) - trainerBonus(a, comp.weather, context),
+    (a, b) => trainerBonus(b, comp) - trainerBonus(a, comp),
   )[0];
   const used = new Set<string>();
   const entries: Lineup["entries"] = [];
@@ -455,7 +461,6 @@ function rankEntries(entries: EntryResult[]): EntryResult[] {
 
 function resolveCompetition(s: MockState, yours: Lineup) {
   const comp = currentCompetition(s);
-  const context = competitionContext(comp);
   const water = comp.kind !== "ergocup";
   const krebsMax = consumeEreignis(s, "Maschsee-Monster") ? 45 : 30;
   const renovation = comp.kind === "regatta" && consumeEreignis(s, "Renovierung");
@@ -474,8 +479,8 @@ function resolveCompetition(s: MockState, yours: Lineup) {
         const boat = p.boats.find((b) => b.id === e.boatId);
         const trainer = p.trainers.find((t) => t.id === lu.trainerId);
         const eventBonus = crew.some((r) => r.event?.type === "wetter") && comp.weather && comp.weather !== "normal" ? 4 : 0;
-        let boatValue = boatContribution(race, boat?.value);
-        if (renovation && boat?.city) boatValue -= 1;
+        let boatValue = boatPart(race, boat, comp);
+        if (renovation && boat?.city) boatValue -= race.boatScale;
         const res: EntryResult = {
           playerId: p.id,
           rowerIds: e.rowerIds,
@@ -483,7 +488,7 @@ function resolveCompetition(s: MockState, yours: Lineup) {
           trainerId: trainer?.id,
           crew: crewScore(crew, comp.weights),
           boatValue,
-          trainer: trainerBonus(trainer, comp.weather, context),
+          trainer: trainerPart(race, trainer, comp),
           eventBonus,
           penalty: 0,
           total: 0,
@@ -500,6 +505,12 @@ function resolveCompetition(s: MockState, yours: Lineup) {
         }
         res.total = res.crew + res.boatValue + res.trainer + res.eventBonus - res.penalty;
         entries.push(res);
+      }
+      if (entries.length > 0 && !comp.teamEvent) {
+        // Gastmannschaft: fixed-strength crew that takes places but never scores (rules.json guests).
+        const wsum = Object.values(comp.weights).reduce((a, w) => a + w, 0);
+        const total = Math.round(race.seats * wsum * (19 + s.current * 0.3)) + (needsBoat(race) ? 5 * race.boatScale : 0);
+        entries.push({ playerId: "", guest: "Gastmannschaft", rowerIds: [], crew: total, boatValue: 0, trainer: 0, eventBonus: 0, penalty: 0, total, place: 0 });
       }
       return { raceId: race.id, name: race.name, entries: rankEntries(entries) };
     }),
@@ -753,7 +764,7 @@ function phaseFor(s: MockState): PhaseView {
     return { ...base, kind: "gameover", title: "Saisonende", prompt: "Die Saison ist vorbei. Hier ist die Abschlusswertung." };
   }
   if (s.step === "result") {
-    return { ...base, kind: "ack", title: `Ergebnis: ${st.name}`, prompt: "Die Rennen sind gefahren." };
+    return { ...base, kind: "ack", stage: "result", title: `Ergebnis: ${st.name}`, prompt: "Die Rennen sind gefahren." };
   }
   if (s.step === "draft") {
     const onTurn = s.draftOrder[s.draftTurn];
@@ -764,6 +775,7 @@ function phaseFor(s: MockState): PhaseView {
       prompt: "Wähle eine Karte aus der offenen Auslage. Wer weniger Medaillenpunkte hat, wählt zuerst.",
       draftOffer: s.draftOffer,
       draftOrder: s.draftOrder,
+      draftTurn: onTurn,
       waiting: onTurn !== YOU,
     };
   }
@@ -781,6 +793,7 @@ function phaseFor(s: MockState): PhaseView {
       return {
         ...base,
         kind: "ack",
+        stage: "setup",
         title: "Spielvorbereitung",
         prompt: "Deine Startkarten sind verteilt: Ruderer aus allen Altersklassen, städtische Boote und zwei Trainer.",
       };
@@ -813,9 +826,9 @@ function phaseFor(s: MockState): PhaseView {
       };
     }
     case "event":
-      return { ...base, kind: "ack", title: "Event", prompt: "Neue Eventkarten wurden gezogen." };
+      return { ...base, kind: "ack", stage: "event", title: "Event", prompt: "Neue Eventkarten wurden gezogen.", newEvents: s.newEvents };
     case "ereignis":
-      return { ...base, kind: "ack", title: "Ereignis", prompt: "Ein Ereignis betrifft alle Teams." };
+      return { ...base, kind: "ack", stage: "ereignis", title: "Ereignis", prompt: "Ein Ereignis betrifft alle Teams.", ereignis: s.ereignis };
     default:
       return {
         ...base,

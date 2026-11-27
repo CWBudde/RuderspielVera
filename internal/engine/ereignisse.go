@@ -7,14 +7,15 @@ import (
 )
 
 // runEreignisStation draws one global Ereignis. Immediate effects are applied now; the others are
-// stored as pending modifiers until the next matching station consumes them.
-func (g *Game) runEreignisStation() string {
+// stored as pending modifiers until the next matching station consumes them. It returns the card
+// name and the description (with per-player details).
+func (g *Game) runEreignisStation() (name, desc string) {
 	weights := make([]int, len(g.d.Ereignisse))
 	for i, e := range g.d.Ereignisse {
 		weights[i] = e.Weight
 	}
 	e := &g.d.Ereignisse[pickWeighted(g.rng, weights)]
-	text := fmt.Sprintf("%s: %s", e.Name, e.Description)
+	desc = e.Description
 	switch e.Effect {
 	case data.EffAllMotivation:
 		for _, pl := range g.players {
@@ -29,14 +30,14 @@ func (g *Game) runEreignisStation() string {
 			}
 			r := pl.rowers[g.rng.IntN(len(pl.rowers))]
 			r.addStat(StatMotivation, e.Value)
-			text += fmt.Sprintf(" %s: %s (%+d Motivation).", pl.name, r.name, e.Value)
+			desc += fmt.Sprintf(" %s: %s (%+d Motivation).", pl.name, r.name, e.Value)
 		}
 	case data.EffNone:
 	default:
 		g.pending = append(g.pending, e)
 	}
-	g.addLog("ereignis", "", text)
-	return text
+	g.addLog("ereignis", "", e.Name+": "+desc)
+	return e.Name, desc
 }
 
 // takePending removes and returns all pending Ereignisse with the given effect, oldest first.

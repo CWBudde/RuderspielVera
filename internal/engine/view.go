@@ -45,9 +45,10 @@ func (g *Game) View(playerID string) GameView {
 		v.Players = append(v.Players, ps)
 	}
 	if n := len(g.results); n > 0 {
-		last := g.results[n-1]
+		last := cloneResult(g.results[n-1])
 		v.LastResult = &last
 	}
+	fillNil(&v)
 	return v
 }
 
@@ -72,8 +73,8 @@ func (g *Game) CurrentPhase(playerID string) PhaseView {
 	if cs := p.comp; cs != nil {
 		pv.Competition = &CompetitionView{
 			Name: cs.name, Kind: StationType(cs.def.Kind), Weights: maps.Clone(cs.weights),
-			Races: slices.Clone(cs.races), Weather: cs.weather, TeamEvent: cs.team(),
-			Notes: append([]string{}, cs.notes...),
+			Races: g.raceViews(cs), Weather: cs.weather, TeamEvent: cs.team(),
+			Notes: append([]string{}, cs.notes...), Context: cs.def.Context, CityBoatMod: cs.cityBoatMod,
 		}
 	}
 	if p.kind == PhaseDraft && g.draft != nil {
@@ -81,8 +82,48 @@ func (g *Game) CurrentPhase(playerID string) PhaseView {
 			pv.DraftOffer = append(pv.DraftOffer, draftCardView(c))
 		}
 		pv.DraftOrder = slices.Clone(g.draft.order)
+		if g.draft.turn < len(g.draft.order) {
+			pv.DraftTurn = g.draft.order[g.draft.turn]
+		}
+	}
+	pv.Stage = stageNames[p.stage]
+	if pl := g.playerByID(playerID); pl != nil {
+		for _, id := range p.newEvents[playerID] {
+			if r := pl.rower(id); r != nil && r.event != nil {
+				pv.NewEvents = append(pv.NewEvents, *rowerView(r, true).Event)
+			}
+		}
+	}
+	if p.ereignis != nil {
+		e := *p.ereignis
+		pv.Ereignis = &e
 	}
 	return pv
+}
+
+var stageNames = map[stage]PhaseStage{
+	stageSetup: StageSetup, stageEventReveal: StageEvent, stageEreignisReveal: StageEreignis, stageResult: StageResult,
+}
+
+// raceViews returns the open competition's races with the scoring hints for client estimates.
+func (g *Game) raceViews(cs *compState) []RaceSpec {
+	races := slices.Clone(cs.races)
+	for i := range races {
+		r := &races[i]
+		r.Ages, r.Genders = slices.Clone(r.Ages), slices.Clone(r.Genders)
+		r.BoatScale = g.d.Rules.BoatScale(r.Seats)
+		r.TrainerScale = g.d.Rules.TrainerScale(r.Seats)
+		switch {
+		case r.Class == BoatErgo:
+			r.BoatScale = 0
+		case r.Class == Boat8x || r.LoanBoat:
+			r.FixedBoatValue = g.boatValue(cs, *r, nil)
+		}
+		if gs, ok := GuestScore(g.d, cs.def, cs.station, *r); ok && !cs.team() {
+			r.GuestScore = int(gs)
+		}
+	}
+	return races
 }
 
 func rowerView(r *rower, owner bool) RowerView {
@@ -149,5 +190,6 @@ func Catalog() (CatalogView, error) {
 	for _, e := range d.Events {
 		c.Events = append(c.Events, EventTypeView{Type: e.Type, Name: e.Name, Description: e.Description})
 	}
+	fillNil(&c)
 	return c, nil
 }

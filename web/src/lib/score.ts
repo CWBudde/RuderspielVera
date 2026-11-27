@@ -1,10 +1,10 @@
 import type {
   CompetitionView,
+  BoatView,
   RaceSpec,
   RowerView,
   Stat,
   TrainerView,
-  Weather,
 } from "@/api/types.gen";
 
 /**
@@ -24,39 +24,33 @@ export function crewScore(rowers: RowerView[], weights: CompetitionView["weights
   return Math.round(rowers.reduce((acc, r) => acc + rowerScore(r, weights), 0));
 }
 
-/** Trainer effect for one boat/ergo entry under the given weather and competition context. */
-export function trainerBonus(
-  trainer: TrainerView | undefined,
-  weather: Weather | undefined,
-  context: string,
-): number {
+/** Trainer effect per seat under the competition's weather and context (TrainerEffect.context). */
+export function trainerBonus(trainer: TrainerView | undefined, comp: CompetitionView): number {
   if (!trainer) return 0;
   let total = 0;
   for (const e of trainer.effects ?? []) {
-    const weatherOk = !e.weather || e.weather === weather;
-    const contextOk = !e.context || e.context === context;
+    const weatherOk = !e.weather || e.weather === comp.weather;
+    const contextOk = !e.context || e.context === (comp.context ?? "");
     if (weatherOk && contextOk) total += e.value;
   }
   return total;
 }
 
-/** Context string the engine uses for trainer abilities, derived from the competition. */
-export function competitionContext(comp: CompetitionView): string {
-  if (comp.kind === "ergocup") return "ergo";
-  const w = comp.weights;
-  if ((w["ausdauer"] ?? 0) >= 2) return "langstrecke";
-  if ((w["geschwindigkeit"] ?? 0) >= 2) return "sprint";
-  return "";
+/** Trainer part of an entry: per-seat effect × race.trainerScale (engine scoreEntry). */
+export function trainerPart(race: RaceSpec, trainer: TrainerView | undefined, comp: CompetitionView): number {
+  return trainerBonus(trainer, comp) * race.trainerScale;
 }
 
-/** rules.json loanBoatValue: boat value used when a loanBoat race is entered without own boat. */
-export const LOAN_BOAT_VALUE = 2;
+/** Base value of a boat in this competition (städtische Boote get the Ereignis modifier). */
+export function boatBaseValue(boat: BoatView, comp: CompetitionView): number {
+  return Math.max(0, boat.value + (boat.city ? (comp.cityBoatMod ?? 0) : 0));
+}
 
-/** Value the boat contributes for an entry (own boat, loan boat or the shared eight). */
-export function boatContribution(race: RaceSpec, boatValue: number | undefined): number {
-  if (race.class === "8x" || race.class === "ergo") return 0;
-  if (boatValue !== undefined) return boatValue;
-  return race.loanBoat ? LOAN_BOAT_VALUE : 0;
+/** Boat part of an entry: own boat, or the loan boat / shared eight (race.fixedBoatValue), × race.boatScale. */
+export function boatPart(race: RaceSpec, boat: BoatView | undefined, comp: CompetitionView): number {
+  if (race.class === "ergo") return 0;
+  const base = boat && race.class !== "8x" ? boatBaseValue(boat, comp) : (race.fixedBoatValue ?? 0);
+  return base * race.boatScale;
 }
 
 export function needsBoat(race: RaceSpec): boolean {

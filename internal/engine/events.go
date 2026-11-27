@@ -9,12 +9,13 @@ import (
 
 // runEventStation deals the personal event cards of the current event station and applies their
 // immediate effects. It returns a German summary per player for the reveal phase.
-func (g *Game) runEventStation() map[string]string {
+func (g *Game) runEventStation() (map[string]string, map[string][]string) {
 	idx := g.eventStations
 	g.eventStations++
 	perStation := g.d.Rules.EventCardsPerStation
 	n := perStation[min(idx, len(perStation)-1)]
 	lines := map[string][]string{}
+	dealt := map[string][]string{}
 	for k := 0; k < n; k++ {
 		for _, pl := range g.players {
 			eligible := eventEligible(pl)
@@ -25,6 +26,7 @@ func (g *Game) runEventStation() map[string]string {
 			def := g.drawEventType()
 			text := g.applyEvent(pl, r, def)
 			lines[pl.id] = append(lines[pl.id], text)
+			dealt[pl.id] = append(dealt[pl.id], r.id)
 			public := fmt.Sprintf("%s: %s erhält %s.", pl.name, r.name, def.Name)
 			g.addLog("event", pl.id, public)
 		}
@@ -37,7 +39,7 @@ func (g *Game) runEventStation() map[string]string {
 		}
 		prompts[pl.id] = "Deine Eventkarten: " + strings.Join(lines[pl.id], " ")
 	}
-	return prompts
+	return prompts, dealt
 }
 
 // eventEligible lists own rowers without an event card (twins never get one).

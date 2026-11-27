@@ -150,10 +150,17 @@ func (g *Game) Over() bool { return g.over }
 func (g *Game) Winners() []string { return slices.Clone(g.winners) }
 
 // Log returns the full resolution log.
-func (g *Game) Log() []LogEntry { return slices.Clone(g.log) }
+func (g *Game) Log() []LogEntry { return append([]LogEntry{}, g.log...) }
 
 // Results returns all competition results so far.
-func (g *Game) Results() []CompetitionResult { return slices.Clone(g.results) }
+func (g *Game) Results() []CompetitionResult {
+	out := make([]CompetitionResult, len(g.results))
+	for i, r := range g.results {
+		out[i] = cloneResult(r)
+		fillNil(&out[i])
+	}
+	return out
+}
 
 // PhaseID returns the ID of the currently open phase.
 func (g *Game) PhaseID() string { return g.phase.id }

@@ -10,7 +10,7 @@ import { WeatherIcon, weatherTint, ShellIcon } from "@/components/icons";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { AGE_LABEL, BOAT_CLASS_LABEL, GENDER_PLURAL, STAT_LABEL, weatherLabel } from "@/lib/labels";
-import { LOAN_BOAT_VALUE, boatContribution, competitionContext, crewProblems, crewScore, isEligible, needsBoat, rowerScore, trainerBonus } from "@/lib/score";
+import { boatPart, crewProblems, crewScore, isEligible, needsBoat, rowerScore, trainerBonus, trainerPart } from "@/lib/score";
 import { cn } from "@/lib/utils";
 
 type Step = "weather" | "trainer" | "lineup";
@@ -25,9 +25,8 @@ export function RegattaPhase() {
   const comp = view.phase.competition as CompetitionView;
   const hasWeather = !!comp.weather;
   const [step, setStep] = useState<Step>(hasWeather ? "weather" : "trainer");
-  const context = competitionContext(comp);
   const [trainerId, setTrainerId] = useState<string | undefined>(() => {
-    const best = [...you.trainers].sort((a, b) => trainerBonus(b, comp.weather, context) - trainerBonus(a, comp.weather, context))[0];
+    const best = [...you.trainers].sort((a, b) => trainerBonus(b, comp) - trainerBonus(a, comp))[0];
     return best?.id;
   });
   const [lineup, setLineup] = useState<Record<string, Draft>>({});
@@ -121,7 +120,7 @@ export function RegattaPhase() {
                   <TrainerCard
                     trainer={t}
                     weather={comp.weather ?? "normal"}
-                    todayBonus={trainerBonus(t, comp.weather, context)}
+                    todayBonus={trainerBonus(t, comp)}
                     className={cn(on && "ring-4 ring-lake")}
                   />
                   {on && (
@@ -134,7 +133,7 @@ export function RegattaPhase() {
             );
           })}
         </ul>
-        <p className="mt-3 text-sm text-muted-foreground">Der Wert gilt pro Boot bzw. pro Ergo-Start.</p>
+        <p className="mt-3 text-sm text-muted-foreground">Trainerwerte gelten pro Ruderplatz: im Einer einfach, im Zweier doppelt, im Vierer vierfach.</p>
       </PhaseFrame>
     );
   }
@@ -223,8 +222,7 @@ function LineupBuilder({
 }) {
   const { you } = useGame();
   const [slot, setSlot] = useState<{ raceId: string; seat: number } | null>(null);
-  const context = competitionContext(comp);
-  const tBonus = trainerBonus(trainer, comp.weather, context);
+  const tBonus = trainerBonus(trainer, comp);
   const rowerById = useMemo(() => new Map(you.rowers.map((r) => [r.id, r])), [you.rowers]);
 
   /** rowerId -> race name it is already entered in */
@@ -275,7 +273,7 @@ function LineupBuilder({
               </span>
             )}
             <span className="inline-flex h-8 items-center gap-1 rounded-full border-2 border-ink bg-white px-2.5 font-bold">
-              {trainer ? `${trainer.name}: ${tBonus > 0 ? `+${tBonus}` : tBonus === 0 ? "kein Bonus" : tBonus} pro Boot` : "Kein Trainer"}
+              {trainer ? `${trainer.name}: ${tBonus > 0 ? `+${tBonus} pro Platz` : tBonus === 0 ? "kein Bonus" : `${tBonus} pro Platz`}` : "Kein Trainer"}
             </span>
             <span className="inline-flex h-8 items-center rounded-full border-2 border-ink bg-white px-2.5 font-semibold">
               {weightsText(comp)}
@@ -308,7 +306,7 @@ function LineupBuilder({
     >
       <ul className="grid gap-3 lg:grid-cols-2">
         {status.map(({ race, d, crew, boat, problems, complete: ok, filled }) => {
-          const est = crewScore(crew.filter((r): r is RowerView => !!r), comp.weights) + boatContribution(race, boat?.value) + (filled ? tBonus : 0);
+          const est = crewScore(crew.filter((r): r is RowerView => !!r), comp.weights) + boatPart(race, boat, comp) + (filled ? trainerPart(race, trainer, comp) : 0);
           const boats = you.boats.filter((b) => b.class === race.class).sort((a, b) => b.value - a.value);
           return (
             <li key={race.id} className={cn("rounded-[16px] bg-cream p-3 cut", ok && "bg-[#eef7e6]")}>
@@ -365,12 +363,13 @@ function LineupBuilder({
               {needsBoat(race) && (
                 <BoatPicker
                   loan={!!race.loanBoat}
+                  loanValue={race.fixedBoatValue ?? 0}
                   boats={boats}
                   value={d.boatId}
                   onChange={(boatId) => setDraft(race.id, { ...d, boatId })}
                 />
               )}
-              {race.class === "8x" && <p className="mt-2 text-xs text-muted-foreground">Gemeinsamer Achter für alle Teams, Bootswert 0.</p>}
+              {race.class === "8x" && <p className="mt-2 text-xs text-muted-foreground">Gemeinsamer Achter für alle Teams, Bootswert {race.fixedBoatValue ?? 0}.</p>}
 
               {(problems.length > 0 || filled > 0) && (
                 <div className="mt-2 flex items-center gap-2">
@@ -442,11 +441,13 @@ function BoatPicker({
   boats,
   value,
   loan,
+  loanValue,
   onChange,
 }: {
   boats: BoatView[];
   value?: string;
   loan: boolean;
+  loanValue: number;
   onChange: (id: string | undefined) => void;
 }) {
   if (boats.length === 0 && !loan) {
@@ -468,7 +469,7 @@ function BoatPicker({
             )}
           >
             Leihboot
-            <span className={cn("num rounded-md px-1 text-base leading-tight", !value ? "bg-white/20" : "bg-st-regatta")}>{LOAN_BOAT_VALUE}</span>
+            <span className={cn("num rounded-md px-1 text-base leading-tight", !value ? "bg-white/20" : "bg-st-regatta")}>{loanValue}</span>
           </button>
         )}
         {boats.map((b) => {

@@ -34,7 +34,9 @@ type phase struct {
 	selection *data.Selection // selection effect
 	comp      *compState      // regatta
 	swap      map[string]string
-	prompts   map[string]string // per-player prompt override
+	prompts   map[string]string   // per-player prompt override
+	newEvents map[string][]string // event reveal: rower IDs that got a card, per player
+	ereignis  *EreignisView
 }
 
 func (p *phase) isRequired(playerID string) bool {
@@ -97,12 +99,13 @@ func (g *Game) enterStation(i int) {
 			fmt.Sprintf("Wähle genau %d Ruderer aus. Jede ausgewählte Person erhält %s.", sel.Count, sel.Label))
 		p.count, p.selection = sel.Count, &sel
 	case StationEvent:
-		prompts := g.runEventStation()
+		prompts, dealt := g.runEventStation()
 		p := g.newPhase(PhaseAck, stageEventReveal, all, "Event", "Die Eventkarten wurden verteilt.")
-		p.prompts = prompts
+		p.prompts, p.newEvents = prompts, dealt
 	case StationEreignis:
-		text := g.runEreignisStation()
-		g.newPhase(PhaseAck, stageEreignisReveal, all, "Ereignis", text)
+		name, desc := g.runEreignisStation()
+		p := g.newPhase(PhaseAck, stageEreignisReveal, all, "Ereignis", name+": "+desc)
+		p.ereignis = &EreignisView{Name: name, Description: desc}
 	case StationRegatta, StationErgoCup, StationJTFO:
 		g.openCompetition()
 	}

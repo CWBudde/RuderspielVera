@@ -188,16 +188,31 @@ type RaceSpec struct {
 	Seats   int        `json:"seats"`
 	// LoanBoat: boatId may be empty; a loan boat (rules.json loanBoatValue) is used instead (JTFO).
 	LoanBoat bool `json:"loanBoat,omitempty"`
+
+	// Scoring hints for client-side estimates (set in competition views):
+	// boat part = (boat value [+ cityBoatMod for city boats], or FixedBoatValue) × BoatScale;
+	// trainer part = matching trainer effects × TrainerScale.
+	BoatScale    int `json:"boatScale"`
+	TrainerScale int `json:"trainerScale"`
+	// FixedBoatValue is the base value used without an own boat: the shared eight (8x) or the loan
+	// boat (loanBoat races). 0 for ergo.
+	FixedBoatValue int `json:"fixedBoatValue,omitempty"`
+	// GuestScore is the guest crew's (Gastmannschaft) total in this race, 0 if there is none.
+	GuestScore int `json:"guestScore,omitempty"`
 }
 
 type CompetitionView struct {
-	Name      string           `json:"name"`
-	Kind      StationType      `json:"kind"` // regatta | ergocup | jtfo
-	Weights   map[Stat]float64 `json:"weights"`
-	Races     []RaceSpec       `json:"races"`
-	Weather   Weather          `json:"weather,omitempty"` // revealed before decisions (water only)
-	TeamEvent bool             `json:"teamEvent"`         // JTFO: all races form one team score
-	Notes     []string         `json:"notes"`             // German rule hints (e.g. Ereignis modifiers)
+	Name    string           `json:"name"`
+	Kind    StationType      `json:"kind"` // regatta | ergocup | jtfo
+	Weights map[Stat]float64 `json:"weights"`
+	Races   []RaceSpec       `json:"races"`
+	Weather Weather          `json:"weather,omitempty"` // revealed before decisions (water only)
+	// Context is matched against TrainerEffect.Context ("", "ergo", "sprint", "langstrecke").
+	Context string `json:"context,omitempty"`
+	// CityBoatMod is added to the value of städtische Boote (Ereignis modifier, may be negative).
+	CityBoatMod int      `json:"cityBoatMod,omitempty"`
+	TeamEvent   bool     `json:"teamEvent"` // JTFO: all races form one team score
+	Notes       []string `json:"notes"`     // German rule hints (e.g. Ereignis modifiers)
 }
 
 // PhaseView is what the current station asks of the viewing player.
@@ -215,6 +230,31 @@ type PhaseView struct {
 	DraftOrder      []string         `json:"draftOrder,omitempty"` // player IDs
 	SwapRowerID     string           `json:"swapRowerId,omitempty"`
 	Waiting         bool             `json:"waiting"` // viewer already decided, waiting for others
+
+	// Stage refines ack phases: "setup", "event" (event cards dealt), "ereignis" (global event
+	// revealed) or "result" (lastResult of this station is shown). Empty for other phases.
+	Stage PhaseStage `json:"stage,omitempty"`
+	// NewEvents: the viewer's event cards dealt at this event station (stage "event").
+	NewEvents []EventCardView `json:"newEvents,omitempty"`
+	// Ereignis: the drawn global event (stage "ereignis").
+	Ereignis *EreignisView `json:"ereignis,omitempty"`
+	// DraftTurn: player ID whose pick it is (draft phases).
+	DraftTurn string `json:"draftTurn,omitempty"`
+}
+
+type PhaseStage string
+
+const (
+	StageNone     PhaseStage = ""
+	StageSetup    PhaseStage = "setup"
+	StageEvent    PhaseStage = "event"
+	StageEreignis PhaseStage = "ereignis"
+	StageResult   PhaseStage = "result"
+)
+
+type EreignisView struct {
+	Name        string `json:"name"`
+	Description string `json:"description"` // card text plus per-player details (German)
 }
 
 type DraftCard struct {

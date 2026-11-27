@@ -89,7 +89,7 @@ export interface BoatView {
 export interface TrainerEffect {
   weather?: Weather; // empty = applies regardless of weather
   context?: string; // "", "ergo", "sprint", "langstrecke"
-  value: number /* int */; // per boat / ergo entry
+  value: number /* int */; // per seat (rules.json trainerPerSeat) or per boat
 }
 export interface TrainerView {
   id: string;
@@ -146,6 +146,22 @@ export interface RaceSpec {
    * LoanBoat: boatId may be empty; a loan boat (rules.json loanBoatValue) is used instead (JTFO).
    */
   loanBoat?: boolean;
+  /**
+   * Scoring hints for client-side estimates (set in competition views):
+   * boat part = (boat value [+ cityBoatMod for city boats], or FixedBoatValue) × BoatScale;
+   * trainer part = matching trainer effects × TrainerScale.
+   */
+  boatScale: number /* int */;
+  trainerScale: number /* int */;
+  /**
+   * FixedBoatValue is the base value used without an own boat: the shared eight (8x) or the loan
+   * boat (loanBoat races). 0 for ergo.
+   */
+  fixedBoatValue?: number /* int */;
+  /**
+   * GuestScore is the guest crew's (Gastmannschaft) total in this race, 0 if there is none.
+   */
+  guestScore?: number /* int */;
 }
 export interface CompetitionView {
   name: string;
@@ -153,6 +169,14 @@ export interface CompetitionView {
   weights: { [key: Stat]: number /* float64 */};
   races: RaceSpec[];
   weather?: Weather; // revealed before decisions (water only)
+  /**
+   * Context is matched against TrainerEffect.Context ("", "ergo", "sprint", "langstrecke").
+   */
+  context?: string;
+  /**
+   * CityBoatMod is added to the value of städtische Boote (Ereignis modifier, may be negative).
+   */
+  cityBoatMod?: number /* int */;
   teamEvent: boolean; // JTFO: all races form one team score
   notes: string[]; // German rule hints (e.g. Ereignis modifiers)
 }
@@ -173,6 +197,33 @@ export interface PhaseView {
   draftOrder?: string[]; // player IDs
   swapRowerId?: string;
   waiting: boolean; // viewer already decided, waiting for others
+  /**
+   * Stage refines ack phases: "setup", "event" (event cards dealt), "ereignis" (global event
+   * revealed) or "result" (lastResult of this station is shown). Empty for other phases.
+   */
+  stage?: PhaseStage;
+  /**
+   * NewEvents: the viewer's event cards dealt at this event station (stage "event").
+   */
+  newEvents?: EventCardView[];
+  /**
+   * Ereignis: the drawn global event (stage "ereignis").
+   */
+  ereignis?: EreignisView;
+  /**
+   * DraftTurn: player ID whose pick it is (draft phases).
+   */
+  draftTurn?: string;
+}
+export type PhaseStage = string;
+export const StageNone: PhaseStage = "";
+export const StageSetup: PhaseStage = "setup";
+export const StageEvent: PhaseStage = "event";
+export const StageEreignis: PhaseStage = "ereignis";
+export const StageResult: PhaseStage = "result";
+export interface EreignisView {
+  name: string;
+  description: string; // card text plus per-player details (German)
 }
 export interface DraftCard {
   id: string;

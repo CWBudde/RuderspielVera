@@ -279,7 +279,9 @@ function race(id: string, cls: string, ages: AgeGroup[], genders: Gender[], mixe
     (ages.length === 1 && genders.length === 1
       ? `${groupName(ages[0], genders[0])} ${CLASS_NAME[cls]}`
       : `${genders.length === 1 ? (genders[0] === "w" ? "Frauen" : "Männer") : "Offen"} ${CLASS_NAME[cls]}`);
-  return { id, name: label, class: cls, ages, genders, mixed, seats: SEATS[cls] };
+  const seats = SEATS[cls];
+  // Mirrors rules.json: boat value ×2 per seat, trainer effect per seat; the shared eight is worth 0.
+  return { id, name: label, class: cls, ages, genders, mixed, seats, boatScale: cls === "ergo" ? 0 : 2 * seats, trainerScale: seats };
 }
 
 const MATRIX: [string, AgeGroup, Gender][] = [];
@@ -296,7 +298,7 @@ export function competitionFor(name: string, kind: StationType, rotation: number
     for (const age of ["kinder", "b", "a"] as AgeGroup[]) {
       for (const g of ["w", "m"] as Gender[]) races.push(race(`ergo-${age}-${g}`, "ergo", [age], [g]));
     }
-    return { ...base, weights: { kraft: 2, motivation: 1 }, races, notes: ["Kein Boot, kein Wetter, keine Zwischenfälle."] };
+    return { ...base, context: "ergo", weights: { kraft: 2, motivation: 1 }, races, notes: ["Kein Boot, kein Wetter, keine Zwischenfälle."] };
   }
   if (kind === "jtfo") {
     return {
@@ -304,9 +306,9 @@ export function competitionFor(name: string, kind: StationType, rotation: number
       teamEvent: true,
       weights: { geschwindigkeit: 1, technik: 1 },
       races: [
-        { ...race("jtfo-2x-1", "2x", ["b", "a"], ["w", "m"], false, "Schulteam Zweier I"), loanBoat: true },
-        { ...race("jtfo-4x", "4x", ["kinder", "b", "a"], ["w", "m"], false, "Schulteam Vierer"), loanBoat: true },
-        { ...race("jtfo-2x-2", "2x", ["kinder", "b"], ["w", "m"], false, "Schulteam Zweier II"), loanBoat: true },
+        { ...race("jtfo-2x-1", "2x", ["b", "a"], ["w", "m"], false, "Schulteam Zweier I"), loanBoat: true, fixedBoatValue: 2 },
+        { ...race("jtfo-4x", "4x", ["kinder", "b", "a"], ["w", "m"], false, "Schulteam Vierer"), loanBoat: true, fixedBoatValue: 2 },
+        { ...race("jtfo-2x-2", "2x", ["kinder", "b"], ["w", "m"], false, "Schulteam Zweier II"), loanBoat: true, fixedBoatValue: 2 },
       ],
       notes: ["Teamwertung: Die drei Boote zählen zusammen, eine Medaille für das ganze Team."],
     };
@@ -318,14 +320,14 @@ export function competitionFor(name: string, kind: StationType, rotation: number
         for (const g of ["w", "m"] as Gender[]) races.push(race(`hi-${cls}-${age}-${g}`, cls, [age], [g]));
       }
     }
-    return { ...base, weights: { ausdauer: 2, motivation: 1 }, races, notes: ["Langstrecke: Ausdauer zählt doppelt."] };
+    return { ...base, context: "langstrecke", weights: { ausdauer: 2, motivation: 1 }, races, notes: ["Langstrecke: Ausdauer zählt doppelt."] };
   }
   if (name === "RVH-Herbstsprint") {
     const races: RaceSpec[] = [];
     for (const cls of ["1x", "2x", "4x"]) {
       for (const g of ["w", "m"] as Gender[]) races.push(race(`rvh-${cls}-${g}`, cls, ["kinder", "b", "a"], [g]));
     }
-    return { ...base, weights: { geschwindigkeit: 2, kraft: 1 }, races, notes: ["Sprint: Altersklassen gemischt."] };
+    return { ...base, context: "sprint", weights: { geschwindigkeit: 2, kraft: 1 }, races, notes: ["Sprint: Altersklassen gemischt."] };
   }
   if (name === "RVB-Endspurt") {
     return {
