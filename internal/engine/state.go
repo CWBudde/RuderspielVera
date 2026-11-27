@@ -363,9 +363,12 @@ func (s Stats) sum() int {
 }
 
 // bestStat returns the highest current stat; ties go to the first in AllStats order.
-func (s Stats) bestStat() Stat {
-	best := AllStats[0]
-	for _, st := range AllStats[1:] {
+func (s Stats) bestStat() Stat { return s.bestOf(AllStats) }
+
+// bestOf returns the highest current stat among stats; ties go to the first in stats order.
+func (s Stats) bestOf(stats []Stat) Stat {
+	best := stats[0]
+	for _, st := range stats[1:] {
 		if s[st] > s[best] {
 			best = st
 		}

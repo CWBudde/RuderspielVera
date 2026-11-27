@@ -6,7 +6,7 @@
     "guestOffset": -2.5,
     "weights": {
       "geschwindigkeit": 1,
-      "motivation": 0.5,
+      "motivation": 1,
       "technik": 1
     },
     "races": [
@@ -65,7 +65,7 @@
     "kind": "ergocup",
     "context": "ergo",
     "water": false,
-    "guestOffset": 5.5,
+    "guestOffset": 5,
     "weights": {
       "kraft": 2,
       "motivation": 1
@@ -126,7 +126,7 @@
     "kind": "regatta",
     "context": "langstrecke",
     "water": true,
-    "guestOffset": -4,
+    "guestOffset": -4.5,
     "weights": {
       "ausdauer": 2,
       "motivation": 1
@@ -138,7 +138,8 @@
         "class": "1x",
         "ages": ["b"],
         "genders": ["w"],
-        "seats": 1
+        "seats": 1,
+        "loanBoat": true
       },
       {
         "id": "1x-b-m",
@@ -146,7 +147,8 @@
         "class": "1x",
         "ages": ["b"],
         "genders": ["m"],
-        "seats": 1
+        "seats": 1,
+        "loanBoat": true
       },
       {
         "id": "1x-a-w",
@@ -154,7 +156,8 @@
         "class": "1x",
         "ages": ["a"],
         "genders": ["w"],
-        "seats": 1
+        "seats": 1,
+        "loanBoat": true
       },
       {
         "id": "1x-a-m",
@@ -162,7 +165,8 @@
         "class": "1x",
         "ages": ["a"],
         "genders": ["m"],
-        "seats": 1
+        "seats": 1,
+        "loanBoat": true
       },
       {
         "id": "2x-b-w",
@@ -170,7 +174,8 @@
         "class": "2x",
         "ages": ["b", "kinder"],
         "genders": ["w"],
-        "seats": 2
+        "seats": 2,
+        "loanBoat": true
       },
       {
         "id": "2x-b-m",
@@ -178,7 +183,8 @@
         "class": "2x",
         "ages": ["b", "kinder"],
         "genders": ["m"],
-        "seats": 2
+        "seats": 2,
+        "loanBoat": true
       },
       {
         "id": "2x-a-w",
@@ -186,7 +192,8 @@
         "class": "2x",
         "ages": ["a", "b"],
         "genders": ["w"],
-        "seats": 2
+        "seats": 2,
+        "loanBoat": true
       },
       {
         "id": "2x-a-m",
@@ -194,8 +201,12 @@
         "class": "2x",
         "ages": ["a", "b"],
         "genders": ["m"],
-        "seats": 2
+        "seats": 2,
+        "loanBoat": true
       }
+    ],
+    "notes": [
+      "Langstrecke: Fehlt ein freies eigenes Boot, wird ein Leihboot (Wert 2) gestellt. So kann jedes Team in allen Rennen starten."
     ]
   },
   "jtfo": {
@@ -204,6 +215,7 @@
     "water": true,
     "weights": {
       "geschwindigkeit": 1,
+      "motivation": 1,
       "technik": 1
     },
     "variants": {
@@ -307,7 +319,7 @@
     "weights": {
       "geschwindigkeit": 1,
       "kraft": 1,
-      "motivation": 0.5
+      "motivation": 1
     },
     "races": [
       {
@@ -365,7 +377,7 @@
     "kind": "ergocup",
     "context": "ergo",
     "water": false,
-    "guestOffset": 1.5,
+    "guestOffset": 1,
     "weights": {
       "kraft": 2,
       "motivation": 1
@@ -426,7 +438,7 @@
     "kind": "ergocup",
     "context": "ergo",
     "water": false,
-    "guestOffset": 6,
+    "guestOffset": 5.5,
     "weights": {
       "kraft": 2,
       "motivation": 1
@@ -489,7 +501,7 @@
     "water": true,
     "weights": {
       "geschwindigkeit": 2,
-      "motivation": 0.5,
+      "motivation": 1,
       "technik": 1
     },
     "races": [
@@ -525,7 +537,8 @@
     "guestOffset": -1.5,
     "weights": {
       "geschwindigkeit": 2,
-      "kraft": 1
+      "kraft": 1,
+      "motivation": 1
     },
     "races": [
       {
@@ -585,7 +598,7 @@
     "water": true,
     "weights": {
       "geschwindigkeit": 1,
-      "motivation": 0.5,
+      "motivation": 1,
       "technik": 1
     },
     "races": [
@@ -646,7 +659,7 @@
     "guestOffset": -3.5,
     "weights": {
       "geschwindigkeit": 1,
-      "motivation": 0.5,
+      "motivation": 1,
       "technik": 1.5
     },
     "races": [
@@ -706,7 +719,7 @@
     "water": true,
     "weights": {
       "geschwindigkeit": 1,
-      "motivation": 0.5,
+      "motivation": 1,
       "technik": 1.5
     },
     "races": [

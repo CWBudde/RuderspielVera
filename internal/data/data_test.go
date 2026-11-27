@@ -138,3 +138,32 @@ func TestStationTypes(t *testing.T) {
 		t.Errorf("counts = %v", count)
 	}
 }
+
+func TestValidateIncidentsAndMotivation(t *testing.T) {
+	t.Parallel()
+
+	d, err := parse()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	d.Rules.Incidents.KenternBySeats = map[int]int{1: 20, 2: 10, 4: 5, 3: 1}
+	d.Rules.Incidents.Material = 900
+	d.Competitions["jtfo"].Weights = map[string]float64{"technik": 1}
+
+	err = d.Validate()
+	if err == nil {
+		t.Fatal("broken data accepted")
+	}
+
+	for _, want := range []string{
+		"kenternBySeats needs a value >= 0 for 8 seats",
+		"unknown boat size 3",
+		"exceed 1000 ‰",
+		"competition jtfo: Motivation must count",
+	} {
+		if !strings.Contains(err.Error(), want) {
+			t.Errorf("missing problem %q in:\n%v", want, err)
+		}
+	}
+}

@@ -92,7 +92,7 @@ func (g *Game) applyEvent(pl *player, rw *rower, def *data.EventType) string {
 		return fmt.Sprintf("Verdopplung: %s von %s steigt auf %d.", statName(s), rw.name, rw.stats[s])
 	case "tausch":
 		g.swapQueue[pl.id] = append(g.swapQueue[pl.id], rw.id)
-		return fmt.Sprintf("Tausch: Du darfst zwei Eigenschaften von %s tauschen.", rw.name)
+		return fmt.Sprintf("Tausch: Du darfst zwei Eigenschaften von %s tauschen (nicht Motivation).", rw.name)
 	case "seelenzwilling":
 		twin := &rower{
 			id: rw.id + "-zwilling", name: rw.name + " (Zwilling)", age: rw.age, gender: rw.gender,
@@ -165,7 +165,8 @@ func (g *Game) openSwapPhase() bool {
 		g.swapQueue[pl.id] = q[1:]
 		required = append(required, pl.id)
 		prompts[pl.id] = fmt.Sprintf(
-			"Tausch-Event: Du darfst zwei Eigenschaften von %s miteinander tauschen – oder darauf verzichten.",
+			"Tausch-Event: Du darfst zwei Eigenschaften von %s miteinander tauschen "+
+				"(Motivation ausgenommen) – oder darauf verzichten.",
 			pl.rower(q[0]).name)
 	}
 
@@ -190,6 +191,10 @@ func validateSwap(sw *[2]Stat) error {
 
 	if sw[0] == sw[1] {
 		return invalid("Wähle zwei verschiedene Eigenschaften zum Tauschen.")
+	}
+
+	if !Trainable(sw[0]) || !Trainable(sw[1]) {
+		return invalid("Motivation kann nicht getauscht werden.")
 	}
 
 	return nil

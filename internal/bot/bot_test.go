@@ -45,7 +45,9 @@ func randomDecider(g *engine.Game, pid string, rng *rand.Rand) (engine.Decision,
 		perm := rng.Perm(len(me.Rowers))[:n]
 		for range pv.Points {
 			dec.Training = append(dec.Training, engine.TrainingAlloc{
-				RowerID: me.Rowers[perm[rng.IntN(n)]].ID, Stat: engine.AllStats[rng.IntN(5)], Points: 1,
+				RowerID: me.Rowers[perm[rng.IntN(n)]].ID,
+				Stat:    engine.TrainableStats[rng.IntN(len(engine.TrainableStats))],
+				Points:  1,
 			})
 		}
 	case engine.PhaseSelection:
@@ -340,4 +342,43 @@ func mustData(t *testing.T) *data.Data {
 	}
 
 	return d
+}
+
+// TestBotsUseLoanBoatsAtHildesheim checks that the bots enter Hildesheim's races with loan boats
+// once their own 1x and 2x are taken, instead of stopping at two entries.
+func TestBotsUseLoanBoatsAtHildesheim(t *testing.T) {
+	t.Parallel()
+
+	ds := []decider{botDecider(Bauchgefuehl), botDecider(Taktiker), botDecider(Bauchgefuehl)}
+	seasons, entries, loans := 10, 0, 0
+
+	for seed := uint64(1); seed <= uint64(seasons); seed++ {
+		g := playSeason(t, seed, ds)
+		for _, res := range g.Results() {
+			if res.Name != "Hildesheimer Regatta" {
+				continue
+			}
+
+			for _, rr := range res.Races {
+				for _, er := range rr.Entries {
+					if er.PlayerID == "" {
+						continue // guest crew
+					}
+
+					entries++
+
+					if er.BoatID == "" {
+						loans++
+					}
+				}
+			}
+		}
+	}
+
+	perPlayer := float64(entries) / float64(seasons*len(ds))
+	t.Logf("Hildesheim: %.1f entries per player, %d of %d with a loan boat", perPlayer, loans, entries)
+
+	if perPlayer <= 2.5 || loans == 0 {
+		t.Errorf("Hildesheim: %.1f entries per player, %d loan boats; want > 2.5 and some loan boats", perPlayer, loans)
+	}
 }

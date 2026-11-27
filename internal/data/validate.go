@@ -328,6 +328,10 @@ func (d *Data) validateCompetitions(p *problems) {
 			p.addf("competition %s: no weights", id)
 		}
 
+		if comp.Weights["motivation"] <= 0 {
+			p.addf("competition %s: Motivation must count in every competition (weight > 0)", id)
+		}
+
 		for s := range comp.Weights {
 			if !slices.Contains(StatNames, s) {
 				p.addf("competition %s: bad weight stat %q", id, s)
@@ -392,9 +396,7 @@ func (d *Data) validateRules(p *problems) {
 		p.addf("rules: training/camp points must be > 0")
 	}
 
-	if rules.Incidents.Kentern+rules.Incidents.Material+rules.Incidents.Krebs > 100 {
-		p.addf("rules: incident probabilities exceed 100 %%")
-	}
+	d.validateIncidents(p)
 
 	if len(rules.WeatherTable) != 6 {
 		p.addf("rules: weatherTable needs 6 faces")
@@ -408,6 +410,46 @@ func (d *Data) validateRules(p *problems) {
 
 	if rules.Deal.RowersPerAgeGroup <= 0 || rules.Deal.Trainers <= 0 {
 		p.addf("rules: bad deal sizes")
+	}
+}
+
+// validateIncidents checks the per-mille incident probabilities: a capsize value for every boat
+// size, and Kentern + Material + Krebs (also with a Krebs Ereignis) must fit into one d1000.
+func (d *Data) validateIncidents(p *problems) {
+	inc := d.Rules.Incidents
+	if inc.Material < 0 || inc.Krebs < 0 {
+		p.addf("rules: incident probabilities must be >= 0")
+	}
+
+	krebs := inc.Krebs
+
+	for _, e := range d.Ereignisse {
+		if e.Effect != EffKrebsChance {
+			continue
+		}
+
+		if e.Value < 0 || e.Value > 1000 {
+			p.addf("ereignis %s: krebs_chance %d ‰ outside 0..1000", e.ID, e.Value)
+		}
+
+		krebs = max(krebs, e.Value)
+	}
+
+	for seats := range inc.KenternBySeats {
+		if !slices.Contains([]int{1, 2, 4, 8}, seats) {
+			p.addf("rules: kenternBySeats has unknown boat size %d", seats)
+		}
+	}
+
+	for _, seats := range []int{1, 2, 4, 8} {
+		k, ok := inc.KenternBySeats[seats]
+		if !ok || k < 0 {
+			p.addf("rules: kenternBySeats needs a value >= 0 for %d seats", seats)
+		}
+
+		if k+inc.Material+krebs > 1000 {
+			p.addf("rules: incident probabilities for %d seats exceed 1000 ‰", seats)
+		}
 	}
 }
 

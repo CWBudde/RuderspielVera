@@ -219,6 +219,15 @@ func TestExportImportRoundTrip(t *testing.T) {
 	_, err = s2.Import(Snapshot{Version: 99})
 	wantStatus(t, err, StatusBadRequest)
 
+	old := back
+	old.Version = 1
+	_, err = s2.Import(old)
+	wantStatus(t, err, StatusBadRequest)
+
+	if !strings.Contains(err.Error(), "älteren Spielversion") {
+		t.Errorf("old save: %v", err)
+	}
+
 	bad := back
 	bad.Config.GameID = "not-hex"
 	_, err = s2.Import(bad)

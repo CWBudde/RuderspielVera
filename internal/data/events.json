@@ -11,7 +11,7 @@
     "name": "Wachstum",
     "weight": 8,
     "value": 2,
-    "description": "Bei jedem Training und Trainingslager wächst die beste Eigenschaft dieser Person automatisch um 2."
+    "description": "Bei jedem Training und Trainingslager wächst die beste Eigenschaft dieser Person (außer Motivation) automatisch um 2."
   },
   {
     "type": "phoenix",
@@ -25,7 +25,7 @@
     "name": "Tausch",
     "weight": 8,
     "value": 0,
-    "description": "Du darfst einmal zwei Eigenschaftswerte dieser Person miteinander tauschen."
+    "description": "Du darfst einmal zwei Eigenschaftswerte dieser Person miteinander tauschen (Motivation ausgenommen)."
   },
   {
     "type": "verdopplung",

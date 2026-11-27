@@ -113,8 +113,13 @@ pass (section 10) so that a trainer matters against crew scores.
 
 ## 3. Training and special stations
 
-- Training (§9.1): exactly 10 points per player, freely on own rowers and stats.
-- Trainingslager: exactly 30 points on **at most 5** rowers, free split (PoC assumption).
+- Training (§9.1): exactly 10 points per player, freely on own rowers and on Kraft, Ausdauer,
+  Geschwindigkeit and Technik.
+- Trainingslager: exactly 30 points on **at most 5** rowers, free split (PoC assumption), same four
+  stats.
+- **Motivation cannot be trained** (designer rule), neither at training nor in a camp; the engine
+  rejects it. Motivation comes only from selections (WR5, Basketball, Wanderfahrt), gold medals,
+  events (Motivations-Event, Phönix, Verdopplung, Seelenzwilling, mission rewards) and Ereignisse.
 - WR5 and Basketballturnier (§9.3/9.4): choose exactly 5 rowers, each +10 Motivation.
 - Wanderfahrt: choose exactly 5 rowers, each +4 Ausdauer and +3 Motivation (PoC assumption).
 
@@ -140,30 +145,47 @@ pass (section 10) so that a trainer matters against crew scores.
   no silver (PoC). A tie for second gives two silvers.
 - One medal per **race entry**, not per crew member. Gold = 2 points, silver = 1 point (§1).
 - Gold motivation (§1): every crew member of a gold boat gets +1 Motivation immediately.
+- Loan boats (Leihboote, value 2, `rules.json` `loanBoatValue`): in races marked `loanBoat`
+  (Hildesheim and JTFO) an entry may leave out its own boat and row a loan boat instead. A loan boat
+  is not an own boat, so the one-start-per-boat rule doesn't limit it. Without loan boats a player
+  with only the city 1x and 2x could enter just 2 of Hildesheim's 8 races.
 - Empty races award nothing. A single finishing starter still has to beat the guest crew (4.6).
 
 ### 4.2 Incidents (water only, §10.2)
 
-- PoC assumption: one d100 per boat entry, mutually exclusive: 1–5 Kentern, 6–15 Materialschaden,
-  16–30 Krebs, else clean (70 %).
+- PoC assumption (designer rule): one d1000 per boat entry, mutually exclusive, probabilities in
+  per mille (`rules.json` `incidents`). Capsizing gets rarer the more rowers a boat has:
+
+  | Boat | Kentern | Materialschaden | Krebs |  Clean |
+  | ---- | ------: | --------------: | ----: | -----: |
+  | 1x   |     2 % |             3 % |  15 % |   80 % |
+  | 2x   |     1 % |             3 % |  15 % |   81 % |
+  | 4x   |   0.5 % |             3 % |  15 % | 81.5 % |
+  | 8x   |   0.2 % |             3 % |  15 % | 81.8 % |
+
+  Order on the die: Kentern first, then Materialschaden, then Krebs.
+
 - Kentern: the crew finishes last (several capsized crews share the place after all finishers) and
   gets no medal. Materialschaden: DNF (place 0), no medal. Krebs: −10 points.
 - No incidents at Ergo-Cups.
 
 ### 4.3 Weights and races
 
-| Competition                                    | Weights                                | Races                                                     |
-| ---------------------------------------------- | -------------------------------------- | --------------------------------------------------------- |
-| Hildesheimer Regatta (Langstrecke)             | Ausdauer 2, Motivation 1               | 1x and 2x × A/B × Mädchen/Jungen (8)                      |
-| Mindor-Cup, DRC-Ergo-Cup, Osnabrücker Ergo-Cup | Kraft 2, Motivation 1                  | Ergometer × Kinder/B/A × Mädchen/Jungen (6), no boat      |
-| Regatta Bremen                                 | Geschw. 1, Technik 1, Motivation 0.5   | 1x B w/m, 2x A w/m, 4x B w/m                              |
-| Kasselregatta                                  | Geschw. 1, Kraft 1, Motivation 0.5     | 1x A w/m, 2x Kinder w/m, 4x A w/m                         |
-| Verbandsregatta I                              | Technik 1.5, Geschw. 1, Motivation 0.5 | 1x Kinder w/m, 2x B w/m, 4x A w/m                         |
-| Regatta Schillerschule                         | Geschw. 1, Technik 1, Motivation 0.5   | 1x A w/m, 2x Kinder w/m, Kinder-Vierer (gemischt), 4x B w |
-| Verbandsregatta II                             | Technik 1.5, Geschw. 1, Motivation 0.5 | 1x B w/m, 2x A w/m, 4x B m, 1x Kinder w                   |
-| JTFO                                           | Geschw. 1, Technik 1                   | team competition, see 4.4                                 |
-| RVH-Herbstsprintregatta (Sprint)               | Geschw. 2, Kraft 1                     | 1x/2x/4x × Mädchen/Jungen, all ages (6)                   |
-| RVB-Endspurtregatta (Sprint)                   | Geschw. 2, Technik 1, Motivation 0.5   | Mixed-Vierer, Mixed-Achter (shared eight)                 |
+| Competition                                    | Weights                              | Races                                                     |
+| ---------------------------------------------- | ------------------------------------ | --------------------------------------------------------- |
+| Hildesheimer Regatta (Langstrecke)             | Ausdauer 2, Motivation 1             | 1x and 2x × A/B × Mädchen/Jungen (8), loan boats          |
+| Mindor-Cup, DRC-Ergo-Cup, Osnabrücker Ergo-Cup | Kraft 2, Motivation 1                | Ergometer × Kinder/B/A × Mädchen/Jungen (6), no boat      |
+| Regatta Bremen                                 | Geschw. 1, Technik 1, Motivation 1   | 1x B w/m, 2x A w/m, 4x B w/m                              |
+| Kasselregatta                                  | Geschw. 1, Kraft 1, Motivation 1     | 1x A w/m, 2x Kinder w/m, 4x A w/m                         |
+| Verbandsregatta I                              | Technik 1.5, Geschw. 1, Motivation 1 | 1x Kinder w/m, 2x B w/m, 4x A w/m                         |
+| Regatta Schillerschule                         | Geschw. 1, Technik 1, Motivation 1   | 1x A w/m, 2x Kinder w/m, Kinder-Vierer (gemischt), 4x B w |
+| Verbandsregatta II                             | Technik 1.5, Geschw. 1, Motivation 1 | 1x B w/m, 2x A w/m, 4x B m, 1x Kinder w                   |
+| JTFO                                           | Geschw. 1, Technik 1, Motivation 1   | team competition, see 4.4                                 |
+| RVH-Herbstsprintregatta (Sprint)               | Geschw. 2, Kraft 1, Motivation 1     | 1x/2x/4x × Mädchen/Jungen, all ages (6)                   |
+| RVB-Endspurtregatta (Sprint)                   | Geschw. 2, Technik 1, Motivation 1   | Mixed-Vierer, Mixed-Achter (shared eight)                 |
+
+Motivation counts with weight 1 in **every** competition (designer rule; data validation enforces a
+Motivation weight > 0).
 
 Every class (1x/2x/4x × age × gender) appears at least once in the five regular regattas. The
 Kinder-Vierer is open to both genders (there are only 5 Kinder boys).
@@ -196,8 +218,8 @@ index + guestOffset of the competition` (Kinder 15, B 19, A 23, growth 0.3 per s
   but it never scores points. At JTFO one guest team (sum of the guest boats) joins the team
   ranking only.
 - `guestOffset` per competition evens out how hard the guests are (the bots' training concentrates
-  on the stats of the next competitions): Hildesheim −4, Mindor-Cup +1.5, DRC-Ergo-Cup +5.5,
-  Osnabrücker Ergo-Cup +6, Bremen −2.5, Verbandsregatta I −3.5, RVH −1.5, others 0.
+  on the stats of the next competitions): Hildesheim −4.5, Mindor-Cup +1, DRC-Ergo-Cup +5,
+  Osnabrücker Ergo-Cup +5.5, Bremen −2.5, Verbandsregatta I −3.5, RVH −1.5, others 0.
 - Guest scores are deterministic, so players (and bots) can compute them in advance.
 
 ## 5. Events (§12)
@@ -210,9 +232,9 @@ index + guestOffset of the competition` (Kinder 15, B 19, A 23, growth 0.3 per s
 | Event                                                     |  Weight | Effect                                                                                                       |
 | --------------------------------------------------------- | ------: | ------------------------------------------------------------------------------------------------------------ |
 | Wetter-Event                                              |       8 | The rower's boat +4 at water regattas when the weather is not Normal                                         |
-| Wachstum                                                  |       8 | Best stat (current; ties → first in display order) +2 at every training and camp                             |
+| Wachstum                                                  |       8 | Best stat except Motivation (current; ties → first in display order) +2 at every training and camp           |
 | Phönix                                                    |      10 | Weakest stat +5 immediately (ties drawn at random)                                                           |
-| Tausch                                                    |       8 | The player may swap two stat values of this rower once (or skip)                                             |
+| Tausch                                                    |       8 | The player may swap two stat values (not Motivation) of this rower once (or skip)                            |
 | Verdopplung                                               |       5 | Current best stat doubled once, permanent (ties drawn at random)                                             |
 | Kraft/Ausdauer/Geschwindigkeits/Technik/Motivations-Event | 10 each | +8 on that stat                                                                                              |
 | Seelenzwilling                                            |       5 | New rower card "<Name> (Zwilling)", same age/gender, 80 % of the current stats (rounded); can't get an event |
@@ -244,7 +266,7 @@ everyone. Immediate effects apply at once; the others wait until the next matchi
 | --------------------- | ------------------------------------------------------------------------ |
 | Trainerstreik         | Next regular training: 5 points                                          |
 | Doppeltraining        | Next regular training: 15 points                                         |
-| Maschsee-Monster      | Next water regatta: Krebs probability 30 %                               |
+| Maschsee-Monster      | Next water regatta: Krebs probability 30 % (`value` 300 ‰)               |
 | Grippewelle           | Immediately: one random rower per team −5 Motivation                     |
 | Vereinsfest           | Immediately: every rower +1 Motivation                                   |
 | Neue Ergometer        | Next Ergo-Cup: Kraft weight 3                                            |
@@ -315,3 +337,33 @@ Known limits: 2-player games still average ~42 points (4 players ~30), because t
 for 3 players. Krebs (−10) is now small against entry totals of 60–550 and could be scaled per
 seat. Boat draft picks are ~50 % of all picks because an extra boat also allows an extra entry
 (players start with one boat per class).
+
+### 10.1 Rule pass: loan boats, rare incidents, untrainable Motivation
+
+Designer rules: Hildesheim races get loan boats (4.1), incidents in per mille with capsizes by boat
+size (4.2), Motivation can't be trained and counts with weight 1 everywhere (3, 4.3). Rebalanced
+`guestOffset`: Hildesheim −4 → −4.5 (bots now also enter weaker crews there), Mindor-Cup
++1.5 → +1, DRC-Ergo-Cup +5.5 → +5, Osnabrücker Ergo-Cup +6 → +5.5 (Motivation is no longer trained,
+so players lost ground against the guests at the Ergo-Cups).
+
+Sim numbers, 1000 games, seed 1, 3 players (default personalities):
+
+| Metric                                                 | Before rule pass          | After                     |
+| ------------------------------------------------------ | ------------------------- | ------------------------- |
+| Final points mean (sd)                                 | 34.1 (4.8)                | 37.6 (5.3)                |
+| Final points min / p10 / median / p90 / max            | 18 / 28 / 34 / 40 / 52    | 19 / 31 / 37 / 45 / 57    |
+| Share of final scores in 15..40                        | 91.4 %                    | 71.6 %                    |
+| Winner minus last                                      | 9.1                       | 10.1                      |
+| Gold / silver per player and season                    | 10.4 / 13.3               | 11.5 / 14.6               |
+| Win rate Taktiker (1 vs 2 Bauchgefühl)                 | 41.0 %                    | 41.8 %                    |
+| Max seat win rate, all seats Taktiker (500 games)      | 34.9 % (38.3 % seed 5001) | 38.7 % (35.0 % seed 5001) |
+| Guest crew 1st / top 2 in contested races              | 49.6 % / 79.0 %           | 46.0 % / 74.2 %           |
+| Player entries per race; races with 0/1/2/3 entrants   | 2.2; 8 / 17 / 19 / 56 %   | 2.4; 5 / 13 / 21 / 62 %   |
+| Hildesheim: entries per race, guest 1st                | 0.75, 41.3 %              | 2.03, 39.4 %              |
+| Incidents per water entry (Kentern / Material / Krebs) | 5.0 / 10.1 / 16.9 %       | 1.3 / 3.1 / 16.7 %        |
+
+Scores rise because fewer boats capsize or break and Hildesheim now has about 2.7 times as many
+entries. The guests got weaker overall: the higher Motivation weight helps the players, who get +10
+Motivation from WR5 and Basketball. Only at the Ergo-Cups (Motivation weight unchanged, but no
+longer trainable) they got stronger, which the lower offsets undo. 2-player
+games now average 47 points (before 42), 4-player games 32 (before 30).

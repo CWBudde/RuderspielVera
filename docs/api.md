@@ -31,7 +31,8 @@ resolves and opens the next phase.
 - After the final RVB-Endspurt result: `gameover` with `winners`.
 - Draft: each pick is its own phase (new `phaseId`); no draft after the final competition.
 - Entries: `boatId` is empty for ergo races and the shared eight (`class: "8x"`), and may be empty
-  in races with `loanBoat: true` (JTFO: a loan boat is used).
+  in races with `loanBoat: true` (JTFO and Hildesheim: a loan boat is used; it is not an own boat,
+  so any number of entries may use one).
 - Engine errors: `engine.ErrStalePhase` → 409; `*engine.ValidationError` (German `Msg`) → 400.
 - Hidden info: other players' regatta decisions are never in a view before resolution.
 - Guest crews (Gastmannschaften, `rules.json` `guests`): every contested race has one extra
@@ -53,5 +54,9 @@ resolves and opens the next phase.
   with no matching station left, e.g. an ergo modifier after the last Ergo-Cup, is not shown).
 - **No nulls**: every non-`omitempty` slice/map in a view is serialized as `[]`/`{}` (e.g. a race
   without entries has `"entries": []`); fields marked optional in the TS types may be absent.
+- Saved games (`gameservice.Snapshot`: server files, WASM localStorage) carry a `version`. It is
+  bumped when a rule change makes old decision logs replay differently (2: per-mille incidents, no
+  Motivation training, Hildesheim loan boats). Importing an older version fails with a German
+  message ("Dieser Spielstand stammt aus einer älteren Spielversion …").
 - Bots: `internal/bot.Decide(g, playerID, personality, rng)` (`Taktiker` / `Bauchgefuehl`,
   `bot.PersonalityFor(seat)`); the bot RNG is separate from the game RNG.

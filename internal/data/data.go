@@ -84,7 +84,7 @@ type Ereignis struct {
 // Ereignis effect kinds.
 const (
 	EffTrainingPoints  = "training_points"
-	EffKrebsChance     = "krebs_chance"
+	EffKrebsChance     = "krebs_chance" // value: Krebs probability in per mille (‰)
 	EffRandomRowerMot  = "random_rower_motivation"
 	EffAllMotivation   = "all_motivation"
 	EffErgoKraftWeight = "ergo_kraft_weight"
@@ -171,15 +171,11 @@ type Rules struct {
 		Points    int `json:"points"`
 		MaxRowers int `json:"maxRowers"`
 	} `json:"camp"`
-	Selections map[string]Selection `json:"selections"`
-	Incidents  struct {
-		Kentern  int `json:"kentern"`
-		Material int `json:"material"`
-		Krebs    int `json:"krebs"`
-	} `json:"incidents"` // percent, mutually exclusive
-	KrebsPenalty         int      `json:"krebsPenalty"`
-	WeatherTable         []string `json:"weatherTable"` // d6 faces
-	EventCardsPerStation []int    `json:"eventCardsPerStation"`
+	Selections           map[string]Selection `json:"selections"`
+	Incidents            Incidents            `json:"incidents"`
+	KrebsPenalty         int                  `json:"krebsPenalty"`
+	WeatherTable         []string             `json:"weatherTable"` // d6 faces
+	EventCardsPerStation []int                `json:"eventCardsPerStation"`
 	Deal                 struct {
 		RowersPerAgeGroup int `json:"rowersPerAgeGroup"`
 		MinPerGender      int `json:"minPerGender"`
@@ -206,6 +202,19 @@ type Rules struct {
 	TrainerFactor   int    `json:"trainerFactor"`
 	Guests          Guests `json:"guests"`
 }
+
+// Incidents are the probabilities of the mutually exclusive water incidents in per mille (‰).
+// One d1000 per boat entry: Kentern first, then Materialschaden, then Krebs, else clean.
+type Incidents struct {
+	// KenternBySeats is the capsize probability by the boat's number of seats (1, 2, 4, 8):
+	// bigger crews capsize less often.
+	KenternBySeats map[int]int `json:"kenternBySeats"`
+	Material       int         `json:"material"`
+	Krebs          int         `json:"krebs"`
+}
+
+// Kentern is the capsize probability (‰) of a boat with the given number of seats.
+func (i Incidents) Kentern(seats int) int { return i.KenternBySeats[seats] }
 
 // BoatScale is how often a boat value counts in a race with the given number of seats.
 func (r Rules) BoatScale(seats int) int { return scale(r.BoatValuePerSeat, r.BoatValueFactor, seats) }

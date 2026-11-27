@@ -8,25 +8,39 @@ import (
 
 func validStat(s Stat) bool { return slices.Contains(AllStats, s) }
 
+// TrainableStats are the stats that training and camps may raise and that Tausch may swap.
+// Motivation is not trainable: it comes only from selections, gold medals, events and Ereignisse.
+//
+//nolint:gochecknoglobals // read-only stat list, like AllStats
+var TrainableStats = []Stat{StatKraft, StatAusdauer, StatSpeed, StatTechnik}
+
+// Trainable reports whether s may be trained (and swapped by Tausch).
+func Trainable(s Stat) bool { return slices.Contains(TrainableStats, s) }
+
 func (g *Game) validateTraining(pl *player, p *phase, allocs []TrainingAlloc) error {
 	total := 0
 	rowers := map[string]bool{}
 
-	for _, a := range allocs {
-		if pl.rower(a.RowerID) == nil {
-			return invalid("Der Ruderer %q gehört nicht zu deinem Team.", a.RowerID)
+	for _, alloc := range allocs {
+		if pl.rower(alloc.RowerID) == nil {
+			return invalid("Der Ruderer %q gehört nicht zu deinem Team.", alloc.RowerID)
 		}
 
-		if !validStat(a.Stat) {
-			return invalid("Unbekannte Eigenschaft %q.", a.Stat)
+		if !validStat(alloc.Stat) {
+			return invalid("Unbekannte Eigenschaft %q.", alloc.Stat)
 		}
 
-		if a.Points <= 0 {
+		if !Trainable(alloc.Stat) {
+			return invalid("Motivation kann man nicht trainieren. " +
+				"Sie steigt nur durch Auswahlen, Goldmedaillen, Events und Ereignisse.")
+		}
+
+		if alloc.Points <= 0 {
 			return invalid("Trainingspunkte müssen positiv sein.")
 		}
 
-		total += a.Points
-		rowers[a.RowerID] = true
+		total += alloc.Points
+		rowers[alloc.RowerID] = true
 	}
 
 	if total != p.points {
@@ -41,6 +55,7 @@ func (g *Game) validateTraining(pl *player, p *phase, allocs []TrainingAlloc) er
 }
 
 // applyTraining adds the points and then triggers Wachstum cards (every training incl. camps).
+// Wachstum raises the best trainable stat: it piggybacks on training, so never Motivation.
 func (g *Game) applyTraining(pl *player, allocs []TrainingAlloc) {
 	for _, a := range allocs {
 		pl.rower(a.RowerID).addStat(a.Stat, a.Points)
@@ -48,7 +63,7 @@ func (g *Game) applyTraining(pl *player, allocs []TrainingAlloc) {
 
 	for _, r := range pl.rowers {
 		if r.event != nil && r.event.def.Type == "wachstum" {
-			s := r.stats.bestStat()
+			s := r.stats.bestOf(TrainableStats)
 			r.addStat(s, r.event.def.Value)
 			g.addLog("event", pl.id, fmt.Sprintf("Wachstum: %s erhält +%d %s.", r.name, r.event.def.Value, statName(s)))
 		}

@@ -14,7 +14,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { ALL_STATS, STAT_LABEL } from "@/lib/labels";
+import { CORE_STATS, STAT_LABEL } from "@/lib/labels";
 import { cn } from "@/lib/utils";
 
 export function SwapPhase() {
@@ -60,12 +60,14 @@ export function SwapPhase() {
           <DialogHeader>
             <DialogTitle className="font-display text-2xl">Zwei Werte tauschen</DialogTitle>
             <DialogDescription>
-              {rower ? `Wähle zwei Werte von ${rower.name}. Sie tauschen ihre Zahlen.` : "Wähle zwei Werte."}
+              {rower
+                ? `Wähle zwei Werte von ${rower.name}. Sie tauschen ihre Zahlen. Motivation lässt sich nicht tauschen.`
+                : "Wähle zwei Werte."}
             </DialogDescription>
           </DialogHeader>
           {rower && (
             <ul className="flex flex-col gap-1.5" role="group" aria-label="Werte">
-              {ALL_STATS.map((s) => {
+              {CORE_STATS.map((s) => {
                 const on = pick.includes(s);
                 const other = pick.length === 2 && on ? pick.find((x) => x !== s) : undefined;
                 return (

@@ -4,7 +4,7 @@ import type { BoatView, CompetitionView, Entry, RaceSpec, RowerView, TrainerView
 import { useGame } from "@/hooks/game";
 import { PhaseFrame } from "@/components/PhaseFrame";
 import { Art } from "@/components/Art";
-import { AgeBadge, GenderMark, MiniStats } from "@/components/RowerCard";
+import { AgeBadge, GenderMark, MiniStats, SumTag } from "@/components/RowerCard";
 import { TrainerCard } from "@/components/GearCards";
 import { WeatherIcon, weatherTint, ShellIcon } from "@/components/icons";
 import { Button } from "@/components/ui/button";
@@ -672,6 +672,7 @@ function RowerPicker({
                       <span className="truncate num text-lg leading-none text-navy">{r.name}</span>
                       <AgeBadge age={r.age} short className="h-5 px-1.5 text-xs" />
                       <GenderMark gender={r.gender} className="size-5 text-[11px]" />
+                      <SumTag rower={r} className="ml-auto" />
                     </span>
                     {blocked ? (
                       <span className="mt-1 block truncate text-xs font-semibold">

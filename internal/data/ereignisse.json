@@ -20,7 +20,7 @@
     "name": "Maschsee-Monster",
     "weight": 10,
     "effect": "krebs_chance",
-    "value": 30,
+    "value": 300,
     "description": "Bei der nächsten Wasserregatta liegt die Krebs-Wahrscheinlichkeit bei 30 %."
   },
   {

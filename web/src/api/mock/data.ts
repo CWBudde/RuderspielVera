@@ -399,11 +399,11 @@ export const EVENT_DECK: { type: string; name: string; description: string; weig
   {
     type: "wachstum",
     name: "Wachstum",
-    description: "Bester Wert +2 bei jedem Training, auch im Trainingslager.",
+    description: "Bester Wert (außer Motivation) +2 bei jedem Training, auch im Trainingslager.",
     weight: 2,
   },
   { type: "phoenix", name: "Phönix", description: "Schwächster Wert sofort +5.", weight: 2 },
-  { type: "tausch", name: "Tausch", description: "Tausche zwei Werte dieses Ruderers.", weight: 2 },
+  { type: "tausch", name: "Tausch", description: "Tausche zwei Werte dieses Ruderers (nicht Motivation).", weight: 2 },
   {
     type: "verdopplung",
     name: "Verdopplung",
@@ -534,7 +534,7 @@ export function competitionFor(name: string, kind: StationType, rotation: number
     return {
       ...base,
       teamEvent: true,
-      weights: { geschwindigkeit: 1, technik: 1 },
+      weights: { geschwindigkeit: 1, motivation: 1, technik: 1 },
       races: [
         {
           ...race("jtfo-2x-1", "2x", ["b", "a"], ["w", "m"], false, "Schulteam Zweier I"),
@@ -559,7 +559,8 @@ export function competitionFor(name: string, kind: StationType, rotation: number
     const races: RaceSpec[] = [];
     for (const cls of ["1x", "2x"]) {
       for (const age of ["b", "a"] as AgeGroup[]) {
-        for (const g of ["w", "m"] as Gender[]) races.push(race(`hi-${cls}-${age}-${g}`, cls, [age], [g]));
+        for (const g of ["w", "m"] as Gender[])
+          races.push({ ...race(`hi-${cls}-${age}-${g}`, cls, [age], [g]), loanBoat: true, fixedBoatValue: 2 });
       }
     }
     return {
@@ -567,7 +568,7 @@ export function competitionFor(name: string, kind: StationType, rotation: number
       context: "langstrecke",
       weights: { ausdauer: 2, motivation: 1 },
       races,
-      notes: ["Langstrecke: Ausdauer zählt doppelt."],
+      notes: ["Langstrecke: Fehlt ein freies eigenes Boot, wird ein Leihboot (Wert 2) gestellt."],
     };
   }
   if (name === "RVH-Herbstsprint") {
@@ -578,7 +579,7 @@ export function competitionFor(name: string, kind: StationType, rotation: number
     return {
       ...base,
       context: "sprint",
-      weights: { geschwindigkeit: 2, kraft: 1 },
+      weights: { geschwindigkeit: 2, kraft: 1, motivation: 1 },
       races,
       notes: ["Sprint: Altersklassen gemischt."],
     };
@@ -586,7 +587,7 @@ export function competitionFor(name: string, kind: StationType, rotation: number
   if (name === "RVB-Endspurt") {
     return {
       ...base,
-      weights: { geschwindigkeit: 2, technik: 1, motivation: 0.5 },
+      weights: { geschwindigkeit: 2, technik: 1, motivation: 1 },
       races: [
         race("rvb-4x", "4x", ["kinder", "b", "a"], ["w", "m"], true, "Mixed-Vierer"),
         race("rvb-8x", "8x", ["kinder", "b", "a"], ["w", "m"], true, "Mixed-Achter"),
@@ -598,10 +599,10 @@ export function competitionFor(name: string, kind: StationType, rotation: number
     };
   }
   const weights: Record<string, number> = name.startsWith("Verbandsregatta")
-    ? { technik: 1.5, geschwindigkeit: 1, motivation: 0.5 }
+    ? { technik: 1.5, geschwindigkeit: 1, motivation: 1 }
     : name === "Kasselregatta"
-      ? { geschwindigkeit: 1, kraft: 1, motivation: 0.5 }
-      : { geschwindigkeit: 1, technik: 1, motivation: 0.5 };
+      ? { geschwindigkeit: 1, kraft: 1, motivation: 1 }
+      : { geschwindigkeit: 1, technik: 1, motivation: 1 };
   const races: RaceSpec[] = [];
   for (let i = 0; i < 6; i++) {
     const [cls, age, g] = MATRIX[(rotation + i * 3) % MATRIX.length];

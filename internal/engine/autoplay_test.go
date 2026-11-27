@@ -25,7 +25,7 @@ func autoDecision(g *Game, pid string, rng *rand.Rand) Decision {
 		var keys [][2]string
 
 		for range pv.Points {
-			k := [2]string{ids[rng.IntN(len(ids))], string(AllStats[rng.IntN(len(AllStats))])}
+			k := [2]string{ids[rng.IntN(len(ids))], string(TrainableStats[rng.IntN(len(TrainableStats))])}
 			if alloc[k] == 0 {
 				keys = append(keys, k)
 			}

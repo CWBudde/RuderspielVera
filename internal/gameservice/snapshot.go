@@ -8,8 +8,10 @@ import (
 	"ruderspiel/internal/engine"
 )
 
-// SnapshotVersion is bumped when the snapshot format changes incompatibly.
-const SnapshotVersion = 1
+// SnapshotVersion is bumped when the snapshot format changes incompatibly or when a rule change
+// makes old decision logs replay differently (2: per-mille incidents, no Motivation training,
+// Hildesheim loan boats, Motivation weight 1 everywhere).
+const SnapshotVersion = 2
 
 // Snapshot is everything needed to rebuild a game with engine.Replay: config (incl. seed),
 // tokens and the decision log. It is the on-disk file of the HTTP server and the localStorage
@@ -68,6 +70,12 @@ func (s *Service) Export(gameID string) (Snapshot, error) {
 // It does not call the store. Bots are not run: a snapshot is always saved after the bots
 // handed control back, so replaying it yields a game that waits on a human (or is over).
 func (s *Service) Import(snap Snapshot) (string, error) {
+	if snap.Version > 0 && snap.Version < SnapshotVersion {
+		return "", newError(StatusBadRequest,
+			"Dieser Spielstand stammt aus einer älteren Spielversion mit anderen Regeln und kann nicht "+
+				"mehr geladen werden. Bitte starte ein neues Spiel.")
+	}
+
 	if snap.Version != SnapshotVersion {
 		return "", newError(StatusBadRequest, fmt.Sprintf("Unbekanntes Spielstand-Format (Version %d).", snap.Version))
 	}

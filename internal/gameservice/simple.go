@@ -25,7 +25,7 @@ func SimpleDecider(g *engine.Game, playerID string, _ int, rng *mrand.Rand) (eng
 	case engine.PhaseTraining:
 		if len(rowers) > 0 && pv.Points > 0 {
 			r := rowers[rng.IntN(len(rowers))]
-			stat := engine.AllStats[rng.IntN(len(engine.AllStats))]
+			stat := engine.TrainableStats[rng.IntN(len(engine.TrainableStats))]
 			dec.Training = []engine.TrainingAlloc{{RowerID: r.ID, Stat: stat, Points: pv.Points}}
 		}
 	case engine.PhaseSelection:

@@ -44,6 +44,35 @@ export function GenderMark({ gender, className }: { gender: string; className?: 
   );
 }
 
+/** Summe: all five stats incl. Motivation (the Regelwerk's rank), plus optional preview points. */
+export function statSum(r: RowerView, preview?: Partial<Record<Stat, number>>): number {
+  return ALL_STATS.reduce((t, s) => t + (r.stats[s] ?? 0) + (preview?.[s] ?? 0), 0);
+}
+
+/** Compact "Summe 87" tag for list rows; with add > 0 it shows the change, e.g. "Summe 87 → 92". */
+export function SumTag({ rower, add = 0, className }: { rower: RowerView; add?: number; className?: string }) {
+  const sum = statSum(rower);
+  return (
+    <span
+      className={cn(
+        "inline-flex shrink-0 items-baseline gap-1 text-[11px] font-bold whitespace-nowrap text-muted-foreground",
+        className,
+      )}
+      aria-label={add > 0 ? `Summe ${sum}, nach dem Training ${sum + add}` : `Summe ${sum}`}
+      title="Summe aller fünf Werte"
+    >
+      Summe
+      <span className="num text-base leading-none text-ink">{sum}</span>
+      {add > 0 && (
+        <>
+          <span aria-hidden>→</span>
+          <span className="num text-base leading-none text-leaf">{sum + add}</span>
+        </>
+      )}
+    </span>
+  );
+}
+
 export function gain(r: RowerView, s: Stat): number {
   return (r.stats[s] ?? 0) - (r.base?.[s] ?? r.stats[s] ?? 0);
 }
@@ -68,6 +97,8 @@ interface RowerCardProps {
 export function RowerCard({ rower, className, preview }: RowerCardProps) {
   const val = (s: Stat) => (rower.stats[s] ?? 0) + (preview?.[s] ?? 0);
   const g = (s: Stat) => gain(rower, s) + (preview?.[s] ?? 0);
+  const sum = statSum(rower, preview);
+  const sumGain = ALL_STATS.reduce((t, s) => t + g(s), 0);
   return (
     <article
       className={cn("@container rounded-[18px] bg-cream p-1.5 cut", className)}
@@ -136,6 +167,16 @@ export function RowerCard({ rower, className, preview }: RowerCardProps) {
           </span>
         </div>
       </div>
+      <div
+        className="flex items-baseline justify-between gap-1 px-1.5 pt-1 font-display text-xs font-bold italic @[15rem]:text-sm"
+        title="Summe aller fünf Werte"
+      >
+        <span>Summe</span>
+        <span className="flex items-baseline gap-0.5 num text-lg leading-none not-italic @[15rem]:text-xl">
+          <Gain n={sumGain} />
+          {sum}
+        </span>
+      </div>
     </article>
   );
 }
@@ -165,6 +206,7 @@ export function RowerRow({
           <AgeBadge age={rower.age} short className="h-5 px-1.5 text-xs" />
           <GenderMark gender={rower.gender} className="size-5 text-[11px]" />
           {rower.event && <Sparkles className="size-4 shrink-0 text-[#c2507a]" aria-label={rower.event.name} />}
+          <SumTag rower={rower} className="ml-auto" />
         </div>
         <MiniStats rower={rower} highlight={highlight} />
       </div>

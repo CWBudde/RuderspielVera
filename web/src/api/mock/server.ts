@@ -40,7 +40,7 @@ import {
   splitStats,
 } from "./data";
 import { boatPart, crewScore, isEligible, needsBoat, trainerBonus, trainerPart } from "@/lib/score";
-import { ALL_STATS, STAT_LABEL } from "@/lib/labels";
+import { ALL_STATS, CORE_STATS, STAT_LABEL } from "@/lib/labels";
 
 export type Step = "main" | "swap" | "result" | "draft" | "gameover";
 
@@ -338,7 +338,7 @@ function applyTraining(s: MockState, p: PlayerSummary, allocs: { rowerId: string
     const r = p.rowers.find((x) => x.id === a.rowerId);
     if (r) addStat(r, a.stat, a.points);
   }
-  for (const r of p.rowers) if (r.event?.type === "wachstum") addStat(r, bestStat(r), 2);
+  for (const r of p.rowers) if (r.event?.type === "wachstum") addStat(r, bestStat(r, CORE_STATS), 2);
   void s;
 }
 
@@ -347,7 +347,7 @@ function botTraining(rng: Rng, p: PlayerSummary, points: number, maxRowers: numb
   const chosen = rng.shuffle([...p.rowers]).slice(0, Math.min(maxRowers, p.rowers.length));
   for (let i = 0; i < points; i++) {
     const r = rng.pick(chosen);
-    allocs.push({ rowerId: r.id, stat: rng.pick(ALL_STATS), points: 1 });
+    allocs.push({ rowerId: r.id, stat: rng.pick(CORE_STATS), points: 1 });
   }
   return allocs;
 }
@@ -357,6 +357,8 @@ function validateTraining(s: MockState, d: Decision, p: PlayerSummary) {
   const allocs = d.training ?? [];
   const sum = allocs.reduce((a, x) => a + x.points, 0);
   if (allocs.some((a) => a.points < 0)) throw new MockError(400, "Negative Trainingspunkte sind nicht erlaubt.");
+  if (allocs.some((a) => a.points > 0 && !CORE_STATS.includes(a.stat)))
+    throw new MockError(400, "Motivation kann man nicht trainieren.");
   if (sum !== points) throw new MockError(400, `Bitte genau ${points} Punkte verteilen (verteilt: ${sum}).`);
   const rowers = new Set(allocs.filter((a) => a.points > 0).map((a) => a.rowerId));
   if (station(s).type === "camp" && rowers.size > 5) throw new MockError(400, "Im Trainingslager höchstens 5 Ruderer.");
@@ -465,7 +467,8 @@ function rankEntries(entries: EntryResult[]): EntryResult[] {
 function resolveCompetition(s: MockState, yours: Lineup) {
   const comp = currentCompetition(s);
   const water = comp.kind !== "ergocup";
-  const krebsMax = consumeEreignis(s, "Maschsee-Monster") ? 45 : 30;
+  // Per mille, mirrors rules.json incidents: Kentern by boat size, Material, Krebs (Maschsee-Monster 300 ‰).
+  const krebs = consumeEreignis(s, "Maschsee-Monster") ? 300 : 150;
   const renovation = comp.kind === "regatta" && consumeEreignis(s, "Renovierung");
   if (comp.kind === "ergocup") consumeEreignis(s, "Neue Ergometer");
   const lineups = new Map<string, Lineup>();
@@ -499,10 +502,11 @@ function resolveCompetition(s: MockState, yours: Lineup) {
           place: 0,
         };
         if (water) {
-          const roll = rng.int(1, 100);
-          if (roll <= 5) res.incident = "kentern";
-          else if (roll <= 15) res.incident = "material";
-          else if (roll <= krebsMax) {
+          const kentern = ({ 1: 20, 2: 10, 4: 5, 8: 2 } as Record<number, number>)[race.seats] ?? 0;
+          const roll = rng.int(1, 1000);
+          if (roll <= kentern) res.incident = "kentern";
+          else if (roll <= kentern + 30) res.incident = "material";
+          else if (roll <= kentern + 30 + krebs) {
             res.incident = "krebs";
             res.penalty = 10;
           }
@@ -964,7 +968,7 @@ export function jump(s: MockState, target: JumpTarget) {
       const t = s.calendar[i].type;
       for (const p of s.players) {
         if (t === "training" || t === "camp") {
-          for (let k = 0; k < (t === "camp" ? 30 : 10); k++) addStat(rng.pick(p.rowers), rng.pick(ALL_STATS), 1);
+          for (let k = 0; k < (t === "camp" ? 30 : 10); k++) addStat(rng.pick(p.rowers), rng.pick(CORE_STATS), 1);
         }
         if (t === "regatta" || t === "ergocup") {
           p.gold += rng.int(0, 2);

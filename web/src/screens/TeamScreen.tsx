@@ -1,9 +1,9 @@
 import { useState } from "react";
-import { LayoutGrid, List } from "lucide-react";
+import { ArrowDownWideNarrow, LayoutGrid, List } from "lucide-react";
 import type { RowerView } from "@/api/types.gen";
 import { useGame } from "@/hooks/game";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { RowerCard, RowerRow } from "@/components/RowerCard";
+import { RowerCard, RowerRow, statSum } from "@/components/RowerCard";
 import { BoatCard, TrainerCard } from "@/components/GearCards";
 import { AGE_ORDER, playerColor } from "@/lib/labels";
 import { readStorage, writeStorage } from "@/lib/storage";
@@ -18,7 +18,14 @@ export function sortRowers(rowers: RowerView[]): RowerView[] {
   );
 }
 
+/** Strongest first by Summe (all five stats), then the usual age/gender/name order. */
+function sortBySum(rowers: RowerView[]): RowerView[] {
+  const base = sortRowers(rowers);
+  return base.sort((a, b) => statSum(b) - statSum(a));
+}
+
 const MODE_KEY = "ruderspiel.teamMode";
+const SORT_KEY = "ruderspiel.teamSort";
 
 export const tabListClass =
   "h-auto w-full rounded-xl border-2 border-ink bg-cream-2 p-1 group-data-[orientation=horizontal]/tabs:h-auto";
@@ -29,8 +36,14 @@ export function TeamScreen() {
   const { view } = useGame();
   const [playerId, setPlayerId] = useState(view.you);
   const [mode, setMode] = useState<"cards" | "list">(() => (readStorage(MODE_KEY) === "list" ? "list" : "cards"));
+  const [sort, setSort] = useState<"age" | "sum">(() => (readStorage(SORT_KEY) === "sum" ? "sum" : "age"));
   const p = view.players.find((x) => x.id === playerId) ?? view.players[0];
-  const rowers = sortRowers(p.rowers ?? []);
+  const rowers = sort === "sum" ? sortBySum(p.rowers ?? []) : sortRowers(p.rowers ?? []);
+
+  const switchSort = (s: "age" | "sum") => {
+    setSort(s);
+    writeStorage(SORT_KEY, s);
+  };
 
   const switchMode = (m: "cards" | "list") => {
     setMode(m);
@@ -75,7 +88,34 @@ export function TeamScreen() {
         </TabsList>
 
         <TabsContent value="rowers" className="mt-2">
-          <div className="mb-2 flex justify-end">
+          <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
+            <div
+              className="inline-flex items-center rounded-xl border-2 border-ink bg-cream p-0.5"
+              role="radiogroup"
+              aria-label="Sortierung"
+            >
+              <ArrowDownWideNarrow className="mx-1.5 size-4 text-ink/60" aria-hidden />
+              {(
+                [
+                  ["age", "Alter"],
+                  ["sum", "Summe"],
+                ] as const
+              ).map(([s, label]) => (
+                <button
+                  key={s}
+                  type="button"
+                  role="radio"
+                  aria-checked={sort === s}
+                  onClick={() => switchSort(s)}
+                  className={cn(
+                    "inline-flex min-h-10 items-center rounded-lg px-3 text-sm font-bold",
+                    sort === s ? "bg-navy text-white" : "text-ink/70",
+                  )}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
             <div
               className="inline-flex rounded-xl border-2 border-ink bg-cream p-0.5"
               role="radiogroup"

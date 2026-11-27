@@ -87,12 +87,13 @@ func (g *Game) enterStation(i int) {
 	case StationTraining:
 		pts := g.consumeTrainingPoints()
 		p := g.newPhase(PhaseTraining, stageNone, all, "Training",
-			fmt.Sprintf("Verteile genau %d Trainingspunkte auf deine Ruderer.", pts))
+			fmt.Sprintf("Verteile genau %d Trainingspunkte auf deine Ruderer. Motivation lässt sich nicht trainieren.", pts))
 		p.points = pts
 	case StationCamp:
 		c := g.d.Rules.Camp
 		p := g.newPhase(PhaseTraining, stageNone, all, st.Name,
-			fmt.Sprintf("Trainingslager: Verteile genau %d Trainingspunkte auf höchstens %d Ruderer.", c.Points, c.MaxRowers))
+			fmt.Sprintf("Trainingslager: Verteile genau %d Trainingspunkte auf höchstens %d Ruderer. "+
+				"Motivation lässt sich nicht trainieren.", c.Points, c.MaxRowers))
 		p.points, p.maxRowers = c.Points, c.MaxRowers
 	case StationSelection:
 		sel := g.d.Rules.Selections[st.Selection]

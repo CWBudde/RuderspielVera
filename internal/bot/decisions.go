@@ -149,7 +149,7 @@ func (b *brain) training(points, maxRowers int) []engine.TrainingAlloc {
 				continue
 			}
 
-			for _, s := range engine.AllStats {
+			for _, s := range engine.TrainableStats {
 				v := b.gain(ol, r.ID, engine.Stats{s: 1})
 				if v > bestV {
 					bestV, bestR, bestS = v, r.ID, s
@@ -246,8 +246,8 @@ func (b *brain) swap(rowerID string) *[2]engine.Stat {
 	base := value(rw.Stats)
 	best, bestV := (*[2]engine.Stat)(nil), base+0.5
 
-	for i, s1 := range engine.AllStats {
-		for _, s2 := range engine.AllStats[i+1:] {
+	for i, s1 := range engine.TrainableStats {
+		for _, s2 := range engine.TrainableStats[i+1:] {
 			st := engine.Stats{}
 			maps.Copy(st, rw.Stats)
 

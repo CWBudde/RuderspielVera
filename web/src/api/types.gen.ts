@@ -143,7 +143,8 @@ export interface RaceSpec {
   mixed: boolean; // requires >=1 girl, >=1 boy, >=2 age groups
   seats: number /* int */;
   /**
-   * LoanBoat: boatId may be empty; a loan boat (rules.json loanBoatValue) is used instead (JTFO).
+   * LoanBoat: boatId may be empty; a loan boat (rules.json loanBoatValue) is used instead (JTFO,
+   * Hildesheim). A loan boat is not an own boat, so it never counts against one start per boat.
    */
   loanBoat?: boolean;
   /**

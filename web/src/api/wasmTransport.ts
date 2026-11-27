@@ -35,6 +35,8 @@ const LOAD_ERROR = "Die Spiel-Engine konnte nicht geladen werden. Bitte die Seit
 
 let loading: Promise<WasmApi> | null = null;
 const imported = new Set<string>();
+/** Why a stored game could not be restored (e.g. a save from an older rules version), by game ID. */
+const importErrors = new Map<string, string>();
 
 /** URL of a file in public/. VITE_WASM_VERSION (content hash, set by `just pages`) busts caches:
  * ruderspiel.wasm and wasm_exec.js have fixed names, and a stale engine breaks saved games. */
@@ -133,6 +135,7 @@ async function ready(gameId?: string): Promise<WasmApi> {
         unwrap(api.importGame(raw));
       } catch (err) {
         console.warn("stored game could not be restored", err); // getView then reports 404
+        if (err instanceof ApiError) importErrors.set(gameId, err.message);
       }
     }
   }
@@ -150,7 +153,14 @@ export const wasmBackend: Backend = {
   },
   async getGame(s: Session) {
     const api = await ready(s.gameId);
-    return unwrap<GameView>(api.getView(s.gameId, s.token));
+    try {
+      return unwrap<GameView>(api.getView(s.gameId, s.token));
+    } catch (err) {
+      // The game is unknown because its save could not be restored: show the reason instead.
+      const reason = importErrors.get(s.gameId);
+      if (reason && err instanceof ApiError && err.status === 404) throw new ApiError(404, reason);
+      throw err;
+    }
   },
   async submitDecision(s: Session, d: Decision) {
     const api = await ready(s.gameId);

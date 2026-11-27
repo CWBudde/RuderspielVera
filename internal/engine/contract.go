@@ -186,7 +186,8 @@ type RaceSpec struct {
 	Genders []Gender   `json:"genders"` // allowed genders (any of)
 	Mixed   bool       `json:"mixed"`   // requires >=1 girl, >=1 boy, >=2 age groups
 	Seats   int        `json:"seats"`
-	// LoanBoat: boatId may be empty; a loan boat (rules.json loanBoatValue) is used instead (JTFO).
+	// LoanBoat: boatId may be empty; a loan boat (rules.json loanBoatValue) is used instead (JTFO,
+	// Hildesheim). A loan boat is not an own boat, so it never counts against one start per boat.
 	LoanBoat bool `json:"loanBoat,omitempty"`
 
 	// Scoring hints for client-side estimates (set in competition views):

@@ -16,7 +16,7 @@ type compState struct {
 	races       []RaceSpec
 	weights     map[Stat]float64
 	weather     Weather // "" for ergo cups
-	krebsPct    int
+	krebs       int     // Krebs probability in per mille
 	cityBoatMod int
 	notes       []string
 }
@@ -58,7 +58,7 @@ func (g *Game) openCompetition() {
 
 	cs := &compState{
 		def: def, station: g.station, name: st.Name, weights: map[Stat]float64{},
-		krebsPct: g.d.Rules.Incidents.Krebs, notes: slices.Clone(def.Notes),
+		krebs: g.d.Rules.Incidents.Krebs, notes: slices.Clone(def.Notes),
 	}
 	for _, r := range g.d.RacesFor(def, len(g.players)) {
 		cs.races = append(cs.races, raceSpec(r))
@@ -80,8 +80,8 @@ func (g *Game) openCompetition() {
 		}
 
 		for _, e := range g.takePending(data.EffKrebsChance) {
-			cs.krebsPct = e.Value
-			cs.notes = append(cs.notes, fmt.Sprintf("%s: Krebs-Wahrscheinlichkeit %d %%.", e.Name, e.Value))
+			cs.krebs = e.Value
+			cs.notes = append(cs.notes, fmt.Sprintf("%s: Krebs-Wahrscheinlichkeit %s %%.", e.Name, perMilleText(e.Value)))
 		}
 
 		for _, e := range g.takePending(data.EffCityBoatMod) {
@@ -320,7 +320,9 @@ func (g *Game) scoreRace(p *phase, race RaceSpec) RaceResult {
 	for _, re := range g.raceEntries(p, race.ID) {
 		er := g.scoreEntry(cs, race, re)
 		if cs.def.Water {
-			er.Incident = rollIncident(g.rng, g.d.Rules.Incidents.Kentern, g.d.Rules.Incidents.Material, cs.krebsPct)
+			inc := g.d.Rules.Incidents
+
+			er.Incident = rollIncident(g.rng, inc.Kentern(race.Seats), inc.Material, cs.krebs)
 			if er.Incident == IncidentKrebs {
 				er.Penalty = g.d.Rules.KrebsPenalty
 				er.Total -= er.Penalty

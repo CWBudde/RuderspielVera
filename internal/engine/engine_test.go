@@ -220,23 +220,46 @@ func TestGoldMotivation(t *testing.T) {
 func TestIncidentDistribution(t *testing.T) {
 	t.Parallel()
 
-	const n = 200000
+	const n = 400000
 	counts := map[IncidentKind]int{}
 
 	for seed := range uint64(20) {
 		rng := newRNG(seed)
 		for range n / 20 {
-			counts[rollIncident(rng, 5, 10, 15)]++
+			counts[rollIncident(rng, 20, 30, 150)]++
 		}
 	}
 
 	want := map[IncidentKind]float64{
-		IncidentKentern: 0.05, IncidentMaterial: 0.10, IncidentKrebs: 0.15, IncidentNone: 0.70,
+		IncidentKentern: 0.02, IncidentMaterial: 0.03, IncidentKrebs: 0.15, IncidentNone: 0.80,
 	}
 	for k, p := range want {
 		got := float64(counts[k]) / n
-		if got < p-0.005 || got > p+0.005 {
-			t.Errorf("%q: %.4f, want %.2f ± 0.005", k, got, p)
+		if got < p-0.003 || got > p+0.003 {
+			t.Errorf("%q: %.4f, want %.3f ± 0.003", k, got, p)
+		}
+	}
+}
+
+func TestIncidentRules(t *testing.T) {
+	t.Parallel()
+
+	inc := newGame(t, 3).d.Rules.Incidents
+	want := map[int]int{1: 20, 2: 10, 4: 5, 8: 2}
+
+	for seats, k := range want {
+		if got := inc.Kentern(seats); got != k {
+			t.Errorf("Kentern(%d) = %d ‰, want %d ‰", seats, got, k)
+		}
+	}
+
+	if inc.Material != 30 || inc.Krebs != 150 {
+		t.Errorf("material %d ‰, krebs %d ‰, want 30 / 150", inc.Material, inc.Krebs)
+	}
+
+	for v, s := range map[int]string{300: "30", 150: "15", 5: "0,5", 2: "0,2"} {
+		if got := perMilleText(v); got != s {
+			t.Errorf("perMilleText(%d) = %q, want %q", v, got, s)
 		}
 	}
 }
@@ -286,6 +309,7 @@ func TestValidateEntries(t *testing.T) {
 	rvb := compFor(g, "rvb", WeatherNormal)
 	ergo := compFor(g, "mindor", "")
 	jtfo := compFor(g, "jtfo", WeatherNormal)
+	kassel := compFor(g, "kassel", WeatherNormal)
 
 	tests := []struct {
 		name    string
@@ -320,7 +344,13 @@ func TestValidateEntries(t *testing.T) {
 			{RaceID: "1x-a-w", RowerIDs: []string{"aw2"}, BoatID: b1},
 		}, "nur eine Meldung"},
 		{"wrong boat class", hild, tr, []Entry{{RaceID: "1x-a-w", RowerIDs: []string{"aw1"}, BoatID: b2}}, "Klasse 1x"},
-		{"missing boat", hild, tr, []Entry{{RaceID: "1x-a-w", RowerIDs: []string{"aw1"}}}, "Wähle ein Boot"},
+		{"missing boat", kassel, tr, []Entry{{RaceID: "1x-a-w", RowerIDs: []string{"aw1"}}}, "Wähle ein Boot"},
+		{"hildesheim loan boats", hild, tr, []Entry{
+			{RaceID: "1x-a-w", RowerIDs: []string{"aw1"}, BoatID: b1},
+			{RaceID: "1x-a-m", RowerIDs: []string{"am1"}},
+			{RaceID: "2x-a-w", RowerIDs: []string{"aw2", "bw1"}, BoatID: b2},
+			{RaceID: "2x-b-m", RowerIDs: []string{"bm1", "km1"}},
+		}, ""},
 		{"foreign boat", hild, tr, []Entry{{RaceID: "1x-a-w", RowerIDs: []string{"aw1"}, BoatID: "ice-man"}}, "gehört nicht"},
 		{"foreign rower", hild, tr, []Entry{
 			{RaceID: "1x-a-w", RowerIDs: []string{"michel-a"}, BoatID: b1},
@@ -403,6 +433,10 @@ func TestValidateTraining(t *testing.T) {
 		{"too many", training, []TrainingAlloc{alloc("aw1", StatKraft, 11)}, "genau 10"},
 		{"negative", training, []TrainingAlloc{alloc("aw1", StatKraft, 12), alloc("aw2", StatKraft, -2)}, "positiv"},
 		{"bad stat", training, []TrainingAlloc{alloc("aw1", "magie", 10)}, "Unbekannte Eigenschaft"},
+		{"motivation", training, []TrainingAlloc{
+			alloc("aw1", StatKraft, 9), alloc("aw1", StatMotivation, 1),
+		}, "Motivation kann man nicht trainieren"},
+		{"camp motivation", camp, []TrainingAlloc{alloc("aw1", StatMotivation, 30)}, "Motivation kann man nicht trainieren"},
 		{"foreign rower", training, []TrainingAlloc{alloc("michel-a", StatKraft, 10)}, "gehört nicht"},
 		{"camp five rowers", camp, []TrainingAlloc{
 			alloc("aw1", StatKraft, 6), alloc("aw2", StatKraft, 6), alloc("am1", StatKraft, 6),
@@ -510,6 +544,16 @@ func TestEventEffects(t *testing.T) {
 			t.Errorf("wachstum: technik %d, want 14", r.stats[StatTechnik])
 		}
 	})
+	t.Run("wachstum skips motivation", func(t *testing.T) {
+		r := pl.rower("kw1")
+		r.stats = Stats{StatKraft: 8, StatAusdauer: 10, StatSpeed: 9, StatTechnik: 12, StatMotivation: 30}
+		g.applyEvent(pl, r, ev("wachstum"))
+		g.applyTraining(pl, []TrainingAlloc{{RowerID: "aw1", Stat: StatKraft, Points: 10}})
+
+		if r.stats[StatTechnik] != 14 || r.stats[StatMotivation] != 30 {
+			t.Errorf("wachstum: technik %d, motivation %d, want 14 / 30", r.stats[StatTechnik], r.stats[StatMotivation])
+		}
+	})
 	t.Run("tausch queues a swap phase", func(t *testing.T) {
 		rw := pl.rower("kw2")
 		rw.stats = Stats{StatKraft: 8, StatAusdauer: 10, StatSpeed: 9, StatTechnik: 12, StatMotivation: 9}
@@ -531,6 +575,11 @@ func TestEventEffects(t *testing.T) {
 		err := g.Submit(pl.id, Decision{PhaseID: pv.ID, Kind: PhaseEventSwap, Swap: &[2]Stat{StatKraft, StatKraft}})
 		if err == nil {
 			t.Errorf("same-stat swap accepted")
+		}
+
+		err = g.Submit(pl.id, Decision{PhaseID: pv.ID, Kind: PhaseEventSwap, Swap: &[2]Stat{StatMotivation, StatTechnik}})
+		if err == nil || !strings.Contains(err.Error(), "Motivation") {
+			t.Errorf("motivation swap: %v", err)
 		}
 
 		err = g.Submit(pl.id, Decision{PhaseID: pv.ID, Kind: PhaseEventSwap, Swap: &[2]Stat{StatKraft, StatTechnik}})

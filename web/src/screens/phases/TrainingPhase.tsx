@@ -4,10 +4,10 @@ import type { RowerView, Stat, TrainingAlloc } from "@/api/types.gen";
 import { useGame } from "@/hooks/game";
 import { PhaseFrame } from "@/components/PhaseFrame";
 import { Art } from "@/components/Art";
-import { AgeBadge, GenderMark, MiniStats } from "@/components/RowerCard";
+import { AgeBadge, GenderMark, MiniStats, SumTag } from "@/components/RowerCard";
 import { StatBadge } from "@/components/icons";
 import { Button } from "@/components/ui/button";
-import { ALL_STATS, STAT_LABEL } from "@/lib/labels";
+import { ALL_STATS, CORE_STATS, STAT_LABEL } from "@/lib/labels";
 import { cn } from "@/lib/utils";
 import { sortRowers } from "@/screens/TeamScreen";
 
@@ -167,6 +167,7 @@ function TrainRow({
             <span className="truncate num text-lg leading-none text-navy">{rower.name}</span>
             <AgeBadge age={rower.age} short className="h-5 px-1.5 text-xs" />
             <GenderMark gender={rower.gender} className="size-5 text-[11px]" />
+            <SumTag rower={rower} add={total} className="ml-auto" />
           </div>
           <MiniStats rower={preview} className={cn(open && "max-lg:hidden", "lg:hidden")} />
         </div>
@@ -176,7 +177,7 @@ function TrainRow({
         <ChevronDown className={cn("size-5 shrink-0 transition-transform lg:hidden", open && "rotate-180")} />
       </button>
       <div className={cn("border-t-2 border-ink/10 px-2 pt-1 pb-2", open ? "block" : "hidden", "lg:block")}>
-        {ALL_STATS.map((s) => {
+        {CORE_STATS.map((s) => {
           const n = alloc[s] ?? 0;
           return (
             <div key={s} className="flex items-center gap-2 py-0.5">
@@ -209,6 +210,15 @@ function TrainRow({
             </div>
           );
         })}
+        <div className="flex items-center gap-2 py-0.5">
+          <StatBadge stat="motivation" className="size-7" />
+          <span className="min-w-0 flex-1 text-sm font-semibold">
+            {STAT_LABEL.motivation}
+            <span className="block text-xs font-normal text-muted-foreground">nicht trainierbar</span>
+          </span>
+          <span className="w-14 text-right num text-xl tabular-nums">{rower.stats.motivation ?? 0}</span>
+          <span className="w-[5.75rem]" aria-hidden />
+        </div>
       </div>
     </li>
   );
