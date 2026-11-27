@@ -1,0 +1,20 @@
+[
+  {"id": "gold-einer", "text": "{name} gewinnt Gold im Einer.", "rewardText": "+10 auf die beste Eigenschaft",
+   "condition": {"type": "medal", "medal": "gold", "class": "1x"}, "reward": {"type": "stat", "value": 10}},
+  {"id": "gold-vierer", "text": "{name} gewinnt Gold im Vierer.", "rewardText": "+1 Medaillenpunkt",
+   "condition": {"type": "medal", "medal": "gold", "class": "4x"}, "reward": {"type": "points", "value": 1}},
+  {"id": "gold-ergo", "text": "{name} gewinnt Gold bei einem Ergo-Cup.", "rewardText": "+1 Medaillenpunkt",
+   "condition": {"type": "medal", "medal": "gold", "kind": "ergocup"}, "reward": {"type": "points", "value": 1}},
+  {"id": "gold-vor-jtfo", "text": "{name} gewinnt Gold vor JTFO.", "rewardText": "+1 Medaillenpunkt",
+   "condition": {"type": "medal", "medal": "gold", "before": "jtfo"}, "reward": {"type": "points", "value": 1}},
+  {"id": "medaille", "text": "{name} gewinnt eine Medaille (Gold oder Silber).", "rewardText": "+10 auf die beste Eigenschaft",
+   "condition": {"type": "medal", "medal": "any"}, "reward": {"type": "stat", "value": 10}},
+  {"id": "schlechtwetter-gold", "text": "{name} gewinnt Gold bei Regen, Hitze, Wind oder Kälte.", "rewardText": "+10 auf die beste Eigenschaft",
+   "condition": {"type": "medal", "medal": "gold", "badWeather": true}, "reward": {"type": "stat", "value": 10}},
+  {"id": "drei-starts", "text": "{name} startet bei 3 weiteren Wettkämpfen.", "rewardText": "+10 auf die beste Eigenschaft",
+   "condition": {"type": "starts", "count": 3}, "reward": {"type": "stat", "value": 10}},
+  {"id": "jtfo-medaille", "text": "{name} holt mit dem Team bei JTFO eine Medaille.", "rewardText": "+1 Medaillenpunkt",
+   "condition": {"type": "medal", "medal": "any", "competition": "jtfo"}, "reward": {"type": "points", "value": 1}},
+  {"id": "endspurt-gold", "text": "{name} gewinnt Gold bei der RVB-Endspurtregatta.", "rewardText": "+1 Medaillenpunkt",
+   "condition": {"type": "medal", "medal": "gold", "competition": "rvb"}, "reward": {"type": "points", "value": 1}}
+]

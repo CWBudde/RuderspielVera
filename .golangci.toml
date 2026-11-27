@@ -1,0 +1,90 @@
+version = '2'
+
+# Linter set adapted from MeKo-Tech/ewws-render: everything on, minus the
+# noisy or project-irrelevant linters below.
+#
+# exhaustruct stays disabled: the engine builds large view/contract structs
+# (GameView, RegattaView, ...) where zero values are intended defaults, so
+# demanding every field be set would flag nearly every literal.
+[linters]
+default = 'all'
+disable = [
+  'depguard',
+  'exhaustive',
+  'exhaustruct',
+  'exhaustruct_v5',
+  'godox',
+  'gomodguard',
+  'ireturn',
+  'mnd',
+  'musttag',
+  'nlreturn',
+  'sqlclosecheck',
+  'wsl',
+]
+enable = ['gomodguard_v2', 'wsl_v5']
+
+[linters.settings]
+[linters.settings.tagliatelle]
+[linters.settings.tagliatelle.case]
+[linters.settings.tagliatelle.case.rules]
+json = 'camel'
+
+[linters.settings.varnamelen]
+ignore-names = ['ok', 'id', 'mw', 'rt', 'db', 'tx']
+ignore-decls = ['w http.ResponseWriter', 'r *http.Request', 'g *Game']
+
+[linters.settings.wsl_v5]
+allow-first-in-block = true
+allow-whole-block = false
+branch-max-lines = 2
+disable = ['decl']
+
+[linters.exclusions]
+generated = 'lax'
+presets = ['comments', 'common-false-positives', 'legacy', 'std-error-handling']
+paths = ['third_party$', 'builtin$', 'examples$', 'web$', 'art$']
+
+[[linters.exclusions.rules]]
+linters = ['gosec']
+text = 'G601:'
+
+# The game uses seeded, deterministic math/rand on purpose (replays, sims);
+# crypto randomness would break reproducibility.
+[[linters.exclusions.rules]]
+linters = ['gosec']
+text = 'G404:'
+
+[[linters.exclusions.rules]]
+linters = ['gochecknoglobals', 'gochecknoinits']
+path = 'cmd/.*\.go'
+
+[[linters.exclusions.rules]]
+linters = ['err113', 'wrapcheck']
+path = 'cmd/.*\.go'
+
+# Static game data (stat names, effect tables, embedded JSON cache) is
+# package-level by design.
+[[linters.exclusions.rules]]
+linters = ['gochecknoglobals']
+path = 'internal/data/.*\.go'
+
+[severity]
+default = 'warn'
+
+[[severity.rules]]
+linters = ['exhaustive', 'exhaustruct', 'exhaustruct_v5', 'godox']
+severity = 'info'
+
+[formatters]
+enable = ['gci', 'gofumpt', 'goimports']
+
+[formatters.settings.gci]
+sections = ['standard', 'default', 'prefix(ruderspiel)']
+
+[formatters.settings.goimports]
+local-prefixes = ['ruderspiel']
+
+[formatters.exclusions]
+generated = 'lax'
+paths = ['third_party$', 'builtin$', 'examples$', 'web$', 'art$']

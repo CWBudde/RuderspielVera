@@ -1,0 +1,65 @@
+[
+  {"id": "s1-setup", "section": 1, "type": "setup", "name": "Spielvorbereitung", "info": "Startkarten werden verteilt."},
+  {"id": "s1-training", "section": 1, "type": "training", "name": "Training", "info": "Trainingspunkte auf die eigenen Ruderer verteilen."},
+  {"id": "s1-hildesheim", "section": 1, "type": "regatta", "name": "Hildesheimer Regatta", "competition": "hildesheim", "info": "Langstrecke: Ausdauer zählt doppelt."},
+
+  {"id": "s2-event", "section": 2, "type": "event", "name": "Event", "info": "Eventkarten für einzelne Ruderer."},
+  {"id": "s2-training", "section": 2, "type": "training", "name": "Training", "info": "Trainingspunkte auf die eigenen Ruderer verteilen."},
+  {"id": "s2-ereignis", "section": 2, "type": "ereignis", "name": "Ereignis", "info": "Eine allgemeine Überraschung für alle."},
+  {"id": "s2-mindor", "section": 2, "type": "ergocup", "name": "Mindor-Cup", "competition": "mindor", "info": "Ergo-Cup: Kraft zählt doppelt."},
+
+  {"id": "s3-event", "section": 3, "type": "event", "name": "Event", "info": "Eventkarten für einzelne Ruderer."},
+  {"id": "s3-wr5", "section": 3, "type": "selection", "name": "Winterruder-Fünfkampf (WR5)", "selection": "wr5", "info": "Fünf Ruderer wählen: je +10 Motivation."},
+  {"id": "s3-training", "section": 3, "type": "training", "name": "Training", "info": "Trainingspunkte auf die eigenen Ruderer verteilen."},
+  {"id": "s3-ereignis", "section": 3, "type": "ereignis", "name": "Ereignis", "info": "Eine allgemeine Überraschung für alle."},
+  {"id": "s3-drc", "section": 3, "type": "ergocup", "name": "DRC-Ergo-Cup", "competition": "drc", "info": "Ergo-Cup: Kraft zählt doppelt."},
+
+  {"id": "s4-event", "section": 4, "type": "event", "name": "Event", "info": "Eventkarten für einzelne Ruderer."},
+  {"id": "s4-training", "section": 4, "type": "training", "name": "Training", "info": "Trainingspunkte auf die eigenen Ruderer verteilen."},
+  {"id": "s4-ereignis", "section": 4, "type": "ereignis", "name": "Ereignis", "info": "Eine allgemeine Überraschung für alle."},
+  {"id": "s4-osnabrueck", "section": 4, "type": "ergocup", "name": "Osnabrücker Ergo-Cup", "competition": "osnabrueck", "info": "Ergo-Cup: Kraft zählt doppelt."},
+
+  {"id": "s5-event", "section": 5, "type": "event", "name": "Event", "info": "Eventkarten für einzelne Ruderer."},
+  {"id": "s5-basketball", "section": 5, "type": "selection", "name": "Basketballturnier", "selection": "basketball", "info": "Fünf Ruderer wählen: je +10 Motivation."},
+  {"id": "s5-training", "section": 5, "type": "training", "name": "Training", "info": "Trainingspunkte auf die eigenen Ruderer verteilen."},
+  {"id": "s5-ereignis", "section": 5, "type": "ereignis", "name": "Ereignis", "info": "Eine allgemeine Überraschung für alle."},
+  {"id": "s5-hankensbuettel", "section": 5, "type": "camp", "name": "Trainingslager Hankensbüttel", "info": "30 Trainingspunkte auf höchstens 5 Ruderer."},
+  {"id": "s5-bremen", "section": 5, "type": "regatta", "name": "Regatta Bremen", "competition": "bremen", "info": "Geschwindigkeit und Technik."},
+
+  {"id": "s6-event", "section": 6, "type": "event", "name": "Event", "info": "Eventkarten für einzelne Ruderer."},
+  {"id": "s6-training", "section": 6, "type": "training", "name": "Training", "info": "Trainingspunkte auf die eigenen Ruderer verteilen."},
+  {"id": "s6-ereignis", "section": 6, "type": "ereignis", "name": "Ereignis", "info": "Eine allgemeine Überraschung für alle."},
+  {"id": "s6-kassel-camp", "section": 6, "type": "camp", "name": "Trainingslager Kassel", "info": "30 Trainingspunkte auf höchstens 5 Ruderer."},
+  {"id": "s6-kassel", "section": 6, "type": "regatta", "name": "Kasselregatta", "competition": "kassel", "info": "Geschwindigkeit und Kraft."},
+
+  {"id": "s7-event", "section": 7, "type": "event", "name": "Event", "info": "Eventkarten für einzelne Ruderer."},
+  {"id": "s7-training", "section": 7, "type": "training", "name": "Training", "info": "Trainingspunkte auf die eigenen Ruderer verteilen."},
+  {"id": "s7-ereignis", "section": 7, "type": "ereignis", "name": "Ereignis", "info": "Eine allgemeine Überraschung für alle."},
+  {"id": "s7-vr1", "section": 7, "type": "regatta", "name": "Verbandsregatta I", "competition": "vr1", "info": "Technik zählt besonders."},
+
+  {"id": "s8-event", "section": 8, "type": "event", "name": "Event", "info": "Eventkarten für einzelne Ruderer."},
+  {"id": "s8-wanderfahrt", "section": 8, "type": "selection", "name": "Wanderfahrt", "selection": "wanderfahrt", "info": "Fünf Ruderer wählen: je +4 Ausdauer und +3 Motivation."},
+  {"id": "s8-training", "section": 8, "type": "training", "name": "Training", "info": "Trainingspunkte auf die eigenen Ruderer verteilen."},
+  {"id": "s8-ereignis", "section": 8, "type": "ereignis", "name": "Ereignis", "info": "Eine allgemeine Überraschung für alle."},
+  {"id": "s8-schillerschule", "section": 8, "type": "regatta", "name": "Regatta Schillerschule", "competition": "schillerschule", "info": "Geschwindigkeit und Technik."},
+
+  {"id": "s9-event", "section": 9, "type": "event", "name": "Event", "info": "Eventkarten für einzelne Ruderer."},
+  {"id": "s9-training", "section": 9, "type": "training", "name": "Training", "info": "Trainingspunkte auf die eigenen Ruderer verteilen."},
+  {"id": "s9-ereignis", "section": 9, "type": "ereignis", "name": "Ereignis", "info": "Eine allgemeine Überraschung für alle."},
+  {"id": "s9-vr2", "section": 9, "type": "regatta", "name": "Verbandsregatta II", "competition": "vr2", "info": "Technik zählt besonders."},
+
+  {"id": "s10-event", "section": 10, "type": "event", "name": "Event", "info": "Eventkarten für einzelne Ruderer."},
+  {"id": "s10-training", "section": 10, "type": "training", "name": "Training", "info": "Trainingspunkte auf die eigenen Ruderer verteilen."},
+  {"id": "s10-ereignis", "section": 10, "type": "ereignis", "name": "Ereignis", "info": "Eine allgemeine Überraschung für alle."},
+  {"id": "s10-jtfo", "section": 10, "type": "jtfo", "name": "Jugend trainiert für Olympia", "competition": "jtfo", "info": "Teamwettkampf: alle Boote zählen zusammen."},
+
+  {"id": "s11-event", "section": 11, "type": "event", "name": "Event", "info": "Eventkarten für einzelne Ruderer."},
+  {"id": "s11-training", "section": 11, "type": "training", "name": "Training", "info": "Trainingspunkte auf die eigenen Ruderer verteilen."},
+  {"id": "s11-ereignis", "section": 11, "type": "ereignis", "name": "Ereignis", "info": "Eine allgemeine Überraschung für alle."},
+  {"id": "s11-rvh", "section": 11, "type": "regatta", "name": "RVH-Herbstsprintregatta", "competition": "rvh", "info": "Sprint: Geschwindigkeit zählt doppelt, Altersklassen gemischt."},
+
+  {"id": "s12-event", "section": 12, "type": "event", "name": "Event", "info": "Eventkarten für einzelne Ruderer."},
+  {"id": "s12-training", "section": 12, "type": "training", "name": "Training", "info": "Trainingspunkte auf die eigenen Ruderer verteilen."},
+  {"id": "s12-ereignis", "section": 12, "type": "ereignis", "name": "Ereignis", "info": "Eine allgemeine Überraschung für alle."},
+  {"id": "s12-rvb", "section": 12, "type": "regatta", "name": "RVB-Endspurtregatta", "competition": "rvb", "info": "Saisonfinale: Mixed-Vierer und Mixed-Achter."}
+]

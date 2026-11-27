@@ -1,0 +1,303 @@
+// Package data holds the embedded, hand-editable rule data of Ruderspiel (cards, calendar,
+// competitions and all tunable numbers) and loads it into validated, typed structs.
+//
+// The structs use plain strings for enums so this package does not depend on the engine; the
+// engine converts them into its contract types.
+package data
+
+import (
+	"embed"
+	"encoding/json"
+	"fmt"
+	"sync"
+)
+
+//go:embed *.json
+var files embed.FS
+
+// Stat names (keys in stat maps).
+var StatNames = []string{"kraft", "ausdauer", "geschwindigkeit", "technik", "motivation"}
+
+// Rower is one starting rower card.
+type Rower struct {
+	ID        string         `json:"id"`
+	Name      string         `json:"name"`
+	Age       string         `json:"age"`    // kinder | b | a
+	Gender    string         `json:"gender"` // w | m
+	Archetype string         `json:"archetype"`
+	Rank      int            `json:"rank"` // sum of the five starting stats
+	Stats     map[string]int `json:"stats"`
+	ArtKey    string         `json:"artKey"`
+}
+
+// Boat is a boat card. City boats are templates; the engine gives every player one copy each.
+type Boat struct {
+	ID     string `json:"id"`
+	Name   string `json:"name"`
+	Class  string `json:"class"` // 1x | 2x | 4x | 8x
+	Value  int    `json:"value"`
+	Group  string `json:"group"` // city | standard | premium | shared
+	City   bool   `json:"city,omitempty"`
+	Shared bool   `json:"shared,omitempty"` // the identical RVB eight
+	ArtKey string `json:"artKey"`
+}
+
+// TrainerEffect applies per boat / ergo entry when weather and context match (empty = any).
+type TrainerEffect struct {
+	Weather string `json:"weather,omitempty"`
+	Context string `json:"context,omitempty"`
+	Value   int    `json:"value"`
+}
+
+type Trainer struct {
+	ID          string          `json:"id"`
+	Name        string          `json:"name"`
+	Gender      string          `json:"gender"`
+	Ability     string          `json:"ability"`
+	Description string          `json:"description"`
+	Effects     []TrainerEffect `json:"effects"`
+	ArtKey      string          `json:"artKey"`
+}
+
+// EventType is one of the 12 personal event card types (Regelwerk §12.2).
+type EventType struct {
+	Type        string `json:"type"`
+	Name        string `json:"name"`
+	Description string `json:"description"`
+	Weight      int    `json:"weight"`
+	Stat        string `json:"stat,omitempty"` // stat events only
+	Value       int    `json:"value"`
+}
+
+// Ereignis is a global modifier card.
+type Ereignis struct {
+	ID          string `json:"id"`
+	Name        string `json:"name"`
+	Description string `json:"description"`
+	Weight      int    `json:"weight"`
+	Effect      string `json:"effect"`
+	Weather     string `json:"weather,omitempty"`
+	Value       int    `json:"value"`
+}
+
+// Ereignis effect kinds.
+const (
+	EffTrainingPoints  = "training_points"
+	EffKrebsChance     = "krebs_chance"
+	EffRandomRowerMot  = "random_rower_motivation"
+	EffAllMotivation   = "all_motivation"
+	EffErgoKraftWeight = "ergo_kraft_weight"
+	EffSponsorPick     = "sponsor_pick"
+	EffForceWeather    = "force_weather"
+	EffNone            = "none"
+	EffCityBoatMod     = "city_boat_mod"
+)
+
+var ereignisEffects = map[string]bool{
+	EffTrainingPoints: true, EffKrebsChance: true, EffRandomRowerMot: true, EffAllMotivation: true,
+	EffErgoKraftWeight: true, EffSponsorPick: true, EffForceWeather: true, EffNone: true, EffCityBoatMod: true,
+}
+
+type MissionCondition struct {
+	Type        string `json:"type"`                  // medal | starts
+	Medal       string `json:"medal,omitempty"`       // gold | any
+	Class       string `json:"class,omitempty"`       // boat class filter
+	Kind        string `json:"kind,omitempty"`        // competition kind filter (regatta|ergocup|jtfo)
+	Competition string `json:"competition,omitempty"` // competition id filter
+	BadWeather  bool   `json:"badWeather,omitempty"`  // weather must not be normal
+	Count       int    `json:"count,omitempty"`       // starts
+	Before      string `json:"before,omitempty"`      // competition id deadline (exclusive)
+}
+
+type MissionReward struct {
+	Type  string `json:"type"` // stat | points
+	Value int    `json:"value"`
+}
+
+type Mission struct {
+	ID         string           `json:"id"`
+	Text       string           `json:"text"` // "{name}" is replaced by the rower's name
+	RewardText string           `json:"rewardText"`
+	Condition  MissionCondition `json:"condition"`
+	Reward     MissionReward    `json:"reward"`
+}
+
+// Station is one calendar step.
+type Station struct {
+	ID          string `json:"id"`
+	Section     int    `json:"section"`
+	Type        string `json:"type"`
+	Name        string `json:"name"`
+	Info        string `json:"info"`
+	Competition string `json:"competition,omitempty"`
+	Selection   string `json:"selection,omitempty"`
+}
+
+type Race struct {
+	ID       string   `json:"id"`
+	Name     string   `json:"name"`
+	Class    string   `json:"class"`
+	Ages     []string `json:"ages"`
+	Genders  []string `json:"genders"`
+	Mixed    bool     `json:"mixed,omitempty"`
+	Seats    int      `json:"seats"`
+	LoanBoat bool     `json:"loanBoat,omitempty"` // a loan boat is provided when no own boat is given
+}
+
+type Competition struct {
+	ID       string             `json:"-"`
+	Name     string             `json:"name"`
+	Kind     string             `json:"kind"` // regatta | ergocup | jtfo
+	Context  string             `json:"context,omitempty"`
+	Water    bool               `json:"water"`
+	Weights  map[string]float64 `json:"weights"`
+	Races    []Race             `json:"races,omitempty"`
+	Variants map[string][]Race  `json:"variants,omitempty"` // JTFO: variant key -> races
+	Notes    []string           `json:"notes,omitempty"`
+}
+
+type Selection struct {
+	Count  int            `json:"count"`
+	Effect map[string]int `json:"effect"`
+	Label  string         `json:"label"`
+}
+
+type Rules struct {
+	TrainingPoints int `json:"trainingPoints"`
+	Camp           struct {
+		Points    int `json:"points"`
+		MaxRowers int `json:"maxRowers"`
+	} `json:"camp"`
+	Selections map[string]Selection `json:"selections"`
+	Incidents  struct {
+		Kentern  int `json:"kentern"`
+		Material int `json:"material"`
+		Krebs    int `json:"krebs"`
+	} `json:"incidents"` // percent, mutually exclusive
+	KrebsPenalty         int      `json:"krebsPenalty"`
+	WeatherTable         []string `json:"weatherTable"` // d6 faces
+	EventCardsPerStation []int    `json:"eventCardsPerStation"`
+	Deal                 struct {
+		RowersPerAgeGroup int `json:"rowersPerAgeGroup"`
+		MinPerGender      int `json:"minPerGender"`
+		Trainers          int `json:"trainers"`
+	} `json:"deal"`
+	Draft struct {
+		ExtraOffer          int  `json:"extraOffer"`
+		TrainersFromSection int  `json:"trainersFromSection"`
+		AtLeastOneBoat      bool `json:"atLeastOneBoat"`
+	} `json:"draft"`
+	MedalPoints struct {
+		Gold   int `json:"gold"`
+		Silver int `json:"silver"`
+	} `json:"medalPoints"`
+	GoldMotivation int               `json:"goldMotivation"`
+	LoanBoatValue  int               `json:"loanBoatValue"`
+	JTFOVariants   map[string]string `json:"jtfoVariants"` // player count -> variant key
+}
+
+// Data is the complete, validated rule data set. Treat it as read-only.
+type Data struct {
+	Rowers       []Rower
+	Boats        []Boat
+	Trainers     []Trainer
+	Events       []EventType
+	Ereignisse   []Ereignis
+	Missions     []Mission
+	Calendar     []Station
+	Competitions map[string]*Competition
+	Rules        Rules
+}
+
+var (
+	loadOnce sync.Once
+	loaded   *Data
+	loadErr  error
+)
+
+// Load parses and validates the embedded data once and returns the shared, read-only result.
+func Load() (*Data, error) {
+	loadOnce.Do(func() { loaded, loadErr = parse() })
+	return loaded, loadErr
+}
+
+// MustLoad is Load for tests and tools; it panics on invalid data.
+func MustLoad() *Data {
+	d, err := Load()
+	if err != nil {
+		panic(err)
+	}
+	return d
+}
+
+func parse() (*Data, error) {
+	d := &Data{}
+	targets := []struct {
+		file string
+		v    any
+	}{
+		{"rowers.json", &d.Rowers},
+		{"boats.json", &d.Boats},
+		{"trainers.json", &d.Trainers},
+		{"events.json", &d.Events},
+		{"ereignisse.json", &d.Ereignisse},
+		{"missions.json", &d.Missions},
+		{"calendar.json", &d.Calendar},
+		{"competitions.json", &d.Competitions},
+		{"rules.json", &d.Rules},
+	}
+	for _, t := range targets {
+		raw, err := files.ReadFile(t.file)
+		if err != nil {
+			return nil, err
+		}
+		if err := json.Unmarshal(raw, t.v); err != nil {
+			return nil, fmt.Errorf("%s: %w", t.file, err)
+		}
+	}
+	for id, c := range d.Competitions {
+		c.ID = id
+	}
+	if err := d.Validate(); err != nil {
+		return nil, err
+	}
+	return d, nil
+}
+
+// Boat returns the boat with the given ID or nil.
+func (d *Data) Boat(id string) *Boat {
+	for i := range d.Boats {
+		if d.Boats[i].ID == id {
+			return &d.Boats[i]
+		}
+	}
+	return nil
+}
+
+// SharedBoat returns the shared RVB eight (or nil).
+func (d *Data) SharedBoat() *Boat {
+	for i := range d.Boats {
+		if d.Boats[i].Shared {
+			return &d.Boats[i]
+		}
+	}
+	return nil
+}
+
+// EventType returns the event type definition or nil.
+func (d *Data) EventType(t string) *EventType {
+	for i := range d.Events {
+		if d.Events[i].Type == t {
+			return &d.Events[i]
+		}
+	}
+	return nil
+}
+
+// RacesFor returns the races of a competition for the given number of players (JTFO variants).
+func (d *Data) RacesFor(c *Competition, players int) []Race {
+	if len(c.Variants) == 0 {
+		return c.Races
+	}
+	return c.Variants[d.Rules.JTFOVariants[fmt.Sprint(players)]]
+}

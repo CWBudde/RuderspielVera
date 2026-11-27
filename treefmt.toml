@@ -1,0 +1,73 @@
+# Formatter config for treefmt (https://treefmt.com). Run via `just fmt`.
+# Tool versions are pinned in `just setup-deps`.
+
+[global]
+excludes = [
+  # dependencies and build output
+  "web/node_modules/**",
+  "web/dist/**",
+  "bin/**",
+  # generated
+  "art/gen/**",
+  "web/src/api/types.gen.ts",
+  "web/pnpm-lock.yaml",
+  ".claude/skills/**/bin/**",
+  # reference material
+  "examples/**",
+  # misc
+  "go.sum",
+  "go.mod",
+  "**/.gitignore",
+  "**/*.txt",
+  "**/*.png",
+  "**/*.jpg",
+  "**/*.webp",
+  "**/*.svg",
+  "**/*.woff2",
+]
+
+### Web
+
+[formatter.prettier]
+command = "prettier"
+options = ["-w"]
+includes = [
+  "*.ts",
+  "*.tsx",
+  "*.js",
+  "*.css",
+  "*.html",
+  "*.json",
+  "*.md",
+  "*.yaml",
+  "*.yml",
+]
+
+### Go
+
+[formatter.gofumpt]
+command = "gofumpt"
+options = ["-w"]
+includes = ["*.go"]
+
+[formatter.gci]
+command = "gci"
+options = [
+  "write",
+  "--skip-generated",
+  "-s",
+  "standard",
+  "-s",
+  "default",
+  "-s",
+  "prefix(ruderspiel)",
+]
+includes = ["*.go"]
+priority = 1 # run after gofumpt
+
+### Shell
+
+[formatter.shfmt]
+command = "shfmt"
+options = ["-s", "-w"]
+includes = ["*.sh"]

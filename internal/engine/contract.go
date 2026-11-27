@@ -186,6 +186,8 @@ type RaceSpec struct {
 	Genders []Gender   `json:"genders"` // allowed genders (any of)
 	Mixed   bool       `json:"mixed"`   // requires >=1 girl, >=1 boy, >=2 age groups
 	Seats   int        `json:"seats"`
+	// LoanBoat: boatId may be empty; a loan boat (rules.json loanBoatValue) is used instead (JTFO).
+	LoanBoat bool `json:"loanBoat,omitempty"`
 }
 
 type CompetitionView struct {
@@ -272,6 +274,21 @@ type GameView struct {
 	ActiveEreignisse []string           `json:"activeEreignisse"`     // German texts of pending modifiers
 	Log              []LogEntry         `json:"log"`                  // newest last; may be truncated by API
 	Winners          []string           `json:"winners,omitempty"`    // set at game over (ties possible)
+}
+
+// ---------- catalog (static card data, GET /api/catalog) ----------
+
+type EventTypeView struct {
+	Type        string `json:"type"`
+	Name        string `json:"name"`
+	Description string `json:"description"`
+}
+
+type CatalogView struct {
+	Rowers   []RowerView     `json:"rowers"`
+	Boats    []BoatView      `json:"boats"`
+	Trainers []TrainerView   `json:"trainers"`
+	Events   []EventTypeView `json:"events"`
 }
 
 // ---------- decisions (client -> server) ----------

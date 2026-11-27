@@ -1,0 +1,32 @@
+name: format
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  treefmt:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-go@v7
+        with:
+          go-version-file: go.mod
+          cache-dependency-path: go.mod
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: "24"
+
+      - uses: extractions/setup-just@v4
+
+      - name: Install formatters
+        run: just setup-deps
+
+      - name: Check formatting
+        run: just fmt-check

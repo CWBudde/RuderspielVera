@@ -1,0 +1,19 @@
+{
+  "trainingPoints": 10,
+  "camp": {"points": 30, "maxRowers": 5},
+  "selections": {
+    "wr5": {"count": 5, "effect": {"motivation": 10}, "label": "+10 Motivation"},
+    "basketball": {"count": 5, "effect": {"motivation": 10}, "label": "+10 Motivation"},
+    "wanderfahrt": {"count": 5, "effect": {"ausdauer": 4, "motivation": 3}, "label": "+4 Ausdauer, +3 Motivation"}
+  },
+  "incidents": {"kentern": 5, "material": 10, "krebs": 15},
+  "krebsPenalty": 10,
+  "weatherTable": ["regen", "hitze", "wind", "kaelte", "normal", "normal"],
+  "eventCardsPerStation": [1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2],
+  "deal": {"rowersPerAgeGroup": 3, "minPerGender": 1, "trainers": 2},
+  "draft": {"extraOffer": 1, "trainersFromSection": 5, "atLeastOneBoat": true},
+  "medalPoints": {"gold": 2, "silver": 1},
+  "goldMotivation": 1,
+  "loanBoatValue": 2,
+  "jtfoVariants": {"2": "C", "3": "B", "4": "A"}
+}

@@ -1,0 +1,22 @@
+[
+  {"id": "trainerstreik", "name": "Trainerstreik", "weight": 10, "effect": "training_points", "value": 5,
+   "description": "Das nächste Training bringt nur 5 Trainingspunkte."},
+  {"id": "doppeltraining", "name": "Doppeltraining", "weight": 10, "effect": "training_points", "value": 15,
+   "description": "Das nächste Training bringt 15 Trainingspunkte."},
+  {"id": "maschsee-monster", "name": "Maschsee-Monster", "weight": 10, "effect": "krebs_chance", "value": 30,
+   "description": "Bei der nächsten Wasserregatta liegt die Krebs-Wahrscheinlichkeit bei 30 %."},
+  {"id": "grippewelle", "name": "Grippewelle", "weight": 10, "effect": "random_rower_motivation", "value": -5,
+   "description": "Sofort: Je Team verliert eine zufällige Person 5 Motivation."},
+  {"id": "vereinsfest", "name": "Vereinsfest", "weight": 10, "effect": "all_motivation", "value": 1,
+   "description": "Sofort: Alle Ruderer aller Teams erhalten +1 Motivation."},
+  {"id": "neue-ergometer", "name": "Neue Ergometer", "weight": 10, "effect": "ergo_kraft_weight", "value": 3,
+   "description": "Beim nächsten Ergo-Cup zählt Kraft dreifach."},
+  {"id": "sponsor", "name": "Sponsor", "weight": 10, "effect": "sponsor_pick", "value": 1,
+   "description": "Bei der nächsten Kartenauswahl darf das Team mit den wenigsten Medaillenpunkten eine Karte mehr wählen."},
+  {"id": "hitzewelle", "name": "Hitzewelle", "weight": 10, "effect": "force_weather", "weather": "hitze", "value": 0,
+   "description": "Bei der nächsten Wasserregatta herrscht garantiert Hitze."},
+  {"id": "ruhige-woche", "name": "Ruhige Woche", "weight": 10, "effect": "none", "value": 0,
+   "description": "Nichts Besonderes passiert."},
+  {"id": "bootshaus-renovierung", "name": "Bootshaus-Renovierung", "weight": 10, "effect": "city_boat_mod", "value": -1,
+   "description": "Bei der nächsten Wasserregatta haben städtische Boote 1 Punkt weniger."}
+]
