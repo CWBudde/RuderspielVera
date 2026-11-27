@@ -476,13 +476,13 @@ func TestIncidentRules(t *testing.T) {
 		}
 	}
 
-	if inc.Material != 30 || inc.Krebs != 150 {
-		t.Errorf("material %d ‰, krebs %d ‰, want 30 / 150", inc.Material, inc.Krebs)
+	if inc.Material != 30 || inc.Krebs != 75 {
+		t.Errorf("material %d ‰, krebs %d ‰, want 30 / 75", inc.Material, inc.Krebs)
 	}
 
 	ks := inc.KrebsScaling
-	if ks.TechnikPerSeat != 14 || ks.Min != 20 || ks.Max != 450 || ks.SeatPercent[1] != 100 || ks.SeatPercent[8] != 150 {
-		t.Errorf("krebsScaling %+v, want perSeat 14, min 20, max 450, 1x 100 %%, 8x 150 %%", ks)
+	if ks.TechnikPerSeat != 14 || ks.Min != 10 || ks.Max != 225 || ks.SeatPercent[1] != 100 || ks.SeatPercent[8] != 150 {
+		t.Errorf("krebsScaling %+v, want perSeat 14, min 10, max 225, 1x 100 %%, 8x 150 %%", ks)
 	}
 
 	for v, s := range map[int]string{300: "30", 150: "15", 5: "0,5", 2: "0,2"} {

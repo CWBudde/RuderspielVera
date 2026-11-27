@@ -32,8 +32,8 @@
     "weight": 10,
     "scope": "water",
     "effect": "krebs_chance",
-    "value": 300,
-    "description": "Bei der nächsten Wasserregatta liegt die Krebs-Wahrscheinlichkeit bei 30 %."
+    "value": 150,
+    "description": "Bei der nächsten Wasserregatta liegt die Krebs-Wahrscheinlichkeit bei 15 %."
   },
   {
     "id": "spiegelglatter-see",
@@ -41,8 +41,8 @@
     "weight": 10,
     "scope": "water",
     "effect": "krebs_chance",
-    "value": 50,
-    "description": "Kein Lüftchen, keine Welle: Bei der nächsten Wasserregatta liegt die Krebs-Wahrscheinlichkeit nur bei 5 %."
+    "value": 25,
+    "description": "Kein Lüftchen, keine Welle: Bei der nächsten Wasserregatta liegt die Krebs-Wahrscheinlichkeit nur bei 2,5 %."
   },
   {
     "id": "treibgut",

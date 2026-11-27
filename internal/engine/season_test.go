@@ -194,7 +194,7 @@ func TestCompetitionEreignisse(t *testing.T) {
 	})
 	t.Run("water modifiers", func(t *testing.T) {
 		cs := open("kassel", "treibgut", "spiegelglatter-see", "dauerregen", "bootshaus-renovierung", "rueckenwind")
-		if cs.material != 100 || cs.krebs != 50 || cs.weather != WeatherRegen || cs.cityBoatMod != -1 ||
+		if cs.material != 100 || cs.krebs != 25 || cs.weather != WeatherRegen || cs.cityBoatMod != -1 ||
 			cs.weights[StatSpeed] != 2 {
 			t.Errorf("cs %+v", cs)
 		}
