@@ -1333,3 +1333,32 @@ func mustJSON(tb testing.TB, v any) string {
 
 	return string(raw)
 }
+
+func TestSelectionAges(t *testing.T) {
+	t.Parallel()
+
+	g := newGame(t, 5)
+	pl := testPlayer(g) // 6 Junioren (A/B) and 3 Kinder
+	sel := g.d.Rules.Selections["wanderfahrt"]
+	p := &phase{count: sel.Count, selection: &sel}
+
+	if err := validateSelection(pl, p, []string{"aw1", "aw2", "am1", "bw1", "kw1"}); err == nil ||
+		!strings.Contains(err.Error(), "err.selectAge") {
+		t.Errorf("Kind accepted for the Wanderfahrt: %v", err)
+	}
+
+	if err := validateSelection(pl, p, []string{"aw1", "aw2", "am1", "bw1", "bm1"}); err != nil {
+		t.Errorf("five Junioren rejected: %v", err)
+	}
+
+	// With only three Junioren, exactly those three must go.
+	pl.rowers = pl.rowers[3:] // bw1, bm1, bm2, kw1, km1, kw2
+
+	if got := selectionWant(pl, p); got != 3 {
+		t.Errorf("want %d rowers, expected 3", got)
+	}
+
+	if err := validateSelection(pl, p, []string{"bw1", "bm1", "bm2"}); err != nil {
+		t.Errorf("all three Junioren rejected: %v", err)
+	}
+}

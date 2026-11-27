@@ -2,6 +2,8 @@ package engine
 
 import (
 	"slices"
+
+	"ruderspiel/internal/data"
 )
 
 func validStat(s Stat) bool { return slices.Contains(AllStats, s) }
@@ -115,13 +117,43 @@ func trainedPoints(allocs []TrainingAlloc, rowerID string) Stats {
 	return out
 }
 
+// selectionAllowed reports whether r may be picked for the selection (rules.json ages; empty =
+// everyone, e.g. the Wanderfahrt is for Junioren only).
+func selectionAllowed(sel *data.Selection, r *rower) bool {
+	return len(sel.Ages) == 0 || slices.Contains(sel.Ages, string(r.age))
+}
+
+// SelectionAllows reports whether a rower of age a may be picked in this selection phase.
+func (pv PhaseView) SelectionAllows(a AgeGroup) bool {
+	return len(pv.SelectionAges) == 0 || slices.Contains(pv.SelectionAges, a)
+}
+
+// selectionWant is the number of rowers pl must pick: the selection count, capped by the rowers
+// allowed to take part.
+func selectionWant(pl *player, p *phase) int {
+	n := 0
+
+	for _, r := range pl.rowers {
+		if selectionAllowed(p.selection, r) {
+			n++
+		}
+	}
+
+	return min(p.count, n)
+}
+
 func validateSelection(pl *player, p *phase, ids []string) error {
-	want := min(p.count, len(pl.rowers))
+	want := selectionWant(pl, p)
 	seen := map[string]bool{}
 
 	for _, id := range ids {
-		if pl.rower(id) == nil {
+		r := pl.rower(id)
+		if r == nil {
 			return invalid("err.rowerNotOwned", "rower", id)
+		}
+
+		if !selectionAllowed(p.selection, r) {
+			return invalid("err.selectAge", "rower", r.name)
 		}
 
 		if seen[id] {

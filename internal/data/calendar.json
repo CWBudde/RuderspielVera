@@ -203,7 +203,7 @@
     "type": "selection",
     "name": "Wanderfahrt",
     "selection": "wanderfahrt",
-    "info": "Fünf Ruderer wählen: je +4 Ausdauer und +3 Motivation."
+    "info": "Fünf Junioren wählen (keine Kinder): je +4 Ausdauer und +3 Motivation."
   },
   {
     "id": "s8-training",

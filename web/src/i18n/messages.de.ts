@@ -125,6 +125,7 @@ export const messagesDe = {
   "err.trainPositive": "Trainingspunkte müssen positiv sein.",
   "err.trainTotal": "Du musst genau {points} Trainingspunkte verteilen (verteilt: {total}).",
   "err.campMaxRowers": "Im Trainingslager dürfen höchstens {maxRowers} Ruderer trainieren (gewählt: {count}).",
+  "err.selectAge": "{rower} darf hier nicht teilnehmen (falsche Altersklasse).",
   "err.selectTwice": "Jeder Ruderer darf nur einmal ausgewählt werden.",
   "err.selectCount": "Wähle genau {want} Ruderer aus (gewählt: {count}).",
   "err.trainerNotOwned": "Dieser Trainer gehört nicht zu deinem Team.",

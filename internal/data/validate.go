@@ -468,6 +468,12 @@ func (d *Data) checkStationRefs(p *problems, s Station) {
 		if !ok || sel.Count <= 0 || len(sel.Effect) == 0 {
 			p.addf("station %s: bad selection %q", s.ID, s.Selection)
 		}
+
+		for _, a := range sel.Ages {
+			if !slices.Contains(validAges, a) {
+				p.addf("station %s: selection %q has bad age %q", s.ID, s.Selection, a)
+			}
+		}
 	}
 }
 

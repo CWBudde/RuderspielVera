@@ -219,6 +219,10 @@ func (b *brain) selection(count int) []string {
 
 	cs := make([]cand, 0, len(b.me.Rowers))
 	for _, r := range b.me.Rowers {
+		if len(sel.Ages) > 0 && !slices.Contains(sel.Ages, string(r.Age)) {
+			continue
+		}
+
 		cs = append(cs, cand{r.ID, b.gain(o, r.ID, delta)})
 	}
 

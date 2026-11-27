@@ -111,6 +111,7 @@ export const messagesEn: Record<keyof typeof messagesDe, string> = {
   "err.trainPositive": "Training points must be positive.",
   "err.trainTotal": "You must distribute exactly {points} training points (distributed: {total}).",
   "err.campMaxRowers": "At most {maxRowers} rowers may train at the training camp (chosen: {count}).",
+  "err.selectAge": "{rower} may not take part here (wrong age group).",
   "err.selectTwice": "Each rower may be picked only once.",
   "err.selectCount": "Pick exactly {want} rowers (picked: {count}).",
   "err.trainerNotOwned": "This coach is not on your team.",

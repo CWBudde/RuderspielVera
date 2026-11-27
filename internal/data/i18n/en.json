@@ -64,7 +64,7 @@
   "data.station.s8-event.name": "Event",
   "data.station.s8-event.info": "Event cards for individual rowers.",
   "data.station.s8-wanderfahrt.name": "Rowing Tour",
-  "data.station.s8-wanderfahrt.info": "Pick five rowers: +4 Endurance and +3 Motivation each.",
+  "data.station.s8-wanderfahrt.info": "Pick five juniors (no children): +4 Endurance and +3 Motivation each.",
   "data.station.s8-training.name": "Training",
   "data.station.s8-training.info": "Spread training points across your own rowers.",
   "data.station.s8-ereignis.name": "Happening",

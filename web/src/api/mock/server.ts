@@ -787,8 +787,13 @@ export function decide(s: MockState, d: Decision) {
     case "selection": {
       const ids = d.rowerIds ?? [];
       const count = view.phase.count ?? 5;
-      if (new Set(ids).size !== Math.min(count, you.rowers.length)) {
+      const ages = view.phase.selectionAges ?? [];
+      const allowed = (r: RowerView) => ages.length === 0 || ages.includes(r.age);
+      if (new Set(ids).size !== Math.min(count, you.rowers.filter(allowed).length)) {
         throw new MockError(400, `Bitte genau ${count} Ruderer auswählen.`);
+      }
+      if (ids.some((id) => !you.rowers.some((r) => r.id === id && allowed(r)))) {
+        throw new MockError(400, "Kinder dürfen hier nicht teilnehmen.");
       }
       const eff = selectionEffect(st.name);
       for (const id of ids) {
@@ -797,10 +802,7 @@ export function decide(s: MockState, d: Decision) {
       }
       withRng(s, (rng) => {
         for (const p of s.players.filter((x) => x.isBot))
-          rng
-            .shuffle([...p.rowers])
-            .slice(0, count)
-            .forEach(eff.apply);
+          rng.shuffle(p.rowers.filter(allowed)).slice(0, count).forEach(eff.apply);
       });
       advance(s);
       return;
@@ -907,6 +909,7 @@ function phaseFor(s: MockState): PhaseView {
         prompt: raw("Wähle genau 5 Ruderer aus, die mitmachen."),
         count: 5,
         selectionEffect: eff.text,
+        ...(st.name === "Wanderfahrt" ? { selectionAges: ["b", "a"] as AgeGroup[] } : {}),
       };
     }
     case "event":

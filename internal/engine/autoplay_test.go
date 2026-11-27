@@ -37,8 +37,11 @@ func autoDecision(g *Game, pid string, rng *rand.Rand) Decision {
 			dec.Training = append(dec.Training, TrainingAlloc{RowerID: k[0], Stat: Stat(k[1]), Points: alloc[k]})
 		}
 	case PhaseSelection:
-		ids := shuffledRowerIDs(pl, rng)
-		dec.RowerIDs = ids[:min(pv.Count, len(ids))]
+		for _, id := range shuffledRowerIDs(pl, rng) {
+			if len(dec.RowerIDs) < pv.Count && pv.SelectionAllows(pl.rower(id).age) {
+				dec.RowerIDs = append(dec.RowerIDs, id)
+			}
+		}
 	case PhaseEventSwap:
 		if rng.IntN(2) == 0 {
 			dec.Swap = &[2]Stat{StatKraft, StatTechnik}

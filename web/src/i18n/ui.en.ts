@@ -263,6 +263,7 @@ export const uiEn: Record<keyof typeof uiDe, string> = {
   "gameOver.newSeason": "New season",
   // Selection phase
   "selection.effect": "Effect: {effect}",
+  "selection.notAllowed": "May not take part here",
   "selection.ofPicked": "of {count} picked",
   // Swap phase
   "swap.skip": "Don't swap",

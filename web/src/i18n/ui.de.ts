@@ -261,6 +261,7 @@ export const uiDe = {
   "gameOver.newSeason": "Neue Saison",
   // Selection phase
   "selection.effect": "Wirkung: {effect}",
+  "selection.notAllowed": "Darf hier nicht teilnehmen",
   "selection.ofPicked": "von {count} gewählt",
   // Swap phase
   "swap.skip": "Nicht tauschen",

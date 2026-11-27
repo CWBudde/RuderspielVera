@@ -51,8 +51,10 @@ func randomDecider(g *engine.Game, pid string, rng *rand.Rand) (engine.Decision,
 			})
 		}
 	case engine.PhaseSelection:
-		for _, i := range rng.Perm(len(me.Rowers))[:min(pv.Count, len(me.Rowers))] {
-			dec.RowerIDs = append(dec.RowerIDs, me.Rowers[i].ID)
+		for _, i := range rng.Perm(len(me.Rowers)) {
+			if r := me.Rowers[i]; len(dec.RowerIDs) < pv.Count && pv.SelectionAllows(r.Age) {
+				dec.RowerIDs = append(dec.RowerIDs, r.ID)
+			}
 		}
 	case engine.PhaseRegatta:
 		if len(me.Trainers) > 0 {

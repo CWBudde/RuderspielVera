@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
 import { Check, Send, Sparkles } from "lucide-react";
+import type { RowerView } from "@/api/types.gen";
 import { useGame } from "@/hooks/game";
 import { PhaseFrame } from "@/components/PhaseFrame";
 import { RowerRow } from "@/components/RowerCard";
@@ -11,7 +12,10 @@ import { selectionEffect } from "@/i18n/data";
 
 export function SelectionPhase() {
   const { view, you, submit, submitting } = useGame();
-  const count = Math.min(view.phase.count ?? 5, you.rowers.length);
+  const ages = view.phase.selectionAges ?? [];
+  const allowed = (r: RowerView) => ages.length === 0 || ages.includes(r.age);
+  const eligible = you.rowers.filter(allowed).length;
+  const count = Math.min(view.phase.count ?? 5, eligible);
   const [picked, setPicked] = useState<string[]>([]);
   const rowers = useMemo(() => sortRowers(you.rowers), [you.rowers]);
   const full = picked.length >= count;
@@ -49,6 +53,7 @@ export function SelectionPhase() {
       <ul className="grid gap-2 lg:grid-cols-2">
         {rowers.map((r) => {
           const on = picked.includes(r.id);
+          const ok = allowed(r);
           return (
             <li key={r.id}>
               <button
@@ -56,7 +61,8 @@ export function SelectionPhase() {
                 role="checkbox"
                 aria-checked={on}
                 onClick={() => toggle(r.id)}
-                disabled={!on && full}
+                disabled={!ok || (!on && full)}
+                title={ok ? undefined : t("selection.notAllowed")}
                 className="w-full text-left disabled:opacity-50"
               >
                 <RowerRow

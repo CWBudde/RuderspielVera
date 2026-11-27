@@ -80,8 +80,8 @@ Go stdlib `net/http` ServeMux with method patterns; no framework.
 All marked as PoC assumptions; numbers live in `internal/data/rules.json`.
 
 **Calendar.** Exactly the 12 sections of Regelwerk §2.2 (52 stations). Hankensbüttel and Kassel =
-_Trainingslager_ (30 points, spread over at most 5 rowers, free split). Wanderfahrt = choose 5 rowers:
-+4 Ausdauer, +3 Motivation each. RVH-Herbstsprint and RVB-Endspurt are separate regattas; game ends
+_Trainingslager_ (30 points, spread over at most 5 rowers, free split). Wanderfahrt = choose 5 Junioren
+(no Kinder): +4 Ausdauer, +3 Motivation each. RVH-Herbstsprint and RVB-Endspurt are separate regattas; game ends
 after RVB.
 
 **Rowers.** 55 cards from §14. Ranking: A-Junioren 100…86 (Michel 100), B-Junioren 85…59, Kinder 58…46

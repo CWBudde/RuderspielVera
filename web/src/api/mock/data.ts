@@ -132,7 +132,7 @@ const INFO: Record<string, string> = {
   jtfo: "Teamwettbewerb Jugend trainiert für Olympia",
   WR5: "Winterruder-Fünfkampf: 5 Ruderer +10 Motivation",
   Basketballturnier: "5 Ruderer +10 Motivation",
-  Wanderfahrt: "5 Ruderer +4 Ausdauer und +3 Motivation",
+  Wanderfahrt: "5 Junioren (keine Kinder) +4 Ausdauer und +3 Motivation",
 };
 
 export function buildCalendar(): StationView[] {

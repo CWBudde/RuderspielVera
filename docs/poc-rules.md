@@ -158,7 +158,8 @@ random walk:
   Maschseelauf, mission rewards; Nachtschicht im Kraftraum and Liebeskummer cost Motivation) and
   Ereignisse.
 - WR5 and Basketballturnier (§9.3/9.4): choose exactly 5 rowers, each +10 Motivation.
-- Wanderfahrt: choose exactly 5 rowers, each +4 Ausdauer and +3 Motivation (PoC assumption).
+- Wanderfahrt: choose exactly 5 Junioren (A or B; Kinder may not take part), each +4 Ausdauer and
+  +3 Motivation (PoC assumption). With fewer than 5 Junioren, all of them go.
 
 ## 4. Competitions
 

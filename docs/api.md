@@ -42,7 +42,9 @@ resolves and opens the next phase.
 - **Phase hints** (no client-side guessing): `phase.stage` refines ack phases (`setup`, `event`,
   `ereignis`, `result`; on `result` the view's `lastResult` is this station's result).
   `phase.newEvents` lists the viewer's event cards dealt at this event station, `phase.ereignis`
-  (`{name, description}`) the drawn Ereignis. `phase.draftTurn` is the index into `draftOrder` of the
+  (`{name, description}`) the drawn Ereignis. On a selection, `phase.selectionAges` (if set) lists
+  the only age groups that may be picked, and `phase.count` is already capped by the viewer's
+  eligible rowers. `phase.draftTurn` is the index into `draftOrder` of the
   open pick (omitted = 0; `draftOrder` can name a player twice after a Sponsor Ereignis).
 - **Scoring hints** for lineup estimates: `competition.context` is matched against
   `TrainerEffect.context`, `competition.cityBoatMod` is added to städtische Boote. Per race:

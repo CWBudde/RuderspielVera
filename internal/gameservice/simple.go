@@ -29,8 +29,10 @@ func SimpleDecider(g *engine.Game, playerID string, _ int, rng *mrand.Rand) (eng
 			dec.Training = []engine.TrainingAlloc{{RowerID: r.ID, Stat: stat, Points: pv.Points}}
 		}
 	case engine.PhaseSelection:
-		for _, r := range rowers[:min(pv.Count, len(rowers))] {
-			dec.RowerIDs = append(dec.RowerIDs, r.ID)
+		for _, r := range rowers {
+			if len(dec.RowerIDs) < pv.Count && pv.SelectionAllows(r.Age) {
+				dec.RowerIDs = append(dec.RowerIDs, r.ID)
+			}
 		}
 	case engine.PhaseDraft:
 		if len(pv.DraftOffer) > 0 {

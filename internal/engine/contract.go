@@ -269,6 +269,7 @@ type PhaseView struct {
 	Count           int              `json:"count,omitempty"`           // selection: exactly N rowers
 	SelectionEffect string           `json:"selectionEffect,omitempty"` // German fallback, e.g. "+10 Motivation"
 	SelectionID     string           `json:"selectionId,omitempty"`     // rules.json selection key; text "data.selection.<id>.label"
+	SelectionAges   []AgeGroup       `json:"selectionAges,omitempty"`   // selection: only these ages may be picked (empty = all)
 	Competition     *CompetitionView `json:"competition,omitempty"`
 	DraftOffer      []DraftCard      `json:"draftOffer,omitempty"`
 	DraftOrder      []string         `json:"draftOrder,omitempty"` // player IDs

@@ -248,6 +248,7 @@ export interface PhaseView {
   count?: number /* int */; // selection: exactly N rowers
   selectionEffect?: string; // German fallback, e.g. "+10 Motivation"
   selectionId?: string; // rules.json selection key; text "data.selection.<id>.label"
+  selectionAges?: AgeGroup[]; // selection: only these ages may be picked (empty = all)
   competition?: CompetitionView;
   draftOffer?: DraftCard[];
   draftOrder?: string[]; // player IDs

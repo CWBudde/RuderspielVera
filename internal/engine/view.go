@@ -79,6 +79,14 @@ func (g *Game) CurrentPhase(playerID string) PhaseView {
 	if p.selection != nil {
 		pv.SelectionEffect = p.selection.Label
 		pv.SelectionID = p.selectionID
+
+		for _, a := range p.selection.Ages {
+			pv.SelectionAges = append(pv.SelectionAges, AgeGroup(a))
+		}
+
+		if pl := g.playerByID(playerID); pl != nil {
+			pv.Count = selectionWant(pl, p)
+		}
 	}
 
 	if p.swap != nil {

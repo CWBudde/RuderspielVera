@@ -219,6 +219,7 @@ type Selection struct {
 	Count  int            `json:"count"`
 	Effect map[string]int `json:"effect"`
 	Label  string         `json:"label"`
+	Ages   []string       `json:"ages,omitempty"` // allowed age groups; empty = everyone
 }
 
 type Rules struct {
