@@ -236,12 +236,25 @@ function LineupBuilder({
 
   const setDraft = (raceId: string, d: Draft) => setLineup((l) => ({ ...l, [raceId]: d }));
 
+  /** boatId -> raceId of the first race (with rowers) that uses it: a boat starts once per competition. */
+  const boatUsedIn = useMemo(() => {
+    const m = new Map<string, string>();
+    for (const race of comp.races) {
+      const d = lineup[race.id];
+      if (d?.boatId && needsBoat(race) && d.seats.some(Boolean) && !m.has(d.boatId)) m.set(d.boatId, race.id);
+    }
+    return m;
+  }, [lineup, comp.races]);
+  const raceName = (id: string) => comp.races.find((r) => r.id === id)?.name ?? "";
+
   const status = comp.races.map((race) => {
     const d = draftFor(race);
     const crew = d.seats.map((id) => (id ? rowerById.get(id) : undefined));
     const filled = crew.filter(Boolean).length;
-    const boat = you.boats.find((b) => b.id === d.boatId);
+    const boat = needsBoat(race) ? you.boats.find((b) => b.id === d.boatId) : undefined;
     const problems = crewProblems(race, crew, !!boat);
+    const owner = boat ? boatUsedIn.get(boat.id) : undefined;
+    if (filled > 0 && owner && owner !== race.id) problems.push(`${boat?.name} startet schon: ${raceName(owner)}`);
     return { race, d, crew, filled, boat, problems, complete: filled === race.seats && problems.length === 0 };
   });
   const complete = status.filter((s) => s.complete);
@@ -324,6 +337,11 @@ function LineupBuilder({
                 <div className="text-right">
                   <p className="text-[11px] font-semibold text-muted-foreground">geschätzt</p>
                   <p className="num text-3xl leading-none">{filled ? est : "–"}</p>
+                  {!!race.guestScore && (
+                    <p className="mt-0.5 text-[11px] font-semibold whitespace-nowrap text-muted-foreground" title="Gastmannschaft">
+                      Gast {race.guestScore}
+                    </p>
+                  )}
                 </div>
               </header>
 
@@ -362,10 +380,15 @@ function LineupBuilder({
 
               {needsBoat(race) && (
                 <BoatPicker
+                  scale={race.boatScale}
                   loan={!!race.loanBoat}
                   loanValue={race.fixedBoatValue ?? 0}
                   boats={boats}
-                  value={d.boatId}
+                  value={filled > 0 || !d.boatId || !boatUsedIn.has(d.boatId) ? d.boatId : undefined}
+                  usedIn={(id) => {
+                    const owner = boatUsedIn.get(id);
+                    return owner && owner !== race.id ? raceName(owner) : undefined;
+                  }}
                   onChange={(boatId) => setDraft(race.id, { ...d, boatId })}
                 />
               )}
@@ -387,7 +410,7 @@ function LineupBuilder({
                     variant="ghost"
                     size="sm"
                     className="ml-auto min-h-11"
-                    onClick={() => setDraft(race.id, { seats: Array(race.seats).fill(undefined), boatId: d.boatId })}
+                    onClick={() => setDraft(race.id, { seats: Array(race.seats).fill(undefined) })}
                   >
                     <Eraser /> Leeren
                   </Button>
@@ -415,7 +438,9 @@ function LineupBuilder({
                 if (existing >= 0) seats[existing] = seats[slot.seat];
                 seats[slot.seat] = rowerId;
                 // Preselect the best own boat of the class on first placement.
-                const best = you.boats.filter((b) => b.class === activeRace.class).sort((a, b) => b.value - a.value)[0];
+                const best = you.boats
+                  .filter((b) => b.class === activeRace.class && (!boatUsedIn.has(b.id) || boatUsedIn.get(b.id) === activeRace.id))
+                  .sort((a, b) => b.value - a.value)[0];
                 const boatId = d.boatId ?? (needsBoat(activeRace) && !activeRace.loanBoat ? best?.id : undefined);
                 setDraft(activeRace.id, { ...d, seats, boatId });
                 // Advance to the next empty seat in this race, or close.
@@ -440,14 +465,18 @@ function LineupBuilder({
 function BoatPicker({
   boats,
   value,
+  usedIn,
   loan,
   loanValue,
+  scale,
   onChange,
 }: {
   boats: BoatView[];
   value?: string;
+  usedIn: (boatId: string) => string | undefined;
   loan: boolean;
   loanValue: number;
+  scale: number;
   onChange: (id: string | undefined) => void;
 }) {
   if (boats.length === 0 && !loan) {
@@ -455,7 +484,7 @@ function BoatPicker({
   }
   return (
     <div className="mt-2">
-      <p className="mb-1 text-xs font-semibold text-muted-foreground">Boot</p>
+      <p className="mb-1 text-xs font-semibold text-muted-foreground">Boot{scale > 1 && ` (Wert zählt ×${scale})`}</p>
       <div className="flex flex-wrap gap-1.5" role="radiogroup" aria-label="Boot">
         {loan && (
           <button
@@ -474,19 +503,26 @@ function BoatPicker({
         )}
         {boats.map((b) => {
           const on = b.id === value;
+          const elsewhere = usedIn(b.id);
           return (
             <button
               key={b.id}
               type="button"
               role="radio"
               aria-checked={on}
+              disabled={!!elsewhere && !on}
+              title={elsewhere ? `startet schon: ${elsewhere}` : undefined}
               onClick={() => onChange(on && !loan ? undefined : b.id)}
               className={cn(
-                "inline-flex min-h-11 items-center gap-1.5 rounded-xl border-2 border-ink px-2.5 text-sm font-bold",
-                on ? "bg-navy text-white" : "bg-white",
+                "inline-flex min-h-11 items-center gap-1.5 rounded-xl border-2 border-ink px-2.5 text-left text-sm font-bold",
+                on ? (elsewhere ? "bg-destructive text-white" : "bg-navy text-white") : "bg-white",
+                elsewhere && !on && "border-dashed opacity-60",
               )}
             >
-              {b.name}
+              <span className="flex flex-col leading-tight">
+                {b.name}
+                {elsewhere && <span className="text-[11px] font-semibold">startet: {elsewhere}</span>}
+              </span>
               <span className={cn("num rounded-md px-1 text-base leading-tight", on ? "bg-white/20" : "bg-st-regatta")}>{b.value}</span>
             </button>
           );

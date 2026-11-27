@@ -7,6 +7,7 @@ import { FlipCard } from "@/components/FlipCard";
 import { Art } from "@/components/Art";
 import { AgeBadge } from "@/components/RowerCard";
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 
 function EventFace({ rower }: { rower: RowerView }) {
   const ev = rower.event;
@@ -78,7 +79,7 @@ export function EventReveal() {
           {mine.map((r) => (
             <FlipCard
               key={r.id}
-              className="aspect-[3/4] w-full sm:w-[17rem]"
+              className={cn("aspect-[3/4] sm:w-[17rem]", mine.length > 1 ? "w-full" : "w-[min(100%,17rem)]")}
               revealed={revealed.has(r.id)}
               onReveal={() => setRevealed((s) => new Set(s).add(r.id))}
               backTone="bg-[#c2507a]"
@@ -113,7 +114,7 @@ export function EreignisReveal() {
   return (
     <PhaseFrame
       title={view.phase.title}
-      prompt={view.phase.prompt}
+      prompt={revealed ? "Das gilt für alle Teams." : "Ein neues Ereignis für alle Teams. Deck es auf!"}
       footer={
         revealed ? (
           <Button size="lg" className="w-full" onClick={() => submit({})} disabled={submitting}>

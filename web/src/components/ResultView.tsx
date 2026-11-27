@@ -43,7 +43,7 @@ export function WeatherChip({ weather, className }: { weather?: string; classNam
 }
 
 function rowerNames(players: PlayerSummary[], e: EntryResult): string {
-  if (e.guest) return "Gastmannschaft";
+  if (e.guest) return "Gastmannschaft: fährt um Platz und Medaille mit, bekommt aber keine Punkte.";
   const p = players.find((x) => x.id === e.playerId);
   return (e.rowerIds ?? []).map((id) => p?.rowers.find((r) => r.id === id)?.name ?? "?").join(", ");
 }
@@ -119,6 +119,11 @@ function RaceCard({ race, players, you, index }: { race: RaceResult; players: Pl
                     <div className="flex items-center gap-1.5">
                       <span className="size-2.5 shrink-0 rounded-full border border-ink" style={{ background: color }} />
                       <span className="truncate text-sm font-bold">{e.guest ?? p?.name ?? e.playerId}</span>
+                      {e.guest && (
+                        <span className="shrink-0 rounded-full border border-ink/40 bg-white px-1.5 text-[10px] font-bold tracking-wide text-muted-foreground uppercase">
+                          Gast
+                        </span>
+                      )}
                       {e.medal && <MedalIcon medal={e.medal === "gold" ? "gold" : "silber"} className="size-5 shrink-0" />}
                       <IncidentIcon incident={e.incident} />
                     </div>
@@ -128,7 +133,7 @@ function RaceCard({ race, players, you, index }: { race: RaceResult; players: Pl
                           className="h-full origin-left rounded-full motion-safe:animate-bar"
                           style={{
                             width: `${dnf ? 0 : Math.max(4, (e.total / max) * 100)}%`,
-                            background: color,
+                            background: e.guest ? `repeating-linear-gradient(135deg, ${color} 0 6px, #c4cad1 6px 12px)` : color,
                             animationDelay: `${index * 80 + i * 120}ms`,
                           }}
                         />

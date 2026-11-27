@@ -7,6 +7,7 @@ import { GameProvider, useGameQuery } from "@/hooks/game";
 import { StartScreen } from "@/screens/StartScreen";
 import { AppShell } from "@/screens/AppShell";
 import { Button } from "@/components/ui/button";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
 
 export function App() {
   const mockRequested = isMockRequested();
@@ -69,9 +70,11 @@ function GameRoot({ session, onLeave, onLost }: { session: Session; onLeave: () 
 
   if (q.data) {
     return (
-      <GameProvider session={session} view={q.data} onLeave={onLeave}>
-        <AppShell />
-      </GameProvider>
+      <ErrorBoundary onHome={onLeave}>
+        <GameProvider session={session} view={q.data} onLeave={onLeave}>
+          <AppShell />
+        </GameProvider>
+      </ErrorBoundary>
     );
   }
   if (q.isError && !lost) {
