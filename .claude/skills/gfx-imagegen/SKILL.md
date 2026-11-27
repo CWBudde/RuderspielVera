@@ -163,10 +163,9 @@ For a club member with a photo in `reference-rowers/<Name>.jpg`:
    line with artKey `people/<card-id>`. `Art.tsx` uses `people/<card id>` for a rower or trainer card
    when it exists and falls back to the generic artKey portrait otherwise.
 
-**These files are likenesses of real minors.** `web/src/assets/art/people/` is git-ignored: never
-commit it, never publish it (GitHub Pages, a public repo, a shared artifact) and never move it
-elsewhere without the user's explicit OK. A local `pnpm build` bundles them into `web/dist/`; do not
-deploy such a build.
+**These files are likenesses of real club members (mostly minors).** The user approved publishing the
+generated portraits (2026-11-27): they are committed and deployed to GitHub Pages. The source photos in
+`reference-rowers/` stay private: never commit, publish or copy them.
 
 ## Lessons
 
