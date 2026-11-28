@@ -13,6 +13,7 @@ func (g *Game) runEventStation() (map[string]Msg, map[string][]string) {
 	n := perStation[min(idx, len(perStation)-1)]
 	lines := map[string][]any{}
 	dealt := map[string][]string{}
+	trailing := g.trailingPlayers()
 
 	for range n {
 		for _, pl := range g.players {
@@ -28,6 +29,14 @@ func (g *Game) runEventStation() (map[string]Msg, map[string][]string) {
 			dealt[pl.id] = append(dealt[pl.id], r.id)
 			g.addLog("event", pl.id, msg("log.eventDealt", "player", pl.name, "rower", rowerName(r),
 				"card", dataMsg("event", def.Type, "name")))
+
+			if boost := g.d.Rules.ComebackBoost; boost > 0 && trailing[pl.id] {
+				s := g.pickWeakestTrainable(r.stats)
+				r.addStat(s, boost)
+				m := msg("event.comeback", "rower", rowerName(r), "value", signed(boost), "stat", statMsg(s))
+				lines[pl.id] = append(lines[pl.id], m)
+				g.addLog("event", pl.id, m)
+			}
 		}
 	}
 
@@ -43,6 +52,44 @@ func (g *Game) runEventStation() (map[string]Msg, map[string][]string) {
 	}
 
 	return prompts, dealt
+}
+
+// trailingPlayers returns the players in sole or shared last place by medal points; nobody when
+// all players are level (e.g. before the first competition).
+func (g *Game) trailingPlayers() map[string]bool {
+	lo, hi := g.points(g.players[0]), g.points(g.players[0])
+	for _, pl := range g.players[1:] {
+		lo, hi = min(lo, g.points(pl)), max(hi, g.points(pl))
+	}
+
+	out := map[string]bool{}
+	if lo == hi {
+		return out
+	}
+
+	for _, pl := range g.players {
+		if g.points(pl) == lo {
+			out[pl.id] = true
+		}
+	}
+
+	return out
+}
+
+// pickWeakestTrainable returns the lowest trainable stat (not Motivation); ties are drawn at random.
+func (g *Game) pickWeakestTrainable(s Stats) Stat {
+	var cands []Stat
+
+	for _, st := range TrainableStats {
+		switch {
+		case len(cands) == 0 || s[st] < s[cands[0]]:
+			cands = append(cands[:0], st)
+		case s[st] == s[cands[0]]:
+			cands = append(cands, st)
+		}
+	}
+
+	return cands[g.rng.IntN(len(cands))]
 }
 
 // eventEligible lists own rowers without an event card.

@@ -19,8 +19,8 @@ import (
 // Ereignisse and six more event cards change the seeded deck draws; 8: premium boats Vierer mit
 // Freunden and Blitz enlarge the draft pool; 9: trainer age bonuses change entry scores; 10: trainer
 // id frau-linke renamed to frau-lincke; 11: all 18 boat classes at the five regular regattas, new
-// Bundeswettbewerb station).
-const SnapshotVersion = 11
+// Bundeswettbewerb station; 12: Aufholjagd, last place gets a stat boost with every event card).
+const SnapshotVersion = 12
 
 // Snapshot is everything needed to rebuild a game with engine.Replay: config (incl. seed),
 // tokens and the decision log. It is the on-disk file of the HTTP server and the localStorage

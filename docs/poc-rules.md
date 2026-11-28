@@ -308,6 +308,10 @@ index + guestOffset of the competition` (Kinder 14, B 18, A 22, growth 0.2 per s
   player), each limited by the player's rowers without an event.
 - The rower is drawn uniformly among own rowers without an event card; the
   type is drawn from a weighted deck (`events.json`).
+- **Aufholjagd** (PoC catch-up rule, `rules.comebackBoost` = 3): a player in sole or shared last
+  place by medal points (not when all players are level) also gets +3 on the weakest trainable
+  stat (not Motivation; ties drawn at random) of every rower dealt a card at that station. In
+  3-player all-bot games it lowers the Taktiker win rate from 42 % to 37 %.
 - **Scope** (`scope`: `water`, `ergo` or `any`): a card whose bonus only works at water regattas,
   at Ergo-Cups or in a context (sprint) is only dealt while such a competition is still ahead, so
   nobody gets Ergo-Bestzeit-Fieber after the Osnabrücker Ergo-Cup. Water cards may be dealt in the

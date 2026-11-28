@@ -1415,3 +1415,34 @@ func TestSelectionAges(t *testing.T) {
 		t.Errorf("all three Junioren rejected: %v", err)
 	}
 }
+
+func TestComebackBoostForLastPlace(t *testing.T) {
+	t.Parallel()
+
+	g := newGame(t, 10)
+	if got := g.trailingPlayers(); len(got) != 0 {
+		t.Errorf("all level: trailing %v, want nobody", got)
+	}
+
+	g.players[0].gold = 2
+	g.players[1].silver = 1
+
+	if got := g.trailingPlayers(); !reflect.DeepEqual(got, map[string]bool{"p3": true}) {
+		t.Fatalf("trailing %v, want p3", got)
+	}
+
+	before := len(g.log)
+	g.runEventStation()
+
+	boosted := map[string]int{}
+
+	for _, e := range g.log[before:] {
+		if e.Msg.Key == "event.comeback" {
+			boosted[e.PlayerID]++
+		}
+	}
+
+	if !reflect.DeepEqual(boosted, map[string]int{"p3": 1}) {
+		t.Errorf("comeback boosts %v, want one for p3", boosted)
+	}
+}

@@ -42,6 +42,7 @@ export const messagesEn: Record<keyof typeof messagesDe, string> = {
   "event.mission": "Secret mission: {mission} (Reward: {reward})",
   "event.described": "{card}: {rower} – {description}",
   "event.plain": "{card}: {rower}.",
+  "event.comeback": "Comeback (last place): {rower} also gets {value} {stat}.",
 
   "ereignis.detail": "{player}: {rower} ({value} {stat}).",
   "ereignis.active": "{name}: {description}",

@@ -394,6 +394,10 @@ func (d *Data) validateMissions(p *problems) {
 // validateWinMotivation checks the Siegesmotivation rule.
 func (d *Data) validateWinMotivation(p *problems) {
 	wm := d.Rules.WinMotivation
+	if d.Rules.ComebackBoost < 0 {
+		p.addf("rules: comebackBoost must be >= 0")
+	}
+
 	if wm.Value < 0 || (wm.Value > 0 && (wm.Competitions < 1 || len(wm.Medals) == 0)) {
 		p.addf("rules: winMotivation needs value >= 0 and, if > 0, competitions >= 1 and medals")
 	}

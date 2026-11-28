@@ -53,6 +53,7 @@ export const messagesDe = {
   "event.mission": "Geheime Mission: {mission} (Belohnung: {reward})",
   "event.described": "{card}: {rower} – {description}",
   "event.plain": "{card}: {rower}.",
+  "event.comeback": "Aufholjagd (letzter Platz): {rower} erhält zusätzlich {value} {stat}.",
 
   // Ereignisse
   "ereignis.detail": "{player}: {rower} ({value} {stat}).",

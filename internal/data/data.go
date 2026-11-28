@@ -245,7 +245,10 @@ type Rules struct {
 	KrebsPenalty         int                  `json:"krebsPenalty"`
 	WeatherTable         []string             `json:"weatherTable"` // d6 faces
 	EventCardsPerStation []int                `json:"eventCardsPerStation"`
-	Deal                 struct {
+	// ComebackBoost: at an event station, a player in sole or shared last place (not everyone tied)
+	// also gets this much on the weakest trainable stat of every rower dealt a card (Aufholjagd).
+	ComebackBoost int `json:"comebackBoost"`
+	Deal          struct {
 		// RowersByPlayers is the number of starting rowers per player and age group, by player count.
 		RowersByPlayers map[string]map[string]int `json:"rowersByPlayers"`
 		MinPerGender    int                       `json:"minPerGender"`

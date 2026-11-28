@@ -25,6 +25,7 @@
   "krebsPenalty": 10,
   "weatherTable": ["regen", "hitze", "wind", "kaelte", "normal", "normal"],
   "eventCardsPerStation": [1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2],
+  "comebackBoost": 3,
   "deal": {
     "rowersByPlayers": {
       "2": { "kinder": 6, "b": 13, "a": 7 },
