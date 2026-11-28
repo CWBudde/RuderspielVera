@@ -1,0 +1,15 @@
+**/node_modules
+web/dist
+web/public/ruderspiel.wasm
+web/public/wasm_exec.js
+bin
+data
+art
+examples
+reference-rowers
+docs
+.worktrees
+.git
+.claude
+.playwright-mcp
+*.log

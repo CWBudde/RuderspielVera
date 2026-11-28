@@ -28,6 +28,7 @@ type Decider func(g *engine.Game, playerID string, seat int, rng *mrand.Rand) (e
 const (
 	StatusBadRequest   = 400
 	StatusUnauthorized = 401
+	StatusForbidden    = 403
 	StatusNotFound     = 404
 	StatusConflict     = 409
 	StatusInternal     = 500
@@ -75,6 +76,7 @@ type Options struct {
 type Service struct {
 	mu     sync.RWMutex
 	games  map[string]*gameEntry
+	codes  map[string]string // lobby join code -> game ID
 	decide Decider
 	store  Store
 	log    *slog.Logger
@@ -112,6 +114,7 @@ func New(opts Options) (*Service, error) {
 
 	return &Service{
 		games:  map[string]*gameEntry{},
+		codes:  map[string]string{},
 		decide: opts.Decider,
 		store:  opts.Store,
 		log:    opts.Logger,
@@ -140,18 +143,42 @@ type LogResponse struct {
 	Results []engine.CompetitionResult `json:"results"`
 }
 
-// gameEntry is one live game. mu serialises all access to game and rngs.
+// gameEntry is one live game or open lobby. mu serialises all access to game, lobby, cfg and
+// rngs; tokMu guards tokens, so authorize can check a token without taking the game lock.
 type gameEntry struct {
 	mu        sync.Mutex
 	id        string
-	game      *engine.Game
-	tokens    map[string]string // token -> player ID (immutable after creation)
+	game      *engine.Game  // nil while the lobby is open
+	lobby     *Lobby        // nil for solo games
+	cfg       engine.Config // lobby only: seed and the humans who joined so far
 	createdAt time.Time
 	rngs      map[int]*mrand.Rand // bot RNG per seat
+
+	tokMu  sync.RWMutex
+	tokens map[string]string // token -> player ID (only grows, while the lobby is open)
 }
 
 func newGameEntry(id string, g *engine.Game, tokens map[string]string, createdAt time.Time) *gameEntry {
 	return &gameEntry{id: id, game: g, tokens: tokens, createdAt: createdAt, rngs: map[int]*mrand.Rand{}}
+}
+
+// playerFor returns the player ID behind token.
+func (e *gameEntry) playerFor(token string) (string, bool) {
+	e.tokMu.RLock()
+	defer e.tokMu.RUnlock()
+
+	pid, ok := e.tokens[token]
+
+	return pid, ok
+}
+
+// started reports an error unless the game is running (a lobby has no game yet). Caller holds e.mu.
+func (e *gameEntry) started() error {
+	if e.game == nil {
+		return newError(StatusConflict, "err.gameNotStarted")
+	}
+
+	return nil
 }
 
 // botRNG returns the bot's private RNG for a seat, seeded from (game seed, seat). After a reload
@@ -238,6 +265,11 @@ func (s *Service) View(gameID, token string) (engine.GameView, error) {
 	e.mu.Lock()
 	defer e.mu.Unlock()
 
+	err = e.started()
+	if err != nil {
+		return engine.GameView{}, err
+	}
+
 	return e.game.View(pid), nil
 }
 
@@ -250,6 +282,11 @@ func (s *Service) Submit(gameID, token string, d engine.Decision) (engine.GameVi
 
 	e.mu.Lock()
 	defer e.mu.Unlock()
+
+	err = e.started()
+	if err != nil {
+		return engine.GameView{}, err
+	}
 
 	err = e.game.Submit(pid, d)
 	if err != nil {
@@ -289,6 +326,11 @@ func (s *Service) Log(gameID, token string) (LogResponse, error) {
 	e.mu.Lock()
 	defer e.mu.Unlock()
 
+	err = e.started()
+	if err != nil {
+		return LogResponse{}, err
+	}
+
 	resp := LogResponse{Log: e.game.Log(), Results: e.game.Results()}
 	if resp.Log == nil {
 		resp.Log = []engine.LogEntry{}
@@ -321,6 +363,11 @@ func (s *Service) WithGame(gameID string, fn func(*engine.Game) error) error {
 
 	e.mu.Lock()
 	defer e.mu.Unlock()
+
+	err := e.started()
+	if err != nil {
+		return err
+	}
 
 	return fn(e.game)
 }
@@ -390,7 +437,7 @@ func (s *Service) authorize(gameID, token string) (*gameEntry, string, error) {
 		return nil, "", newError(StatusUnauthorized, "err.noToken")
 	}
 
-	pid, ok := e.tokens[token] // immutable after creation, no lock needed
+	pid, ok := e.playerFor(token)
 	if !ok {
 		return nil, "", newError(StatusUnauthorized, "err.badToken")
 	}

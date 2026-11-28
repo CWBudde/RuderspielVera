@@ -1,0 +1,129 @@
+# Ruderspiel on the k3s at pcjv.de (Traefik + cert-manager). Applied by `just deploy`, which
+# replaces IMAGE with the freshly imported image tag. Games are files on the PVC (one replica,
+# Recreate: the volume is ReadWriteOnce and the game registry lives in memory).
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: ruderspiel
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: ruderspiel-data
+  namespace: ruderspiel
+spec:
+  accessModes: [ReadWriteOnce]
+  storageClassName: local-path
+  resources:
+    requests:
+      storage: 1Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ruderspiel
+  namespace: ruderspiel
+  labels:
+    app.kubernetes.io/name: ruderspiel
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: ruderspiel
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: ruderspiel
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 65532
+        runAsGroup: 65532
+        fsGroup: 65532
+      containers:
+        - name: ruderspiel
+          image: IMAGE
+          imagePullPolicy: Never # imported into containerd by `just deploy`, not in a registry
+          ports:
+            - name: http
+              containerPort: 8080
+          volumeMounts:
+            - name: data
+              mountPath: /data
+          readinessProbe:
+            httpGet:
+              path: /api/catalog
+              port: http
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /api/catalog
+              port: http
+            initialDelaySeconds: 10
+            periodSeconds: 30
+          resources:
+            requests:
+              cpu: 20m
+              memory: 64Mi
+            limits:
+              memory: 256Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: [ALL]
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: ruderspiel-data
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ruderspiel
+  namespace: ruderspiel
+spec:
+  selector:
+    app.kubernetes.io/name: ruderspiel
+  ports:
+    - name: http
+      port: 80
+      targetPort: http
+---
+apiVersion: traefik.io/v1alpha1
+kind: Middleware
+metadata:
+  name: redirect-to-https
+  namespace: ruderspiel
+spec:
+  redirectScheme:
+    scheme: https
+    permanent: true
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: ruderspiel
+  namespace: ruderspiel
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-production
+    traefik.ingress.kubernetes.io/router.entrypoints: web,websecure
+    traefik.ingress.kubernetes.io/router.middlewares: ruderspiel-redirect-to-https@kubernetescrd
+spec:
+  ingressClassName: traefik
+  rules:
+    - host: ruderspiel.pcjv.de
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: ruderspiel
+                port:
+                  name: http
+  tls:
+    - hosts: [ruderspiel.pcjv.de]
+      secretName: ruderspiel-pcjv-tls

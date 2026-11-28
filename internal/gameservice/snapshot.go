@@ -2,6 +2,7 @@ package gameservice
 
 import (
 	"maps"
+	"slices"
 	"time"
 
 	"ruderspiel/internal/engine"
@@ -25,20 +26,39 @@ type Snapshot struct {
 	Config    engine.Config              `json:"config"`
 	Tokens    map[string]string          `json:"tokens"` // bearer token -> player ID
 	Decisions []engine.SubmittedDecision `json:"decisions"`
+	Lobby     *Lobby                     `json:"lobby,omitempty"` // multiplayer games only
 	CreatedAt time.Time                  `json:"createdAt"`
 	UpdatedAt time.Time                  `json:"updatedAt"`
 }
 
 // snapshot builds the snapshot of a live game. Caller holds e.mu.
 func (s *Service) snapshot(e *gameEntry) Snapshot {
-	return Snapshot{
+	e.tokMu.RLock()
+	tokens := maps.Clone(e.tokens)
+	e.tokMu.RUnlock()
+
+	snap := Snapshot{
 		Version:   SnapshotVersion,
-		Config:    e.game.Config(),
-		Tokens:    maps.Clone(e.tokens),
-		Decisions: e.game.Decisions(),
+		Tokens:    tokens,
 		CreatedAt: e.createdAt,
 		UpdatedAt: s.now(),
 	}
+
+	if e.lobby != nil {
+		l := *e.lobby
+		snap.Lobby = &l
+	}
+
+	if e.game == nil {
+		snap.Config = e.cfg
+		snap.Config.Players = slices.Clone(e.cfg.Players)
+		snap.Decisions = []engine.SubmittedDecision{}
+	} else {
+		snap.Config = e.game.Config()
+		snap.Decisions = e.game.Decisions()
+	}
+
+	return snap
 }
 
 // save hands the game to the store, if any. Caller holds e.mu.
@@ -87,21 +107,41 @@ func (s *Service) Import(snap Snapshot) (string, error) {
 		return "", newError(StatusBadRequest, "err.snapshotGameID")
 	}
 
-	g, err := engine.Replay(snap.Config, snap.Decisions)
-	if err != nil {
-		s.log.Error("replay failed", "game", id, "err", err)
-		return "", newError(StatusBadRequest, "err.snapshotReplay")
-	}
-
 	tokens := snap.Tokens
 	if tokens == nil {
 		tokens = map[string]string{}
 	}
 
-	e := newGameEntry(id, g, tokens, snap.CreatedAt)
+	var e *gameEntry
+
+	if snap.Lobby != nil && !snap.Lobby.Started {
+		if !validLobby(snap.Lobby, snap.Config) {
+			return "", newError(StatusBadRequest, "err.snapshotReplay")
+		}
+
+		e = newGameEntry(id, nil, tokens, snap.CreatedAt)
+		e.cfg = snap.Config
+	} else {
+		g, err := engine.Replay(snap.Config, snap.Decisions)
+		if err != nil {
+			s.log.Error("replay failed", "game", id, "err", err)
+			return "", newError(StatusBadRequest, "err.snapshotReplay")
+		}
+
+		e = newGameEntry(id, g, tokens, snap.CreatedAt)
+	}
+
+	if snap.Lobby != nil {
+		l := *snap.Lobby
+		e.lobby = &l
+	}
 
 	s.mu.Lock()
 	s.games[id] = e
+
+	if e.lobby != nil {
+		s.codes[e.lobby.Code] = id
+	}
 	s.mu.Unlock()
 
 	return id, nil

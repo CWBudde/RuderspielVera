@@ -21,6 +21,23 @@ trainer `id`).
 | GET    | `/api/games/{id}/log`       | bearer token                                                | `{"log": LogEntry[], "results": CompetitionResult[]}`                                                 |
 | GET    | `/api/catalog`              | –                                                           | `CatalogView` (`{"rowers", "boats", "trainers", "events": EventTypeView[]}`, from `engine.Catalog()`) |
 
+### Multiplayer lobby (HTTP server only; the wasm build has no multiplayer)
+
+| Method | Path                       | Body                                               | Response                                             |
+| ------ | -------------------------- | -------------------------------------------------- | ---------------------------------------------------- |
+| POST   | `/api/lobbies`             | `{"playerName", "seats": 2..4, "seed" (optional)}` | 201 `{"gameId", "playerId": "p1", "token", "lobby"}` |
+| POST   | `/api/lobbies/{code}/join` | `{"playerName"}`                                   | 201 same shape, next seat (`p2`, `p3`, …)            |
+| GET    | `/api/games/{id}/lobby`    | bearer token                                       | `LobbyView` (also after the start, then incl. bots)  |
+| POST   | `/api/games/{id}/start`    | bearer token of the host (`p1`)                    | `GameView`; free seats are filled with bots          |
+
+`LobbyView` = `{gameId, code, seats, players: [{id, name, isBot}], you, host, started}` (Go:
+`gameservice.LobbyView`, TS: `web/src/api/client.ts`). Join codes are 6 characters without
+look-alikes; case, spaces and dashes are ignored. Until the start, `GET /api/games/{id}` answers 409
+`err.gameNotStarted` (the UI shows the lobby). Errors: `err.seatCount` 400, `err.lobbyNotFound` 404,
+`err.lobbyFull` / `err.lobbyStarted` 409, `err.notHost` 403. Every human seat decides itself; the
+phase resolves when all humans have decided (bots answer at once), so `phase.waiting` +
+`players[].decided` drive the "waiting for …" screen, which polls every 2 s.
+
 Errors: HTTP 4xx/5xx with `{"error": "<message key>", "msg": Msg}` (the wasm transport returns the
 same in its envelope). A decision with a stale
 `phaseId` returns 409.

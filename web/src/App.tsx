@@ -1,10 +1,21 @@
-import { lazy, Suspense, useEffect, useState } from "react";
+import { lazy, Suspense, useCallback, useEffect, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
-import { ApiError, createGame, isMockRequested, loadSession, saveSession, type Session } from "@/api/client";
+import {
+  ApiError,
+  createGame,
+  createLobby,
+  isMockRequested,
+  joinCodeFromUrl,
+  joinLobby,
+  loadSession,
+  saveSession,
+  type Session,
+} from "@/api/client";
 import { GameProvider, useGameQuery } from "@/hooks/game";
 import { StartScreen } from "@/screens/StartScreen";
+import { LobbyScreen } from "@/screens/LobbyScreen";
 // The game screens load after the start screen (route-level code split).
 const AppShell = lazy(() => import("@/screens/AppShell").then((m) => ({ default: m.AppShell })));
 import { Button } from "@/components/ui/button";
@@ -15,10 +26,12 @@ export function App() {
   // Subscribing here re-renders the whole tree when the language changes.
   useLang();
   const mockRequested = isMockRequested();
+  // An invite link (?join=CODE) opens the start screen with the code filled in.
+  const [joinCode] = useState(() => joinCodeFromUrl());
   const [stored, setStored] = useState<Session | null>(() => loadSession());
   const [session, setSession] = useState<Session | null>(() => {
     const s = loadSession();
-    return s && (!mockRequested || s.mock) ? s : null;
+    return s && (!mockRequested || s.mock) && !joinCode ? s : null;
   });
   const [creating, setCreating] = useState(false);
   const qc = useQueryClient();
@@ -37,6 +50,21 @@ export function App() {
     }
   };
 
+  // Multiplayer: the session is stored right away; GameRoot shows the lobby until the start.
+  const enterLobby = async (open: () => Promise<{ session: Session }>) => {
+    setCreating(true);
+    try {
+      const { session: s } = await open();
+      if (joinCode) window.history.replaceState(null, "", window.location.pathname);
+      setStored(s);
+      setSession(s);
+    } catch (e) {
+      toast.error(e instanceof ApiError ? e.message : t("app.startFailed"));
+    } finally {
+      setCreating(false);
+    }
+  };
+
   if (!session) {
     return (
       <StartScreen
@@ -44,7 +72,10 @@ export function App() {
         mock={mockRequested}
         busy={creating}
         onCreate={create}
+        onCreateLobby={(name, seats, seed) => void enterLobby(() => createLobby(name, seats, seed))}
+        onJoin={(name, code) => void enterLobby(() => joinLobby(code, name))}
         onResume={() => setSession(stored)}
+        initialCode={joinCode}
       />
     );
   }
@@ -64,6 +95,10 @@ export function App() {
 function GameRoot({ session, onLeave, onLost }: { session: Session; onLeave: () => void; onLost: () => void }) {
   const q = useGameQuery(session);
   const lost = q.error instanceof ApiError && [401, 403, 404].includes(q.error.status);
+  // 409 on the game view = a multiplayer lobby that has not started yet.
+  const inLobby = q.error instanceof ApiError && q.error.status === 409;
+  const refetch = q.refetch;
+  const onStarted = useCallback(() => void refetch(), [refetch]);
 
   useEffect(() => {
     if (lost && q.error) {
@@ -72,6 +107,9 @@ function GameRoot({ session, onLeave, onLost }: { session: Session; onLeave: () 
     }
   }, [lost, q.error, onLost]);
 
+  if (inLobby && !q.data) {
+    return <LobbyScreen session={session} onStarted={onStarted} onLeave={onLeave} />;
+  }
   if (q.data) {
     return (
       <ErrorBoundary onHome={onLeave}>

@@ -82,6 +82,10 @@ func (s *Server) Handler(static http.Handler) http.Handler {
 	mux.HandleFunc("POST /api/games/{id}/decisions", s.handleDecision)
 	mux.HandleFunc("GET /api/games/{id}/log", s.handleLog)
 	mux.HandleFunc("GET /api/catalog", s.handleCatalog)
+	mux.HandleFunc("POST /api/lobbies", s.handleCreateLobby)
+	mux.HandleFunc("POST /api/lobbies/{code}/join", s.handleJoinLobby)
+	mux.HandleFunc("GET /api/games/{id}/lobby", s.handleLobby)
+	mux.HandleFunc("POST /api/games/{id}/start", s.handleStart)
 	mux.HandleFunc("/api/", func(w http.ResponseWriter, _ *http.Request) {
 		writeError(w, gameservice.NewError(http.StatusNotFound, "err.unknownEndpoint"))
 	})
@@ -142,6 +146,36 @@ func (s *Server) handleLog(w http.ResponseWriter, r *http.Request) {
 func (s *Server) handleCatalog(w http.ResponseWriter, _ *http.Request) {
 	c, err := s.svc.Catalog()
 	reply(w, http.StatusOK, c, err)
+}
+
+func (s *Server) handleCreateLobby(w http.ResponseWriter, r *http.Request) {
+	var req gameservice.CreateLobbyRequest
+	if !decodeBody(w, r, &req) {
+		return
+	}
+
+	resp, err := s.svc.CreateLobby(req)
+	reply(w, http.StatusCreated, resp, err)
+}
+
+func (s *Server) handleJoinLobby(w http.ResponseWriter, r *http.Request) {
+	var req gameservice.JoinLobbyRequest
+	if !decodeBody(w, r, &req) {
+		return
+	}
+
+	resp, err := s.svc.JoinLobby(r.PathValue("code"), req)
+	reply(w, http.StatusCreated, resp, err)
+}
+
+func (s *Server) handleLobby(w http.ResponseWriter, r *http.Request) {
+	v, err := s.svc.Lobby(r.PathValue("id"), bearer(r))
+	reply(w, http.StatusOK, v, err)
+}
+
+func (s *Server) handleStart(w http.ResponseWriter, r *http.Request) {
+	v, err := s.svc.StartLobby(r.PathValue("id"), bearer(r))
+	reply(w, http.StatusOK, v, err)
 }
 
 // bearer extracts the token from "Authorization: Bearer <token>" ("" if missing).

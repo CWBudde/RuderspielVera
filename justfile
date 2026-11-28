@@ -101,3 +101,23 @@ lint:
 # Run golangci-lint and apply auto-fixes
 lint-fix:
     golangci-lint run --config ./.golangci.toml --timeout 5m --fix ./...
+
+#################################
+# Server deployment (k3s on pcjv.de, https://ruderspiel.pcjv.de)
+#################################
+
+deploy_host := "pcjv.de"
+
+# Build the server image (Go API + SPA) as localhost/ruderspiel:<tag>
+image tag=`git rev-parse --short=12 HEAD`:
+    docker build -t localhost/ruderspiel:{{tag}} .
+
+# Build, copy the image into the k3s containerd on the server and roll out
+deploy tag=`git rev-parse --short=12 HEAD`: (image tag)
+    docker save localhost/ruderspiel:{{tag}} | ssh {{deploy_host}} 'sudo k3s ctr -n k8s.io images import -'
+    sed 's#image: IMAGE#image: localhost/ruderspiel:{{tag}}#' deploy/k8s.yaml | ssh {{deploy_host}} 'sudo k3s kubectl apply -f -'
+    ssh {{deploy_host}} 'sudo k3s kubectl -n ruderspiel rollout status deploy/ruderspiel --timeout=120s'
+
+# Tail the server log
+deploy-logs:
+    ssh {{deploy_host}} 'sudo k3s kubectl -n ruderspiel logs -f deploy/ruderspiel'

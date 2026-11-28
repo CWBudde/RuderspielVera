@@ -139,3 +139,76 @@ export const getGame = (s: Session) => backendFor(s.mock).getGame(s);
 export const submitDecision = (s: Session, d: Decision) => backendFor(s.mock).submitDecision(s, d);
 export const getLog = (s: Session) => backendFor(s.mock).getLog(s);
 export const getCatalog = (mock: boolean) => backendFor(mock).getCatalog();
+
+// ---------- Multiplayer lobby (HTTP server only; not in the wasm or mock build) ----------
+
+/** Multiplayer needs the Go server; the static wasm build and the mock run everything locally. */
+export const multiplayerAvailable = import.meta.env.VITE_TRANSPORT !== "wasm";
+
+export interface LobbyPlayer {
+  id: string;
+  name: string;
+  isBot: boolean;
+}
+
+/** Mirrors gameservice.LobbyView. */
+export interface LobbyView {
+  gameId: string;
+  code: string;
+  seats: number;
+  players: LobbyPlayer[];
+  you: string;
+  host: boolean;
+  started: boolean;
+}
+
+interface LobbyResponse {
+  gameId: string;
+  playerId: string;
+  token: string;
+  lobby: LobbyView;
+}
+
+function lobbySession(res: LobbyResponse): Session {
+  const session: Session = { gameId: res.gameId, playerId: res.playerId, token: res.token, mock: false };
+  saveSession(session);
+  return session;
+}
+
+export async function createLobby(playerName: string, seats: number, seed: number | undefined) {
+  const res = await request<LobbyResponse>("/api/lobbies", {
+    method: "POST",
+    body: JSON.stringify({ playerName, seats, seed }),
+  });
+  return { session: lobbySession(res), lobby: res.lobby };
+}
+
+export async function joinLobby(code: string, playerName: string) {
+  const res = await request<LobbyResponse>(`/api/lobbies/${encodeURIComponent(code.trim())}/join`, {
+    method: "POST",
+    body: JSON.stringify({ playerName }),
+  });
+  return { session: lobbySession(res), lobby: res.lobby };
+}
+
+export const getLobby = (s: Session) =>
+  request<LobbyView>(`/api/games/${encodeURIComponent(s.gameId)}/lobby`, {}, s.token);
+
+export const startLobby = (s: Session) =>
+  request<GameView>(`/api/games/${encodeURIComponent(s.gameId)}/start`, { method: "POST" }, s.token);
+
+/** The invite link for a lobby code (opens the start screen with the code filled in). */
+export function joinLink(code: string): string {
+  const url = new URL(import.meta.env.BASE_URL, window.location.origin);
+  url.searchParams.set("join", code);
+  return url.toString();
+}
+
+/** Reads ?join=CODE from the address bar. */
+export function joinCodeFromUrl(): string {
+  try {
+    return new URLSearchParams(window.location.search).get("join")?.trim().toUpperCase() ?? "";
+  } catch {
+    return "";
+  }
+}
