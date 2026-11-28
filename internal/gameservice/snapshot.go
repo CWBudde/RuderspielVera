@@ -17,8 +17,9 @@ import (
 // boats dealt at random with values 1/2/4, loan boats worth 0, own eights Kraftwerk / Paintrain,
 // boat values count once instead of twice per seat; 7: Hannover content pack, eight more
 // Ereignisse and six more event cards change the seeded deck draws; 8: premium boats Vierer mit
-// Freunden and Blitz enlarge the draft pool; 9: trainer age bonuses change entry scores).
-const SnapshotVersion = 9
+// Freunden and Blitz enlarge the draft pool; 9: trainer age bonuses change entry scores; 10: trainer
+// id frau-linke renamed to frau-lincke).
+const SnapshotVersion = 10
 
 // Snapshot is everything needed to rebuild a game with engine.Replay: config (incl. seed),
 // tokens and the decision log. It is the on-disk file of the HTTP server and the localStorage

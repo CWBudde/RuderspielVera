@@ -314,7 +314,7 @@ export const TRAINERS: TrainerView[] = [
     ],
   },
   {
-    id: "tr-linke",
+    id: "tr-lincke",
     mood: 0,
     moodTrend: 0,
     name: "Frau Lincke",

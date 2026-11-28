@@ -146,7 +146,7 @@ resolves and opens the next phase.
   5: Krebs chance scaled by boat size and crew Technik, Seelenzwilling links a teammate, Wanderfahrt
   for Junioren only; 6: named city boats dealt at random with values 1/2/4, loan boats worth 0,
   own eights Kraftwerk / Paintrain, boat values count once instead of twice per seat; 7: Hannover
-  content pack; 8: premium boats Vierer mit Freunden and Blitz; 9: trainer age bonuses).
+  content pack; 8: premium boats Vierer mit Freunden and Blitz; 9: trainer age bonuses; 10: trainer id `frau-lincke`).
   Importing an older version fails with `err.snapshotOld`.
 - Bots: `internal/bot.Decide(g, playerID, personality, rng)` (`Taktiker` / `Bauchgefuehl`,
   `bot.PersonalityFor(seat)`); the bot RNG is separate from the game RNG.
