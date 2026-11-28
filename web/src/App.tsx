@@ -15,6 +15,7 @@ import {
   validateSession,
   type Session,
 } from "@/api/client";
+import { useGameEvents } from "@/api/useGameEvents";
 import { GameProvider, useGameQuery } from "@/hooks/game";
 import { StartScreen } from "@/screens/StartScreen";
 import { LobbyScreen } from "@/screens/LobbyScreen";
@@ -123,10 +124,17 @@ export function App() {
 }
 
 function GameRoot({ session, onLeave, onLost }: { session: Session; onLeave: () => void; onLost: () => void }) {
-  const q = useGameQuery(session);
+  // One event stream serves both the lobby and the game view; solo games (one human) need none.
+  const [multiHuman, setMultiHuman] = useState(false);
+  const live = useGameEvents(session, multiHuman);
+  const q = useGameQuery(session, live);
   const lost = q.error instanceof ApiError && [401, 403, 404].includes(q.error.status);
   // 409 on the game view = a multiplayer lobby that has not started yet.
   const inLobby = q.error instanceof ApiError && q.error.status === 409;
+  const humans = q.data ? q.data.players.filter((p) => !p.isBot).length : 0;
+  const wantsStream = inLobby || humans > 1;
+  // Sticky: a refetch error or the lobby-to-game switch must not drop the stream.
+  if (wantsStream && !multiHuman) setMultiHuman(true);
   const refetch = q.refetch;
   const onStarted = useCallback(() => void refetch(), [refetch]);
 
@@ -138,7 +146,7 @@ function GameRoot({ session, onLeave, onLost }: { session: Session; onLeave: () 
   }, [lost, q.error, onLost]);
 
   if (inLobby && !q.data) {
-    return <LobbyScreen session={session} onStarted={onStarted} onLeave={onLeave} />;
+    return <LobbyScreen session={session} live={live} onStarted={onStarted} onLeave={onLeave} />;
   }
   if (q.data) {
     return (

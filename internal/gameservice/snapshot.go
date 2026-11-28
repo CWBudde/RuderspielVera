@@ -63,15 +63,16 @@ func (s *Service) snapshot(e *gameEntry) Snapshot {
 
 // save hands the game to the store, if any. Caller holds e.mu.
 func (s *Service) save(e *gameEntry) error {
-	if s.store == nil {
-		return nil
+	if s.store != nil {
+		err := s.store.Save(s.snapshot(e))
+		if err != nil {
+			s.log.Error("save failed", "game", e.id, "err", err)
+			return newError(StatusInternal, "err.saveFailed")
+		}
 	}
 
-	err := s.store.Save(s.snapshot(e))
-	if err != nil {
-		s.log.Error("save failed", "game", e.id, "err", err)
-		return newError(StatusInternal, "err.saveFailed")
-	}
+	// Every mutation ends in save, so this is the one place that tells subscribers.
+	s.events.notify(e.id)
 
 	return nil
 }

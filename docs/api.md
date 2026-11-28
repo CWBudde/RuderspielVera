@@ -29,6 +29,7 @@ trainer `id`).
 | POST   | `/api/lobbies/{code}/join` | `{"playerName"}`                                   | 201 same shape, next seat (`p2`, `p3`, …)            |
 | GET    | `/api/games/{id}/lobby`    | bearer token                                       | `LobbyView` (also after the start, then incl. bots)  |
 | POST   | `/api/games/{id}/start`    | bearer token of the host (`p1`)                    | `GameView`; free seats are filled with bots          |
+| GET    | `/api/games/{id}/events`   | `?token=<token>` (query, not header)               | `text/event-stream` of change notifications          |
 
 `LobbyView` = `{gameId, code, seats, players: [{id, name, isBot}], you, host, started}` (Go:
 `gameservice.LobbyView`, TS: `web/src/api/client.ts`). Join codes are 6 characters without
@@ -36,7 +37,25 @@ look-alikes; case, spaces and dashes are ignored. Until the start, `GET /api/gam
 `err.gameNotStarted` (the UI shows the lobby). Errors: `err.seatCount` 400, `err.lobbyNotFound` 404,
 `err.lobbyFull` / `err.lobbyStarted` 409, `err.notHost` 403. Every human seat decides itself; the
 phase resolves when all humans have decided (bots answer at once), so `phase.waiting` +
-`players[].decided` drive the "waiting for …" screen, which polls every 2 s.
+`players[].decided` drive the "waiting for …" screen.
+
+**Change events.** `GET /api/games/{id}/events?token=…` is a Server-Sent Events stream for one
+player of the game (lobby or running). EventSource cannot send headers, so this endpoint, and only
+this one, takes the token as a query parameter; it is checked like the bearer token (401
+`err.noToken` / `err.badToken`, 404 `err.gameNotFound`). After every saved change of the game (join,
+start, decisions incl. the bot moves that follow) the server sends
+
+```
+event: change
+data: <version>
+```
+
+where `version` counts the game's changes since the server started (only increasing within one
+connection; versions in between may be skipped). The payload carries no state: the client refetches
+`GET /api/games/{id}` and `GET /api/games/{id}/lobby`. The stream opens with `retry: 3000` and a
+`: connected` comment and sends a `: ping` comment every 25 s so proxies keep it open. The UI
+(`web/src/api/useGameEvents.ts`) refetches on every event and on each (re)connect, and polls every
+15 s while the stream is connected, every 2 s otherwise.
 
 Errors: HTTP 4xx/5xx with `{"error": "<message key>", "msg": Msg}` (the wasm transport returns the
 same in its envelope). A decision with a stale

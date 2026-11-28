@@ -8,6 +8,7 @@ import (
 	"errors"
 	"flag"
 	"log/slog"
+	"net"
 	"net/http"
 	"os"
 	"os/signal"
@@ -45,14 +46,7 @@ func main() {
 		log.Info("no SPA build found, API only", "dir", *webDir)
 	}
 
-	hs := &http.Server{
-		Addr:              *addr,
-		Handler:           srv.Handler(static),
-		ReadHeaderTimeout: 10 * time.Second,
-		ReadTimeout:       30 * time.Second,
-		WriteTimeout:      60 * time.Second,
-		IdleTimeout:       120 * time.Second,
-	}
+	hs := newHTTPServer(*addr, srv.Handler(static))
 
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
@@ -77,6 +71,27 @@ func main() {
 	if err != nil {
 		log.Error("shutdown failed", "err", err)
 	}
+}
+
+// newHTTPServer configures the server. Requests derive their context from a base context that is
+// cancelled on shutdown: that ends the long-lived event streams (GET /api/games/{id}/events), which
+// Shutdown would otherwise wait for. The stream handler clears the read/write timeouts for its
+// own connection.
+func newHTTPServer(addr string, h http.Handler) *http.Server {
+	baseCtx, cancelBase := context.WithCancel(context.Background())
+
+	hs := &http.Server{
+		Addr:              addr,
+		Handler:           h,
+		ReadHeaderTimeout: 10 * time.Second,
+		ReadTimeout:       30 * time.Second,
+		WriteTimeout:      60 * time.Second,
+		IdleTimeout:       120 * time.Second,
+		BaseContext:       func(net.Listener) context.Context { return baseCtx },
+	}
+	hs.RegisterOnShutdown(cancelBase)
+
+	return hs
 }
 
 // spaHandler serves files from dir and falls back to index.html for unknown paths (client routing).

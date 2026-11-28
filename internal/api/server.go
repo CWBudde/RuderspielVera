@@ -86,6 +86,7 @@ func (s *Server) Handler(static http.Handler) http.Handler {
 	mux.HandleFunc("POST /api/lobbies/{code}/join", s.handleJoinLobby)
 	mux.HandleFunc("GET /api/games/{id}/lobby", s.handleLobby)
 	mux.HandleFunc("POST /api/games/{id}/start", s.handleStart)
+	mux.HandleFunc("GET /api/games/{id}/events", s.handleEvents)
 	mux.HandleFunc("/api/", func(w http.ResponseWriter, _ *http.Request) {
 		writeError(w, gameservice.NewError(http.StatusNotFound, "err.unknownEndpoint"))
 	})

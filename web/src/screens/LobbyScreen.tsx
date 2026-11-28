@@ -3,6 +3,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { Bot, Check, Copy, Crown, Loader2, Play, Share2, User } from "lucide-react";
 import { ApiError, getLobby, joinLink, startLobby, type Session } from "@/api/client";
+import { FALLBACK_POLL_MS, LIVE_POLL_MS } from "@/api/useGameEvents";
 import { Button } from "@/components/ui/button";
 import { LanguageToggle } from "@/components/LanguageToggle";
 import { ResumeLink } from "@/components/ResumeLink";
@@ -10,15 +11,18 @@ import { t } from "@/i18n";
 
 /**
  * Waiting room of a multiplayer game: shows the join code and invite link, the seats taken so far,
- * and (for the host) the start button. Polls the lobby; once the game has started, onStarted
- * switches to the game view for everyone.
+ * and (for the host) the start button. Refetches the lobby on server events (polling as a
+ * fallback); once the game has started, onStarted switches to the game view for everyone.
  */
 export function LobbyScreen({
   session,
+  live,
   onStarted,
   onLeave,
 }: {
   session: Session;
+  /** The server's event stream is connected (see useGameEvents); polling is then a slow fallback. */
+  live: boolean;
   onStarted: () => void;
   onLeave: () => void;
 }) {
@@ -26,7 +30,7 @@ export function LobbyScreen({
   const q = useQuery({
     queryKey: ["lobby", session.gameId],
     queryFn: () => getLobby(session),
-    refetchInterval: (query) => (query.state.data?.started ? false : 2000),
+    refetchInterval: (query) => (query.state.data?.started ? false : live ? LIVE_POLL_MS : FALLBACK_POLL_MS),
     retry: (count, err) => !(err instanceof ApiError && err.status >= 400 && err.status < 500) && count < 3,
   });
   const lobby = q.data;

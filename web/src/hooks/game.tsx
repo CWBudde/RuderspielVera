@@ -3,6 +3,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import type { Decision, GameView, PlayerSummary } from "@/api/types.gen";
 import { ApiError, getGame, getLog, submitDecision, type LogResponse, type Session } from "@/api/client";
+import { FALLBACK_POLL_MS, LIVE_POLL_MS } from "@/api/useGameEvents";
 import { t } from "@/i18n";
 
 interface GameContextValue {
@@ -17,13 +18,14 @@ interface GameContextValue {
 
 const GameContext = createContext<GameContextValue | null>(null);
 
-export function useGameQuery(session: Session | null) {
+/** live: the server's event stream is connected, so polling is only a slow safety net. */
+export function useGameQuery(session: Session | null, live = false) {
   return useQuery({
     queryKey: ["game", session?.gameId],
     queryFn: () => getGame(session as Session),
     enabled: !!session,
     retry: (count, err) => !(err instanceof ApiError && err.status >= 400 && err.status < 500) && count < 3,
-    refetchInterval: (q) => (q.state.data?.phase.waiting ? 2000 : false),
+    refetchInterval: (q) => (q.state.data?.phase.waiting ? (live ? LIVE_POLL_MS : FALLBACK_POLL_MS) : false),
   });
 }
 

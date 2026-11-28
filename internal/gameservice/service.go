@@ -81,6 +81,7 @@ type Service struct {
 	store  Store
 	log    *slog.Logger
 	now    func() time.Time
+	events *notifier
 }
 
 // Bot display names per bot index (seat 1..3).
@@ -119,6 +120,7 @@ func New(opts Options) (*Service, error) {
 		store:  opts.Store,
 		log:    opts.Logger,
 		now:    opts.Now,
+		events: newNotifier(),
 	}, nil
 }
 
