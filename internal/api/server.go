@@ -10,6 +10,7 @@ import (
 	"log/slog"
 	"net/http"
 	"strings"
+	"time"
 
 	"ruderspiel/internal/engine"
 	"ruderspiel/internal/gameservice"
@@ -28,12 +29,24 @@ type Options struct {
 	DataDir string       // persistence directory; empty = in-memory only
 	Decider Decider      // bot brain (required)
 	Logger  *slog.Logger // defaults to slog.Default()
+
+	// TurnTimeout and LobbyMaxAge configure the service janitor (see gameservice.Options); the
+	// janitor runs only if one of them is > 0. Close stops it.
+	TurnTimeout time.Duration
+	LobbyMaxAge time.Duration
+
+	// CreateRate limits POST /api/games, /api/lobbies and /api/lobbies/{code}/join per client IP
+	// to CreateRate requests per minute with bursts of CreateBurst (default: CreateRate).
+	// 0 disables the limit.
+	CreateRate  float64
+	CreateBurst int
 }
 
 // Server is the HTTP front of a gameservice.Service.
 type Server struct {
-	svc *gameservice.Service
-	log *slog.Logger
+	svc     *gameservice.Service
+	log     *slog.Logger
+	limiter *ipLimiter // nil = no rate limit
 }
 
 const maxBodySize = 64 << 10
@@ -56,20 +69,39 @@ func New(opts Options) (*Server, error) {
 		store = fileStore{dir: opts.DataDir}
 	}
 
-	svc, err := gameservice.New(gameservice.Options{Decider: opts.Decider, Store: store, Logger: opts.Logger})
+	svc, err := gameservice.New(gameservice.Options{
+		Decider: opts.Decider, Store: store, Logger: opts.Logger,
+		TurnTimeout: opts.TurnTimeout, LobbyMaxAge: opts.LobbyMaxAge,
+	})
 	if err != nil {
 		return nil, fmt.Errorf("api: %w", err)
 	}
 
-	s := &Server{svc: svc, log: opts.Logger}
+	srv := &Server{svc: svc, log: opts.Logger}
 
-	err = s.loadAll(opts.DataDir)
+	if opts.CreateRate > 0 {
+		burst := opts.CreateBurst
+		if burst <= 0 {
+			burst = max(1, int(opts.CreateRate))
+		}
+
+		srv.limiter = newIPLimiter(opts.CreateRate/60, burst, time.Now)
+	}
+
+	err = srv.loadAll(opts.DataDir)
 	if err != nil {
 		return nil, err
 	}
 
-	return s, nil
+	if opts.TurnTimeout > 0 || opts.LobbyMaxAge > 0 {
+		svc.StartJanitor(0)
+	}
+
+	return srv, nil
 }
+
+// Close stops the background janitor. The server must not be used afterwards.
+func (s *Server) Close() { s.svc.Close() }
 
 // Service returns the underlying game service.
 func (s *Server) Service() *gameservice.Service { return s.svc }
@@ -77,13 +109,13 @@ func (s *Server) Service() *gameservice.Service { return s.svc }
 // Handler returns the full HTTP handler. static (optional) serves everything outside /api/.
 func (s *Server) Handler(static http.Handler) http.Handler {
 	mux := http.NewServeMux()
-	mux.HandleFunc("POST /api/games", s.handleCreate)
+	mux.HandleFunc("POST /api/games", s.rateLimited(s.handleCreate))
 	mux.HandleFunc("GET /api/games/{id}", s.handleView)
 	mux.HandleFunc("POST /api/games/{id}/decisions", s.handleDecision)
 	mux.HandleFunc("GET /api/games/{id}/log", s.handleLog)
 	mux.HandleFunc("GET /api/catalog", s.handleCatalog)
-	mux.HandleFunc("POST /api/lobbies", s.handleCreateLobby)
-	mux.HandleFunc("POST /api/lobbies/{code}/join", s.handleJoinLobby)
+	mux.HandleFunc("POST /api/lobbies", s.rateLimited(s.handleCreateLobby))
+	mux.HandleFunc("POST /api/lobbies/{code}/join", s.rateLimited(s.handleJoinLobby))
 	mux.HandleFunc("GET /api/games/{id}/lobby", s.handleLobby)
 	mux.HandleFunc("POST /api/games/{id}/start", s.handleStart)
 	mux.HandleFunc("GET /api/games/{id}/events", s.handleEvents)

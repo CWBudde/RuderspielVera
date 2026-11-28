@@ -57,6 +57,20 @@ func (fs fileStore) Save(snap gameservice.Snapshot) error {
 	return nil
 }
 
+// Delete removes the game file; a missing file is not an error.
+func (fs fileStore) Delete(gameID string) error {
+	if !gameservice.ValidGameID(gameID) {
+		return errInvalidFileID
+	}
+
+	err := os.Remove(filepath.Join(fs.dir, gameID+".json"))
+	if err != nil && !errors.Is(err, os.ErrNotExist) {
+		return fmt.Errorf("delete game %s: %w", gameID, err)
+	}
+
+	return nil
+}
+
 // loadAll reads every game file in dir and imports (replays) it. Broken files are logged and skipped.
 func (s *Server) loadAll(dir string) error {
 	if dir == "" {

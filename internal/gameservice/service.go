@@ -70,6 +70,13 @@ type Options struct {
 	Store   Store        // optional persistence
 	Logger  *slog.Logger // defaults to slog.Default()
 	Now     func() time.Time
+
+	// TurnTimeout (> 0) lets the janitor decide for humans who keep a multiplayer game waiting
+	// longer than this. 0 disables it.
+	TurnTimeout time.Duration
+	// LobbyMaxAge (> 0) lets the janitor drop lobbies that were not started within this age.
+	// 0 disables it.
+	LobbyMaxAge time.Duration
 }
 
 // Service holds all games. The maps are guarded by mu; each game has its own mutex.
@@ -82,6 +89,13 @@ type Service struct {
 	log    *slog.Logger
 	now    func() time.Time
 	events *notifier
+
+	turnTimeout time.Duration
+	lobbyMaxAge time.Duration
+
+	janitorMu sync.Mutex
+	stop      chan struct{} // closed by Close; nil while the janitor is not running
+	done      chan struct{} // closed when the janitor goroutine has returned
 }
 
 // Bot display names per bot index (seat 1..3).
@@ -121,6 +135,9 @@ func New(opts Options) (*Service, error) {
 		log:    opts.Logger,
 		now:    opts.Now,
 		events: newNotifier(),
+
+		turnTimeout: opts.TurnTimeout,
+		lobbyMaxAge: opts.LobbyMaxAge,
 	}, nil
 }
 
@@ -155,6 +172,11 @@ type gameEntry struct {
 	cfg       engine.Config // lobby only: seed and the humans who joined so far
 	createdAt time.Time
 	rngs      map[int]*mrand.Rand // bot RNG per seat
+	removed   bool                // dropped by the janitor; callers holding a stale pointer must not use it
+
+	// Turn clock for the turn timeout (memory only): the phase the game last waited in and since when.
+	waitPhase string
+	waitSince time.Time
 
 	tokMu  sync.RWMutex
 	tokens map[string]string // token -> player ID (only grows, while the lobby is open)
@@ -383,6 +405,8 @@ func (s *Service) CheckToken(gameID, token string) error {
 // runBots lets bots decide while the game is running and a pending player is a bot, so the view
 // returned afterwards always waits on a human (or shows game over). Caller holds e.mu.
 func (s *Service) runBots(e *gameEntry) error {
+	defer s.markWaiting(e)
+
 	cfg := e.game.Config()
 	for steps := 0; !e.game.Over(); steps++ {
 		if steps > maxBotSteps {

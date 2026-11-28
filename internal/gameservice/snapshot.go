@@ -130,6 +130,7 @@ func (s *Service) Import(snap Snapshot) (string, error) {
 		}
 
 		e = newGameEntry(id, g, tokens, snap.CreatedAt)
+		s.markWaiting(e) // the turn clock restarts on load
 	}
 
 	if snap.Lobby != nil {

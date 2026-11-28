@@ -99,6 +99,7 @@ export const messagesDe = {
   "err.lobbyNotFound": "Unter diesem Code gibt es kein Spiel.",
   "err.lobbyStarted": "Dieses Spiel hat schon begonnen.",
   "err.lobbyFull": "Alle Plätze in diesem Spiel sind vergeben.",
+  "err.rateLimited": "Zu viele Anfragen. Bitte warte kurz und versuche es dann erneut.",
   "err.notHost": "Nur wer das Spiel eröffnet hat, kann es starten.",
   "err.botCount": "Es sind 1 bis {max} Bots möglich.",
   "err.createFailed": "Das Spiel konnte nicht erstellt werden.",

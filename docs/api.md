@@ -57,9 +57,25 @@ connection; versions in between may be skipped). The payload carries no state: t
 (`web/src/api/useGameEvents.ts`) refetches on every event and on each (re)connect, and polls every
 15 s while the stream is connected, every 2 s otherwise.
 
+Turn timeout (server flag `-turn-timeout`, default 10m, 0 = off): when a started multiplayer game
+has waited on the same phase for longer than the timeout, the server makes a bot decision (same
+bot as the bot seats) for every human who has not decided, lets the bots continue and saves. The
+clock starts when the phase begins and lives in memory, so a server restart restarts it. Solo
+games are never affected. The player keeps the seat; the next phase waits on them again.
+
+Stale lobbies (flag `-lobby-max-age`, default 24h, 0 = off): a lobby that was not started within
+that age is dropped together with its join code and game file; afterwards join answers 404
+`err.lobbyNotFound` and the tokens answer 404 `err.gameNotFound`.
+
 Errors: HTTP 4xx/5xx with `{"error": "<message key>", "msg": Msg}` (the wasm transport returns the
 same in its envelope). A decision with a stale
 `phaseId` returns 409.
+
+Rate limit (HTTP server only): `POST /api/games`, `POST /api/lobbies` and
+`POST /api/lobbies/{code}/join` share a token bucket per client IP (flags `-create-rate`, requests
+per minute, default 10, 0 = off; `-create-burst`, default 10). The client IP is the first
+`X-Forwarded-For` entry (set by Traefik) or else the connection's address. Over the limit the
+answer is 429 `err.rateLimited` with a `Retry-After` header (seconds).
 
 ## Phase model
 

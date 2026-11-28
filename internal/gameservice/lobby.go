@@ -129,6 +129,8 @@ func (s *Service) JoinLobby(code string, req JoinLobbyRequest) (LobbyResponse, e
 	defer e.mu.Unlock()
 
 	switch {
+	case e.removed:
+		return LobbyResponse{}, newError(StatusNotFound, "err.lobbyNotFound")
 	case e.lobby.Started:
 		return LobbyResponse{}, newError(StatusConflict, "err.lobbyStarted")
 	case len(e.cfg.Players) >= e.lobby.Seats:
@@ -190,7 +192,7 @@ func (s *Service) StartLobby(gameID, token string) (engine.GameView, error) {
 	defer e.mu.Unlock()
 
 	switch {
-	case e.lobby == nil:
+	case e.lobby == nil || e.removed:
 		return engine.GameView{}, newError(StatusNotFound, "err.lobbyNotFound")
 	case pid != hostID:
 		return engine.GameView{}, newError(StatusForbidden, "err.notHost")

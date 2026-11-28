@@ -84,6 +84,7 @@ export const messagesEn: Record<keyof typeof messagesDe, string> = {
   "err.lobbyNotFound": "There is no game with this code.",
   "err.lobbyStarted": "This game has already started.",
   "err.lobbyFull": "All seats in this game are taken.",
+  "err.rateLimited": "Too many requests. Please wait a moment and try again.",
   "err.notHost": "Only the player who opened the game can start it.",
   "err.botCount": "1 to {max} bots are possible.",
   "err.createFailed": "The game could not be created.",

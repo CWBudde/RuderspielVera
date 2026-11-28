@@ -20,17 +20,43 @@ import (
 	"ruderspiel/internal/api"
 )
 
-func main() {
-	addr := flag.String("addr", ":8080", "listen address")
-	dataDir := flag.String("data", "./data/games", "directory for persisted games (empty = in-memory only)")
-	webDir := flag.String("web", "web/dist", "directory of the built SPA (served if it exists)")
+// config is the parsed command line.
+type config struct {
+	addr   string
+	webDir string
+	opts   api.Options
+}
+
+// parseFlags reads the command line: listen address, SPA directory and the API options.
+func parseFlags() config {
+	var c config
+
+	flag.StringVar(&c.addr, "addr", ":8080", "listen address")
+	flag.StringVar(&c.opts.DataDir, "data", "./data/games", "directory for persisted games (empty = in-memory only)")
+	flag.StringVar(&c.webDir, "web", "web/dist", "directory of the built SPA (served if it exists)")
+	flag.DurationVar(&c.opts.TurnTimeout, "turn-timeout", 10*time.Minute,
+		"multiplayer: a bot decides for a human who keeps the game waiting this long (0 = off)")
+	flag.DurationVar(&c.opts.LobbyMaxAge, "lobby-max-age", 24*time.Hour,
+		"drop lobbies not started within this age (0 = off)")
+	flag.Float64Var(&c.opts.CreateRate, "create-rate", 10,
+		"per-IP limit for creating and joining games, requests per minute (0 = off)")
+	flag.IntVar(&c.opts.CreateBurst, "create-burst", 10, "burst size for -create-rate")
 
 	flag.Parse()
+
+	return c
+}
+
+func main() {
+	cfg := parseFlags()
+	addr, webDir, opts := cfg.addr, cfg.webDir, cfg.opts
 
 	log := slog.New(slog.NewTextHandler(os.Stderr, nil))
 	slog.SetDefault(log)
 
-	srv, err := api.New(api.Options{DataDir: *dataDir, Decider: botDecider, Logger: log})
+	opts.Decider, opts.Logger = botDecider, log
+
+	srv, err := api.New(opts)
 	if err != nil {
 		log.Error("startup failed", "err", err)
 		os.Exit(1)
@@ -38,21 +64,21 @@ func main() {
 
 	var static http.Handler
 
-	st, err := os.Stat(filepath.Join(*webDir, "index.html"))
+	st, err := os.Stat(filepath.Join(webDir, "index.html"))
 	if err == nil && !st.IsDir() {
-		static = spaHandler(*webDir)
-		log.Info("serving SPA", "dir", *webDir)
+		static = spaHandler(webDir)
+		log.Info("serving SPA", "dir", webDir)
 	} else {
-		log.Info("no SPA build found, API only", "dir", *webDir)
+		log.Info("no SPA build found, API only", "dir", webDir)
 	}
 
-	hs := newHTTPServer(*addr, srv.Handler(static))
+	hs := newHTTPServer(addr, srv.Handler(static))
 
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
 
 	go func() {
-		log.Info("listening", "addr", *addr)
+		log.Info("listening", "addr", addr)
 
 		err := hs.ListenAndServe()
 		if err != nil && !errors.Is(err, http.ErrServerClosed) {
@@ -71,6 +97,8 @@ func main() {
 	if err != nil {
 		log.Error("shutdown failed", "err", err)
 	}
+
+	srv.Close()
 }
 
 // newHTTPServer configures the server. Requests derive their context from a base context that is
