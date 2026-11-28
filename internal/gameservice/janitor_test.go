@@ -213,12 +213,13 @@ func TestStaleLobbyCleanup(t *testing.T) {
 		t.Fatalf("deleted = %v", store.deleted)
 	}
 
-	if _, err := s.Lobby(open.GameID, open.Token); AsError(err).Status != StatusNotFound {
+	_, err = s.Lobby(open.GameID, open.Token)
+	if AsError(err).Status != StatusNotFound {
 		t.Fatalf("lobby still reachable: %v", err)
 	}
 
 	_, err = s.JoinLobby(open.Lobby.Code, JoinLobbyRequest{PlayerName: "Late"})
-	if se := AsError(err); se.Msg.Key != "err.lobbyNotFound" {
+	if AsError(err).Msg.Key != "err.lobbyNotFound" {
 		t.Fatalf("join after cleanup: %v", err)
 	}
 
@@ -230,7 +231,8 @@ func TestStaleLobbyCleanup(t *testing.T) {
 		t.Fatal("join code left behind")
 	}
 
-	if _, err := s.Lobby(started.GameID, started.Token); err != nil {
+	_, err = s.Lobby(started.GameID, started.Token)
+	if err != nil {
 		t.Fatalf("started game removed: %v", err)
 	}
 }
