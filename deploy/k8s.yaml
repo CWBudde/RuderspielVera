@@ -46,6 +46,9 @@ spec:
         - name: ruderspiel
           image: IMAGE
           imagePullPolicy: Never # imported into containerd by `just deploy`, not in a registry
+          # k3s's klipper-lb (externalTrafficPolicy: Cluster) masquerades client addresses, so all
+          # clients may share one rate-limit bucket: keep the limit generous.
+          args: ["-create-rate", "60", "-create-burst", "30"]
           ports:
             - name: http
               containerPort: 8080
