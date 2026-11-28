@@ -227,6 +227,7 @@ export const uiDe = {
   "boat.city": "Städtisch",
   "boat.club": "Vereinsboot",
   "boat.value": "Wert",
+  "effect.perAge": "je Ruderer/in ({ages})",
   "effect.always": "immer",
   "effect.weather.regen": "bei Regen",
   "effect.weather.hitze": "bei Hitze",

@@ -151,7 +151,10 @@ type BoatView struct {
 type TrainerEffect struct {
 	Weather Weather `json:"weather,omitempty"` // empty = applies regardless of weather
 	Context string  `json:"context,omitempty"` // "", "ergo", "sprint", "langstrecke"
-	Value   int     `json:"value"`             // per seat (rules.json trainerPerSeat) or per boat
+	// Ages makes the effect an age bonus: it counts once per crew rower of one of these ages
+	// instead of once per seat (RaceSpec.trainerScale does not apply; × rules.json trainerFactor).
+	Ages  []AgeGroup `json:"ages,omitempty"`
+	Value int        `json:"value"` // per seat (rules.json trainerPerSeat) or per boat
 }
 
 type TrainerView struct {

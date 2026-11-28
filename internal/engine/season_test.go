@@ -408,6 +408,51 @@ func TestTrainerMood(t *testing.T) {
 	})
 }
 
+func TestTrainerAgeBonus(t *testing.T) {
+	t.Parallel()
+
+	g := newGame(t, 15)
+	pl := testPlayer(g)
+	cs := compFor(g, "kassel", WeatherNormal)
+	crew := []*rower{pl.rower("aw1"), pl.rower("aw2"), pl.rower("bw1"), pl.rower("kw1")}
+
+	ageBonus := func(id string) int {
+		i := slices.IndexFunc(g.d.Trainers, func(tr data.Trainer) bool { return tr.ID == id })
+		if i < 0 {
+			t.Fatalf("no trainer %s", id)
+		}
+
+		return g.trainerAgeBonus(&trainer{def: &g.d.Trainers[i]}, cs, crew)
+	}
+
+	f := g.d.Rules.TrainerAgeScale(1)
+	if got, want := ageBonus("frau-linke"), 3*f; got != want { // one Kind
+		t.Errorf("Frau Linke: %d, want %d", got, want)
+	}
+
+	if got, want := ageBonus("herr-sack"), 3*2*f; got != want { // two A + one B junior
+		t.Errorf("Herr Sack: %d, want %d", got, want)
+	}
+
+	if got, want := ageBonus("salim"), 2*3*f; got != want { // two A juniors
+		t.Errorf("Salim: %d, want %d", got, want)
+	}
+
+	for _, tr := range g.d.Trainers {
+		n := 0
+
+		for _, e := range tr.Effects {
+			if len(e.Ages) > 0 {
+				n++
+			}
+		}
+
+		if n != 1 {
+			t.Errorf("trainer %s: %d age bonuses, want 1", tr.ID, n)
+		}
+	}
+}
+
 func abs(x int) int {
 	if x < 0 {
 		return -x

@@ -117,7 +117,9 @@ resolves and opens the next phase.
   (`rules.json` `boatValuePerSeat`/`boatValueFactor`, `trainerPerSeat`), `fixedBoatValue` is the base
   value without a chosen boat (the viewer's best eight, loan boat) and `guestScore` the guest crew's total. Entry
   total = round(Σ weight·stat) + boat·boatScale + (trainer effect + trainer.mood)·trainerScale +
-  event bonus − penalty.
+  trainer age bonus + event bonus − penalty. A `TrainerEffect` with `ages` is an age bonus: it is
+  not part of the per-seat effect but counts once per crew rower of one of those ages (×
+  `trainerScale / seats`).
 - **Venue and distance**: calendar `StationView`s of competition stations and `phase.competition`
   carry `venue` (a proper name such as "Maschsee, Hannover", not translated) and `distance` (race
   length in metres). Both are omitted when unknown or not a competition (`competitions.json`).
@@ -143,7 +145,8 @@ resolves and opens the next phase.
   decks, trainer mood; 4: temporary Siegesmotivation, weaker guest crews, shorter regular regattas;
   5: Krebs chance scaled by boat size and crew Technik, Seelenzwilling links a teammate, Wanderfahrt
   for Junioren only; 6: named city boats dealt at random with values 1/2/4, loan boats worth 0,
-  own eights Kraftwerk / Paintrain, boat values count once instead of twice per seat).
+  own eights Kraftwerk / Paintrain, boat values count once instead of twice per seat; 7: Hannover
+  content pack; 8: premium boats Vierer mit Freunden and Blitz; 9: trainer age bonuses).
   Importing an older version fails with `err.snapshotOld`.
 - Bots: `internal/bot.Decide(g, playerID, personality, rng)` (`Taktiker` / `Bauchgefuehl`,
   `bot.PersonalityFor(seat)`); the bot RNG is separate from the game RNG.

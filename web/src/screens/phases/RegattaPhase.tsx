@@ -17,6 +17,7 @@ import {
   isEligible,
   needsBoat,
   rowerScore,
+  trainerAgeBonus,
   trainerBonus,
   trainerPart,
 } from "@/lib/score";
@@ -37,7 +38,10 @@ export function RegattaPhase() {
   const hasWeather = !!comp.weather;
   const [step, setStep] = useState<Step>(hasWeather ? "weather" : "trainer");
   const [trainerId, setTrainerId] = useState<string | undefined>(() => {
-    const best = [...you.trainers].sort((a, b) => trainerBonus(b, comp) - trainerBonus(a, comp))[0];
+    // Age bonuses are estimated per seat by the share of own rowers they cover.
+    const perSeat = (tr: TrainerView) =>
+      trainerBonus(tr, comp) + trainerAgeBonus(tr, comp, you.rowers) / Math.max(1, you.rowers.length);
+    const best = [...you.trainers].sort((a, b) => perSeat(b) - perSeat(a))[0];
     return best?.id;
   });
   const [lineup, setLineup] = useState<Record<string, Draft>>({});
@@ -348,13 +352,11 @@ function LineupBuilder({
     >
       <ul className="grid gap-3 lg:grid-cols-2">
         {status.map(({ race, d, crew, boat, problems, complete: ok, filled }) => {
+          const rowers = crew.filter((r): r is RowerView => !!r);
           const est =
-            crewScore(
-              crew.filter((r): r is RowerView => !!r),
-              comp.weights,
-            ) +
+            crewScore(rowers, comp.weights) +
             boatPart(race, boat, comp) +
-            (filled ? trainerPart(race, trainer, comp) : 0);
+            (filled ? trainerPart(race, trainer, comp, rowers) : 0);
           const boats = you.boats.filter((b) => b.class === race.class).sort((a, b) => b.value - a.value);
           return (
             <li key={race.id} className={cn("rounded-[16px] bg-cream p-3 cut", ok && "bg-[#eef7e6]")}>

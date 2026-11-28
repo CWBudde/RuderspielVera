@@ -1,5 +1,5 @@
 import { t } from "@/i18n";
-import type { CompetitionView, BoatView, RaceSpec, RowerView, Stat, TrainerView } from "@/api/types.gen";
+import type { CompetitionView, BoatView, RaceSpec, RowerView, Stat, TrainerEffect, TrainerView } from "@/api/types.gen";
 
 /**
  * Client-side estimates of the engine's race scoring (docs/PLAN.md "Race scoring"):
@@ -18,24 +18,49 @@ export function crewScore(rowers: RowerView[], weights: CompetitionView["weights
   return Math.round(rowers.reduce((acc, r) => acc + rowerScore(r, weights), 0));
 }
 
+function effectApplies(e: TrainerEffect, comp: CompetitionView): boolean {
+  const weatherOk = !e.weather || e.weather === comp.weather;
+  const contextOk = !e.context || e.context === (comp.context ?? "");
+  return weatherOk && contextOk;
+}
+
 /**
  * Trainer effect per seat under the competition's weather and context (TrainerEffect.context),
- * plus the trainer's current mood (Laune), which the engine adds per seat as well.
+ * plus the trainer's current mood (Laune), which the engine adds per seat as well. Age bonuses
+ * (TrainerEffect.ages) are not included: they depend on the crew, see trainerAgeBonus.
  */
 export function trainerBonus(trainer: TrainerView | undefined, comp: CompetitionView): number {
   if (!trainer) return 0;
   let total = trainer.mood ?? 0;
   for (const e of trainer.effects ?? []) {
-    const weatherOk = !e.weather || e.weather === comp.weather;
-    const contextOk = !e.context || e.context === (comp.context ?? "");
-    if (weatherOk && contextOk) total += e.value;
+    if (!e.ages?.length && effectApplies(e, comp)) total += e.value;
   }
   return total;
 }
 
-/** Trainer part of an entry: per-seat effect × race.trainerScale (engine scoreEntry). */
-export function trainerPart(race: RaceSpec, trainer: TrainerView | undefined, comp: CompetitionView): number {
-  return trainerBonus(trainer, comp) * race.trainerScale;
+/** Number of crew rowers each matching age bonus counts for, times its value (unscaled). */
+export function trainerAgeBonus(trainer: TrainerView | undefined, comp: CompetitionView, crew: RowerView[]): number {
+  if (!trainer) return 0;
+  let total = 0;
+  for (const e of trainer.effects ?? []) {
+    if (!e.ages?.length || !effectApplies(e, comp)) continue;
+    total += e.value * crew.filter((r) => e.ages!.includes(r.age)).length;
+  }
+  return total;
+}
+
+/**
+ * Trainer part of an entry (engine scoreEntry): per-seat effect × race.trainerScale plus the age
+ * bonus per matching rower (× the per-seat factor, trainerScale / seats).
+ */
+export function trainerPart(
+  race: RaceSpec,
+  trainer: TrainerView | undefined,
+  comp: CompetitionView,
+  crew: RowerView[],
+): number {
+  const factor = race.seats > 0 ? race.trainerScale / race.seats : 1;
+  return trainerBonus(trainer, comp) * race.trainerScale + Math.round(trainerAgeBonus(trainer, comp, crew) * factor);
 }
 
 /** Base value of a boat in this competition (städtische Boote get the Ereignis modifier). */

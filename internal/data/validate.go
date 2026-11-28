@@ -163,22 +163,28 @@ func (d *Data) validateTrainers(p *problems, ids, boatIDs map[string]bool) {
 		p.addf("trainers: want 10, got %d", len(d.Trainers))
 	}
 
-	for _, t := range d.Trainers {
-		if t.ID == "" || boatIDs[t.ID] || ids[t.ID] {
-			p.addf("trainer %q: empty or colliding id", t.ID)
+	for _, tr := range d.Trainers {
+		if tr.ID == "" || boatIDs[tr.ID] || ids[tr.ID] {
+			p.addf("trainer %q: empty or colliding id", tr.ID)
 		}
 
-		if len(t.Effects) == 0 {
-			p.addf("trainer %s: no effects", t.ID)
+		if len(tr.Effects) == 0 {
+			p.addf("trainer %s: no effects", tr.ID)
 		}
 
-		for _, e := range t.Effects {
+		for _, e := range tr.Effects {
 			if e.Weather != "" && !slices.Contains(validWeather, e.Weather) {
-				p.addf("trainer %s: bad weather %q", t.ID, e.Weather)
+				p.addf("trainer %s: bad weather %q", tr.ID, e.Weather)
 			}
 
 			if !slices.Contains(validContexts, e.Context) {
-				p.addf("trainer %s: bad context %q", t.ID, e.Context)
+				p.addf("trainer %s: bad context %q", tr.ID, e.Context)
+			}
+
+			for _, a := range e.Ages {
+				if !slices.Contains(validAges, a) {
+					p.addf("trainer %s: bad age %q", tr.ID, a)
+				}
 			}
 		}
 	}

@@ -9,7 +9,7 @@ import (
 
 // scoreEntry computes an entry without incident:
 // total = round(Σ weight·stat over the crew) + boat + (trainer effect + trainer mood) × scale +
-// event bonuses.
+// trainer age bonus + event bonuses.
 func (g *Game) scoreEntry(cs *compState, race RaceSpec, re raceEntry) EntryResult {
 	er := EntryResult{PlayerID: re.pl.id}
 	crew := 0.0
@@ -39,7 +39,8 @@ func (g *Game) scoreEntry(cs *compState, race RaceSpec, re raceEntry) EntryResul
 
 	if re.trainer != nil {
 		er.TrainerID = re.trainer.def.ID
-		er.Trainer = (trainerEffect(re.trainer, cs) + g.mood[re.trainer.def.ID]) * g.d.Rules.TrainerScale(race.Seats)
+		er.Trainer = (trainerEffect(re.trainer, cs)+g.mood[re.trainer.def.ID])*g.d.Rules.TrainerScale(race.Seats) +
+			g.trainerAgeBonus(re.trainer, cs, re.rowers)
 	}
 
 	er.Total = er.Crew + er.BoatValue + er.Trainer + er.EventBonus
@@ -85,24 +86,47 @@ func (g *Game) boatValue(cs *compState, race RaceSpec, bt *boat) int {
 	return max(v, 0)
 }
 
-// trainerEffect sums the trainer's effects matching the competition's weather and context.
-// It applies once per boat / ergo entry.
+// trainerEffect sums the trainer's per-seat effects (not the age bonuses) matching the
+// competition's weather and context.
 func trainerEffect(t *trainer, cs *compState) int {
 	total := 0
 
 	for _, e := range t.def.Effects {
-		if e.Weather != "" && Weather(e.Weather) != cs.weather {
-			continue
+		if len(e.Ages) == 0 && effectMatches(e, cs) {
+			total += e.Value
 		}
-
-		if e.Context != "" && e.Context != cs.def.Context {
-			continue
-		}
-
-		total += e.Value
 	}
 
 	return total
+}
+
+// trainerAgeBonus is the trainer's age bonus in an entry: each matching age effect counts per
+// crew rower of one of its ages (rules.json trainerPerSeat, × trainerFactor).
+func (g *Game) trainerAgeBonus(t *trainer, cs *compState, rowers []*rower) int {
+	total := 0
+
+	for _, e := range t.def.Effects {
+		if len(e.Ages) == 0 || !effectMatches(e, cs) {
+			continue
+		}
+
+		n := 0
+
+		for _, r := range rowers {
+			if slices.Contains(e.Ages, string(r.age)) {
+				n++
+			}
+		}
+
+		total += e.Value * g.d.Rules.TrainerAgeScale(n)
+	}
+
+	return total
+}
+
+func effectMatches(e data.TrainerEffect, cs *compState) bool {
+	return (e.Weather == "" || Weather(e.Weather) == cs.weather) &&
+		(e.Context == "" || e.Context == cs.def.Context)
 }
 
 // rankEntries assigns places and medals in place and sorts the entries by place.

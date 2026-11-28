@@ -103,20 +103,39 @@ func (b *brain) currentComp() *compModel {
 
 // ---------- scoring ----------
 
-// trainerEffect mirrors the engine: effects whose weather and context match, per entry.
-func trainerEffect(t engine.TrainerView, weather engine.Weather, context string) int {
-	total := 0
+// trainerEffect mirrors the engine: per-seat effects whose weather and context match. An age bonus
+// counts per matching rower; it is estimated per seat by the share of the team's rowers it covers.
+func trainerEffect(tm *team, t engine.TrainerView, weather engine.Weather, context string) float64 {
+	total := 0.0
 
-	for _, e := range t.Effects {
-		if e.Weather != "" && e.Weather != weather {
+	for _, eff := range t.Effects {
+		if eff.Weather != "" && eff.Weather != weather {
 			continue
 		}
 
-		if e.Context != "" && e.Context != context {
+		if eff.Context != "" && eff.Context != context {
 			continue
 		}
 
-		total += e.Value
+		if len(eff.Ages) == 0 {
+			total += float64(eff.Value)
+
+			continue
+		}
+
+		if len(tm.rowers) == 0 {
+			continue
+		}
+
+		n := 0
+
+		for _, r := range tm.rowers {
+			if slices.Contains(eff.Ages, r.Age) {
+				n++
+			}
+		}
+
+		total += float64(eff.Value*n) / float64(len(tm.rowers))
 	}
 
 	return total
@@ -176,18 +195,18 @@ func (b *brain) expectedTrainer(tm *team, c *compModel) float64 {
 	sum := 0.0
 
 	for _, w := range weathers {
-		best := math.MinInt
+		best := math.Inf(-1)
 
 		for _, tr := range tm.trainers {
-			v := trainerEffect(tr, w, c.def.Context)
+			v := trainerEffect(tm, tr, w, c.def.Context)
 			if sameSection {
-				v += tr.Mood
+				v += float64(tr.Mood)
 			}
 
 			best = max(best, v)
 		}
 
-		sum += float64(best)
+		sum += best
 	}
 
 	return sum / float64(len(weathers))
@@ -234,7 +253,7 @@ func (b *brain) bestTrainer(t *team, c *compModel, jitter float64) string {
 	best, bestV := "", math.Inf(-1)
 
 	for _, tr := range t.trainers {
-		v := float64(trainerEffect(tr, c.weather, c.def.Context) + tr.Mood)
+		v := trainerEffect(t, tr, c.weather, c.def.Context) + float64(tr.Mood)
 		if jitter > 0 {
 			v += b.rng.NormFloat64() * jitter
 		}

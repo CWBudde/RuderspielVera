@@ -1,8 +1,8 @@
-import { ArrowDownRight, ArrowUpRight, Building2, Frown, Meh, Smile, Star } from "lucide-react";
+import { ArrowDownRight, ArrowUpRight, Building2, Frown, Meh, Smile, Star, Users } from "lucide-react";
 import type { BoatView, TrainerEffect, TrainerView, Weather } from "@/api/types.gen";
 import { Art } from "@/components/Art";
 import { ShellIcon, WeatherIcon } from "@/components/icons";
-import { boatClassLabel, contextLabel } from "@/lib/labels";
+import { ageLabel, boatClassLabel, contextLabel } from "@/lib/labels";
 import { cn } from "@/lib/utils";
 import { t, tData, tk } from "@/i18n";
 import { boatName, trainerAbility, trainerDescription, trainerName } from "@/i18n/data";
@@ -42,6 +42,7 @@ export function effectText(e: TrainerEffect): string {
   const parts: string[] = [];
   if (e.weather) parts.push(tData(`effect.weather.${e.weather}`, e.weather));
   if (e.context) parts.push(contextLabel(e.context));
+  if (e.ages?.length) return `${sign} ${t("effect.perAge", { ages: e.ages.map(ageLabel).join(" + ") })}`;
   return `${sign} ${parts.join(" ") || t("effect.always")}`;
 }
 
@@ -124,6 +125,8 @@ export function TrainerCard({
               >
                 {e.weather ? (
                   <WeatherIcon weather={e.weather} className="size-4 shrink-0" />
+                ) : e.ages?.length ? (
+                  <Users className="size-4 shrink-0" />
                 ) : (
                   <Star className="size-4 shrink-0" />
                 )}

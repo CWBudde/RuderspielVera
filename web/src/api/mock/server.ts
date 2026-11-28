@@ -518,7 +518,7 @@ function resolveCompetition(s: MockState, yours: Lineup) {
           trainerId: trainer?.id,
           crew: crewScore(crew, comp.weights),
           boatValue,
-          trainer: trainerPart(race, trainer, comp),
+          trainer: trainerPart(race, trainer, comp, crew),
           eventBonus,
           penalty: 0,
           total: 0,

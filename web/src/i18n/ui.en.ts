@@ -228,6 +228,7 @@ export const uiEn: Record<keyof typeof uiDe, string> = {
   "boat.city": "City boat",
   "boat.club": "Club boat",
   "boat.value": "Value",
+  "effect.perAge": "per rower ({ages})",
   "effect.always": "always",
   "effect.weather.regen": "in rain",
   "effect.weather.hitze": "in heat",

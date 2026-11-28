@@ -93,23 +93,28 @@ Yara (w).
 
 ### 2.4 Trainers (§14.4)
 
-PoC assumption: trainers have only these effects; each effect applies **once per seat** (per rower
+PoC assumption: each weather or context effect applies **once per seat** (per rower
 in the boat; `trainerPerSeat`, an ergo start has one seat) when its weather and/or context matches.
 Weather effects never apply at Ergo-Cups (no weather there). The values were doubled in the balancing
 pass (section 10) so that a trainer matters against crew scores.
 
-| Trainer    | Fähigkeit            | Effects (per seat)                                        |
-| ---------- | -------------------- | --------------------------------------------------------- |
-| Frau Linke | Regenfest            | Regen +8, Wind −6                                         |
-| Herr Sack  | Sonnenanbeter        | Hitze +10, Regen −10 (Regelwerk example: "Sonne" = Hitze) |
-| Hannah     | Eisbärin             | Kälte +10, Hitze −6                                       |
-| Caro       | Windflüsterin        | Wind +10, Kälte −6                                        |
-| Julian     | Ergo-Spezialist      | Ergo-Cups +8 per start, Hitze −6                          |
-| Aron       | Sprintcoach          | Sprint regattas (RVH, RVB) +8, Wind −6                    |
-| Salim      | Langstreckenprofi    | Long distance (Hildesheim) +10, Regen −6                  |
-| Fridtjof   | Gewohnheitstier      | Normal weather +8, Kälte −8                               |
-| Josef      | Nordlicht            | Wind +6, Regen +6, Hitze −12                              |
-| Clara      | Schönwettertrainerin | Hitze +6, Normal +6, Wind −8                              |
+Designer rule: every trainer also has an **age bonus** that ignores weather and context: it counts
+once per rower of the trainer's age group(s) in the boat (or ergo start), × `trainerFactor`.
+Three trainers each coach Kinder, B-Junioren and A-Junioren (+3); Herr Sack coaches both junior
+groups for a smaller +2.
+
+| Trainer    | Fähigkeit            | Effects (per seat)                                        | Age bonus (per rower) |
+| ---------- | -------------------- | --------------------------------------------------------- | --------------------- |
+| Frau Linke | Regenfest            | Regen +8, Wind −6                                         | Kinder +3             |
+| Herr Sack  | Sonnenanbeter        | Hitze +10, Regen −10 (Regelwerk example: "Sonne" = Hitze) | B + A +2              |
+| Hannah     | Eisbärin             | Kälte +10, Hitze −6                                       | B +3                  |
+| Caro       | Windflüsterin        | Wind +10, Kälte −6                                        | Kinder +3             |
+| Julian     | Ergo-Spezialist      | Ergo-Cups +8 per start, Hitze −6                          | A +3                  |
+| Aron       | Sprintcoach          | Sprint regattas (RVH, RVB) +8, Wind −6                    | B +3                  |
+| Salim      | Langstreckenprofi    | Long distance (Hildesheim) +10, Regen −6                  | A +3                  |
+| Fridtjof   | Gewohnheitstier      | Normal weather +8, Kälte −8                               | A +3                  |
+| Josef      | Nordlicht            | Wind +6, Regen +6, Hitze −12                              | B +3                  |
+| Clara      | Schönwettertrainerin | Hitze +6, Normal +6, Wind −8                              | Kinder +3             |
 
 ### 2.4.1 Trainer mood (Laune)
 

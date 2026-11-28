@@ -117,6 +117,11 @@ export interface BoatView {
 export interface TrainerEffect {
   weather?: Weather; // empty = applies regardless of weather
   context?: string; // "", "ergo", "sprint", "langstrecke"
+  /**
+   * Ages makes the effect an age bonus: it counts once per crew rower of one of these ages
+   * instead of once per seat (RaceSpec.trainerScale does not apply; × rules.json trainerFactor).
+   */
+  ages?: AgeGroup[];
   value: number /* int */; // per seat (rules.json trainerPerSeat) or per boat
 }
 export interface TrainerView {

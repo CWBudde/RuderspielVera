@@ -48,11 +48,14 @@ type Boat struct {
 	ArtKey     string `json:"artKey"`
 }
 
-// TrainerEffect applies per boat / ergo entry when weather and context match (empty = any).
+// TrainerEffect applies per seat (or per boat, see Rules.TrainerPerSeat) when weather and context
+// match (empty = any). An effect with Ages is an age bonus: it counts once per rower of one of
+// these ages in the boat instead of once per seat (per boat: once if any rower matches).
 type TrainerEffect struct {
-	Weather string `json:"weather,omitempty"`
-	Context string `json:"context,omitempty"`
-	Value   int    `json:"value"`
+	Weather string   `json:"weather,omitempty"`
+	Context string   `json:"context,omitempty"`
+	Ages    []string `json:"ages,omitempty"`
+	Value   int      `json:"value"`
 }
 
 type Trainer struct {
@@ -326,6 +329,20 @@ func (r Rules) BoatScale(seats int) int { return scale(r.BoatValuePerSeat, r.Boa
 
 // TrainerScale is how often a trainer effect counts in a race with the given number of seats.
 func (r Rules) TrainerScale(seats int) int { return scale(r.TrainerPerSeat, r.TrainerFactor, seats) }
+
+// TrainerAgeScale is how often a trainer age bonus counts when matching of the crew's rowers have
+// one of its ages: once per matching rower (per seat rules) or once if any matches (per boat).
+func (r Rules) TrainerAgeScale(matching int) int {
+	if matching == 0 {
+		return 0
+	}
+
+	if !r.TrainerPerSeat {
+		matching = 1
+	}
+
+	return scale(true, r.TrainerFactor, matching)
+}
 
 func scale(perSeat bool, factor, seats int) int {
 	if factor == 0 {

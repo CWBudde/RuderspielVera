@@ -223,7 +223,12 @@ func trainerView(t *data.Trainer) TrainerView {
 		Effects: []TrainerEffect{},
 	}
 	for _, e := range t.Effects {
-		v.Effects = append(v.Effects, TrainerEffect{Weather: Weather(e.Weather), Context: e.Context, Value: e.Value})
+		te := TrainerEffect{Weather: Weather(e.Weather), Context: e.Context, Value: e.Value}
+		for _, a := range e.Ages {
+			te.Ages = append(te.Ages, AgeGroup(a))
+		}
+
+		v.Effects = append(v.Effects, te)
 	}
 
 	return v

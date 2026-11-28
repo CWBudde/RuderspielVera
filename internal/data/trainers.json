@@ -4,10 +4,11 @@
     "name": "Frau Linke",
     "gender": "w",
     "ability": "Regenfest",
-    "description": "Bei Regen +8 pro Ruderplatz. Bei Wind −6 pro Ruderplatz.",
+    "description": "Bei Regen +8 pro Ruderplatz. Bei Wind −6 pro Ruderplatz. Pro Kind im Boot +3.",
     "effects": [
       { "weather": "regen", "value": 8 },
-      { "weather": "wind", "value": -6 }
+      { "weather": "wind", "value": -6 },
+      { "ages": ["kinder"], "value": 3 }
     ],
     "artKey": "trainer-w"
   },
@@ -16,10 +17,11 @@
     "name": "Herr Sack",
     "gender": "m",
     "ability": "Sonnenanbeter",
-    "description": "Bei Hitze +10 pro Ruderplatz. Bei Regen −10 pro Ruderplatz.",
+    "description": "Bei Hitze +10 pro Ruderplatz. Bei Regen −10 pro Ruderplatz. Pro Junior/in (B und A) im Boot +2.",
     "effects": [
       { "weather": "hitze", "value": 10 },
-      { "weather": "regen", "value": -10 }
+      { "weather": "regen", "value": -10 },
+      { "ages": ["b", "a"], "value": 2 }
     ],
     "artKey": "trainer-m"
   },
@@ -28,10 +30,11 @@
     "name": "Hannah",
     "gender": "w",
     "ability": "Eisbärin",
-    "description": "Bei Kälte +10 pro Ruderplatz. Bei Hitze −6 pro Ruderplatz.",
+    "description": "Bei Kälte +10 pro Ruderplatz. Bei Hitze −6 pro Ruderplatz. Pro B-Junior/in im Boot +3.",
     "effects": [
       { "weather": "kaelte", "value": 10 },
-      { "weather": "hitze", "value": -6 }
+      { "weather": "hitze", "value": -6 },
+      { "ages": ["b"], "value": 3 }
     ],
     "artKey": "trainer-w"
   },
@@ -40,10 +43,11 @@
     "name": "Caro",
     "gender": "w",
     "ability": "Windflüsterin",
-    "description": "Bei Wind +10 pro Ruderplatz. Bei Kälte −6 pro Ruderplatz.",
+    "description": "Bei Wind +10 pro Ruderplatz. Bei Kälte −6 pro Ruderplatz. Pro Kind im Boot +3.",
     "effects": [
       { "weather": "wind", "value": 10 },
-      { "weather": "kaelte", "value": -6 }
+      { "weather": "kaelte", "value": -6 },
+      { "ages": ["kinder"], "value": 3 }
     ],
     "artKey": "trainer-w"
   },
@@ -52,10 +56,11 @@
     "name": "Julian",
     "gender": "m",
     "ability": "Ergo-Spezialist",
-    "description": "Bei Ergo-Cups +8 pro Start. Bei Hitze −6 pro Ruderplatz.",
+    "description": "Bei Ergo-Cups +8 pro Start. Bei Hitze −6 pro Ruderplatz. Pro A-Junior/in im Boot +3.",
     "effects": [
       { "context": "ergo", "value": 8 },
-      { "weather": "hitze", "value": -6 }
+      { "weather": "hitze", "value": -6 },
+      { "ages": ["a"], "value": 3 }
     ],
     "artKey": "trainer-m"
   },
@@ -64,10 +69,11 @@
     "name": "Aron",
     "gender": "m",
     "ability": "Sprintcoach",
-    "description": "Bei Sprintregatten (RVH, RVB) +8 pro Ruderplatz. Bei Wind −6 pro Ruderplatz.",
+    "description": "Bei Sprintregatten (RVH, RVB) +8 pro Ruderplatz. Bei Wind −6 pro Ruderplatz. Pro B-Junior/in im Boot +3.",
     "effects": [
       { "context": "sprint", "value": 8 },
-      { "weather": "wind", "value": -6 }
+      { "weather": "wind", "value": -6 },
+      { "ages": ["b"], "value": 3 }
     ],
     "artKey": "trainer-m"
   },
@@ -76,10 +82,11 @@
     "name": "Salim",
     "gender": "m",
     "ability": "Langstreckenprofi",
-    "description": "Bei Langstreckenregatten (Hildesheim) +10 pro Ruderplatz. Bei Regen −6 pro Ruderplatz.",
+    "description": "Bei Langstreckenregatten (Hildesheim) +10 pro Ruderplatz. Bei Regen −6 pro Ruderplatz. Pro A-Junior/in im Boot +3.",
     "effects": [
       { "context": "langstrecke", "value": 10 },
-      { "weather": "regen", "value": -6 }
+      { "weather": "regen", "value": -6 },
+      { "ages": ["a"], "value": 3 }
     ],
     "artKey": "trainer-m"
   },
@@ -88,10 +95,11 @@
     "name": "Fridtjof",
     "gender": "m",
     "ability": "Gewohnheitstier",
-    "description": "Bei normalem Wetter +8 pro Ruderplatz. Bei Kälte −8 pro Ruderplatz.",
+    "description": "Bei normalem Wetter +8 pro Ruderplatz. Bei Kälte −8 pro Ruderplatz. Pro A-Junior/in im Boot +3.",
     "effects": [
       { "weather": "normal", "value": 8 },
-      { "weather": "kaelte", "value": -8 }
+      { "weather": "kaelte", "value": -8 },
+      { "ages": ["a"], "value": 3 }
     ],
     "artKey": "trainer-m"
   },
@@ -100,11 +108,12 @@
     "name": "Josef",
     "gender": "m",
     "ability": "Nordlicht",
-    "description": "Bei Wind +6 und bei Regen +6 pro Ruderplatz. Bei Hitze −12 pro Ruderplatz.",
+    "description": "Bei Wind +6 und bei Regen +6 pro Ruderplatz. Bei Hitze −12 pro Ruderplatz. Pro B-Junior/in im Boot +3.",
     "effects": [
       { "weather": "wind", "value": 6 },
       { "weather": "regen", "value": 6 },
-      { "weather": "hitze", "value": -12 }
+      { "weather": "hitze", "value": -12 },
+      { "ages": ["b"], "value": 3 }
     ],
     "artKey": "trainer-m"
   },
@@ -113,11 +122,12 @@
     "name": "Clara",
     "gender": "w",
     "ability": "Schönwettertrainerin",
-    "description": "Bei Hitze +6 und bei normalem Wetter +6 pro Ruderplatz. Bei Wind −8 pro Ruderplatz.",
+    "description": "Bei Hitze +6 und bei normalem Wetter +6 pro Ruderplatz. Bei Wind −8 pro Ruderplatz. Pro Kind im Boot +3.",
     "effects": [
       { "weather": "hitze", "value": 6 },
       { "weather": "normal", "value": 6 },
-      { "weather": "wind", "value": -8 }
+      { "weather": "wind", "value": -8 },
+      { "ages": ["kinder"], "value": 3 }
     ],
     "artKey": "trainer-w"
   }
