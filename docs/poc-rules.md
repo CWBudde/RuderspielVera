@@ -76,8 +76,10 @@ Yara (w).
   | Class  | City boats (value)                       | Outlined group (8–10)                                          |
   | ------ | ---------------------------------------- | -------------------------------------------------------------- |
   | Einer  | Ice-Man, Manpower, Kalypso, Reinfall (1) | Zwergenkreuzer 8, Traumstart 9, Rennschlumpf 8, Singlespeed 10 |
-  | Zweier | Bi-Turbo, Black Sword, Goodspeed (2)     | Freiheit 8, X-Wing 10, Laufwunder 9, H zwei O 8                |
-  | Vierer | Simsalabim, Oshi, Need 4 Speed (4)       | Q 10, 5 Freunde 9, Wilhelm 8                                   |
+  | Zweier | Bi-Turbo, Black Sword, Goodspeed (2)     | Freiheit 8, X-Wing 10, Laufwunder 9, H2O 8                     |
+  | Vierer | Simsalabim, Oshi, Need 4 Speed (4)       | Q 10, 5 Freunde 9, Wilhelm 8, Vierer mit Freunden 9, Blitz 8   |
+
+  Vierer mit Freunden (a DRC gig double four, christened 2007) and Blitz (the HRC's first boat, 1881) are additions from the Hannover club sites, not part of the handwritten list.
 
 - Designer rule: every player owns the eight **Kraftwerk** (value 8), rowed only at the
   RVB-Endspurt. Human players (not bots) are offered the eight **Paintrain** (value 12) in the last

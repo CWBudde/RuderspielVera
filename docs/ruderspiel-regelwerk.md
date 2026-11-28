@@ -508,7 +508,7 @@ Die Namensliste enthält zwei Gruppen regulärer Boote. Die zweite ist handschri
 | Kategorie | Zweite Namensgruppe (umrandet)                                          |
 | --------- | ----------------------------------------------------------------------- |
 | Einer     | Zwergenkreuzer, Traumstart, Rennschlumpf (Lesart unsicher), Singlespeed |
-| Zweier    | Freiheit, X-Wing, Laufwunder, H zwei O                                  |
+| Zweier    | Freiheit, X-Wing, Laufwunder, H2O (bestätigt)                           |
 | Vierer    | Q, 5 Freunde, Wilhelm                                                   |
 
 Die regulären Achter Hannover, Kraftwerk und Pointbreak (letzter Name unsicher) sind in den Notizen durchgestrichen und gehören nicht zum normalen Bootsbestand. Der einheitliche Sonder-Achter für die Endspurtregatta erhält gegebenenfalls noch einen Namen.

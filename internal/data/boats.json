@@ -80,10 +80,19 @@
   { "id": "freiheit", "name": "Freiheit", "class": "2x", "value": 8, "group": "premium", "artKey": "boat-2x" },
   { "id": "x-wing", "name": "X-Wing", "class": "2x", "value": 10, "group": "premium", "artKey": "boat-2x" },
   { "id": "laufwunder", "name": "Laufwunder", "class": "2x", "value": 9, "group": "premium", "artKey": "boat-2x" },
-  { "id": "h-zwei-o", "name": "H zwei O", "class": "2x", "value": 8, "group": "premium", "artKey": "boat-2x" },
+  { "id": "h-zwei-o", "name": "H2O", "class": "2x", "value": 8, "group": "premium", "artKey": "boat-2x" },
   { "id": "q", "name": "Q", "class": "4x", "value": 10, "group": "premium", "artKey": "boat-4x" },
   { "id": "5-freunde", "name": "5 Freunde", "class": "4x", "value": 9, "group": "premium", "artKey": "boat-4x" },
   { "id": "wilhelm", "name": "Wilhelm", "class": "4x", "value": 8, "group": "premium", "artKey": "boat-4x" },
+  {
+    "id": "vierer-mit-freunden",
+    "name": "Vierer mit Freunden",
+    "class": "4x",
+    "value": 9,
+    "group": "premium",
+    "artKey": "boat-4x"
+  },
+  { "id": "blitz", "name": "Blitz", "class": "4x", "value": 8, "group": "premium", "artKey": "boat-4x" },
 
   {
     "id": "kraftwerk",

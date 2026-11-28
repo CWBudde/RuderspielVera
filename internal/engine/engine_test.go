@@ -76,8 +76,8 @@ func TestNewDeal(t *testing.T) {
 		}
 	}
 
-	if rowers != 1 || boats != 12 || trainers != 4 {
-		t.Errorf("pool = %d rowers, %d boats, %d trainers; want 1/12/4", rowers, boats, trainers)
+	if rowers != 1 || boats != 14 || trainers != 4 {
+		t.Errorf("pool = %d rowers, %d boats, %d trainers; want 1/14/4", rowers, boats, trainers)
 	}
 
 	if g.CurrentPhase("p1").Kind != PhaseAck {

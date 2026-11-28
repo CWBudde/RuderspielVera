@@ -279,7 +279,7 @@ export const NAMED_BOATS: [string, string, number][] = [
   ["Freiheit", "2x", 8],
   ["X-Wing", "2x", 10],
   ["Laufwunder", "2x", 9],
-  ["H zwei O", "2x", 9],
+  ["H2O", "2x", 9],
   ["Q", "4x", 10],
   ["5 Freunde", "4x", 9],
   ["Wilhelm", "4x", 8],
