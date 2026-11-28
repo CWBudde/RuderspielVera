@@ -81,3 +81,14 @@ export function playerColor(players: { id: string }[], id: string): string {
   const i = players.findIndex((p) => p.id === id);
   return PLAYER_COLORS[i >= 0 ? i % PLAYER_COLORS.length : 0];
 }
+
+/**
+ * Where a competition takes place and how long it is ("Maschsee, Hannover · 1000 m"); "" when the
+ * station has neither. The venue is a proper name and stays untranslated.
+ */
+export function venueLine(x: { venue?: string; distance?: number } | undefined): string {
+  if (!x) return "";
+  const d = x.distance ?? 0;
+  const dist = d <= 0 ? "" : d >= 2000 && d % 1000 === 0 ? `${d / 1000} km` : `${d} m`;
+  return [x.venue ?? "", dist].filter(Boolean).join(" · ");
+}

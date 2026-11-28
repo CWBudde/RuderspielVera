@@ -148,7 +148,7 @@ func TestValidateIncidentsAndMotivation(t *testing.T) {
 	}
 
 	d.Rules.Incidents.KenternBySeats = map[int]int{1: 20, 2: 10, 4: 5, 3: 1}
-	d.Rules.Incidents.Material = 900
+	d.Rules.Incidents.Material = 990 // + Krebs max 10 + Kentern 20 > 1000 ‰
 	d.Rules.Incidents.KrebsScaling = KrebsScaling{SeatPercent: map[int]int{1: 100, 2: 100, 4: 100}, Min: 50, Max: 10}
 	d.Competitions["jtfo"].Weights = map[string]float64{"technik": 1}
 

@@ -2,11 +2,14 @@
 
 ## Context
 
-`/mnt/projekte/Code/RuderspielVera` holds only the rules draft `ruderspiel-regelwerk.md` (German, many
-points still **Offen**) and two style examples: `Kartendesign fürs Ruderspiel.png` (navy/white card
-frames, watercolour-ink portraits, stat rows with icons) and `Maschsee Hannover_ Das große
-Regatta-Spielbrett.png` (illustrated board around the Maschsee, pastel round stations by type). It is
-not yet a git repo.
+The project started from the rules draft `ruderspiel-regelwerk.md` (German, many points still
+**Offen**) and two style examples (card design, illustrated Maschsee board). Phases 0–7 below are
+done: the PoC is playable against bots, over HTTP and as a static WebAssembly build.
+
+Status of the later phases (see the end of this file): multiplayer lobbies, SSE push, seat resume,
+turn timeout with bot fallback, rate limiting, k3s deployment, the PWA and CI (Go tests, lint,
+format, web build, Pages) have landed. Persistence is file snapshots of the decision log, not
+PostgreSQL; realtime uses SSE, not WebSockets; there are no accounts.
 
 Goal: a responsive (smartphone-first) multiplayer rowing-management game with a Go backend and a
 React-TS frontend. The first PoC is playable as **one human vs. two computer opponents**. Decision taken:

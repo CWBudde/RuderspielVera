@@ -15,7 +15,12 @@
     "kenternBySeats": { "1": 20, "2": 10, "4": 5, "8": 2 },
     "material": 30,
     "krebs": 75,
-    "krebsScaling": { "seatPercent": { "1": 100, "2": 115, "4": 130, "8": 150 }, "technikPerSeat": 14, "min": 10, "max": 225 }
+    "krebsScaling": {
+      "seatPercent": { "1": 100, "2": 115, "4": 130, "8": 150 },
+      "technikPerSeat": 14,
+      "min": 10,
+      "max": 225
+    }
   },
   "krebsPenalty": 10,
   "weatherTable": ["regen", "hitze", "wind", "kaelte", "normal", "normal"],

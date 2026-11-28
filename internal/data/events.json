@@ -241,5 +241,76 @@
       "motivation": 2
     },
     "description": "Einmal um den Maschsee (6 km) mit der ganzen Familie: Ausdauer +6, Motivation +2."
+  },
+  {
+    "type": "schlachtruf",
+    "name": "Randale, Bambule!",
+    "weight": 5,
+    "scope": "any",
+    "value": 0,
+    "stats": {
+      "motivation": 4
+    },
+    "description": "Der Schlachtruf vom Steg geht unter die Haut: +4 Motivation."
+  },
+  {
+    "type": "gummibaerchenpokal",
+    "name": "Gummibärchenpokal",
+    "weight": 5,
+    "scope": "any",
+    "value": 0,
+    "stats": {
+      "technik": 4,
+      "motivation": 2
+    },
+    "description": "Für die sauberste Technik gibt es den Gummibärchenpokal: +4 Technik, +2 Motivation."
+  },
+  {
+    "type": "talentiade",
+    "name": "Talentiade",
+    "weight": 5,
+    "scope": "any",
+    "value": 0,
+    "stats": {
+      "kraft": 3,
+      "geschwindigkeit": 3
+    },
+    "description": "Beim Sichtungstest überrascht dieser Ruderer alle: +3 Kraft, +3 Geschwindigkeit."
+  },
+  {
+    "type": "kenteruebung",
+    "name": "Kenterübung",
+    "weight": 5,
+    "scope": "any",
+    "value": 0,
+    "stats": {
+      "technik": 3,
+      "motivation": 2
+    },
+    "description": "Wer einmal freiwillig gekentert ist, hat keine Angst mehr vor dem Wasser: +3 Technik, +2 Motivation."
+  },
+  {
+    "type": "glueckssocken",
+    "name": "Glückssocken",
+    "weight": 5,
+    "scope": "any",
+    "value": 0,
+    "stats": {
+      "motivation": 3,
+      "geschwindigkeit": 2
+    },
+    "description": "Die Vereinssocken sind ab jetzt bei jedem Start dabei: +3 Motivation, +2 Geschwindigkeit."
+  },
+  {
+    "type": "ergo-extraschicht",
+    "name": "Übung macht den Meister",
+    "weight": 5,
+    "scope": "ergo",
+    "value": 0,
+    "stats": {
+      "kraft": 3
+    },
+    "bonus": 3,
+    "description": "Extraeinheiten auf dem Ergometer: +3 Kraft und +3 bei jedem Ergo-Cup."
   }
 ]

@@ -2,6 +2,8 @@
   "bremen": {
     "name": "Regatta Bremen",
     "kind": "regatta",
+    "venue": "Bremen",
+    "distance": 1500,
     "water": true,
     "guestOffset": -1.0,
     "weights": {
@@ -47,6 +49,8 @@
   "drc": {
     "name": "DRC-Ergo-Cup",
     "kind": "ergocup",
+    "venue": "Zentrum für Hochschulsport, Hannover",
+    "distance": 1000,
     "context": "ergo",
     "water": false,
     "guestOffset": 5.5,
@@ -108,6 +112,8 @@
   "hildesheim": {
     "name": "Hildesheimer Regatta",
     "kind": "regatta",
+    "venue": "Hildesheim",
+    "distance": 6000,
     "context": "langstrecke",
     "water": true,
     "guestOffset": -4.5,
@@ -196,6 +202,8 @@
   "jtfo": {
     "name": "Jugend trainiert für Olympia",
     "kind": "jtfo",
+    "venue": "Hannover",
+    "distance": 1000,
     "water": true,
     "guestOffset": -1.25,
     "weights": {
@@ -300,6 +308,8 @@
   "kassel": {
     "name": "Kasselregatta",
     "kind": "regatta",
+    "venue": "Kassel",
+    "distance": 1000,
     "water": true,
     "guestOffset": -1.5,
     "weights": {
@@ -345,6 +355,7 @@
   "mindoor": {
     "name": "Mindoor-Cup",
     "kind": "ergocup",
+    "venue": "Minden",
     "context": "ergo",
     "water": false,
     "guestOffset": 1.0,
@@ -406,6 +417,8 @@
   "osnabrueck": {
     "name": "Osnabrücker Ergo-Cup",
     "kind": "ergocup",
+    "venue": "Osnabrück",
+    "distance": 1000,
     "context": "ergo",
     "water": false,
     "guestOffset": 7.0,
@@ -467,6 +480,7 @@
   "rvb": {
     "name": "RVB-Endspurtregatta",
     "kind": "regatta",
+    "venue": "Maschsee, Hannover",
     "context": "sprint",
     "water": true,
     "guestOffset": -3.5,
@@ -503,6 +517,7 @@
   "rvh": {
     "name": "RVH-Herbstsprintregatta",
     "kind": "regatta",
+    "venue": "Maschsee, Hannover",
     "context": "sprint",
     "water": true,
     "guestOffset": -3.5,
@@ -566,6 +581,7 @@
   "schillerschule": {
     "name": "Regatta Schillerschule",
     "kind": "regatta",
+    "venue": "Hannover",
     "water": true,
     "guestOffset": 1.0,
     "weights": {
@@ -611,6 +627,7 @@
   "vr1": {
     "name": "Verbandsregatta I",
     "kind": "regatta",
+    "venue": "Maschsee, Hannover",
     "water": true,
     "guestOffset": 2.5,
     "weights": {
@@ -656,6 +673,7 @@
   "vr2": {
     "name": "Verbandsregatta II",
     "kind": "regatta",
+    "venue": "Maschsee, Hannover",
     "water": true,
     "weights": {
       "geschwindigkeit": 1,

@@ -170,6 +170,12 @@ export interface StationView {
   type: StationType;
   name: string; // German fallback, e.g. "Hildesheimer Regatta"
   info: string; // German fallback: what happens here
+  /**
+   * Venue and Distance (metres) of a competition station; empty / 0 for other stations or when
+   * unknown. Venue is a proper name and not translated.
+   */
+  venue?: string;
+  distance?: number /* int */;
 }
 export interface PlayerSummary {
   id: string;
@@ -234,6 +240,8 @@ export interface CompetitionView {
   cityBoatMod?: number /* int */;
   teamEvent: boolean; // JTFO: all races form one team score
   notes: Msg[]; // rule hints (static competition notes, Ereignis modifiers)
+  venue?: string; // e.g. "Maschsee, Hannover" (not translated)
+  distance?: number /* int */; // race length in metres, 0 = varies / unknown
 }
 /**
  * PhaseView is what the current station asks of the viewing player.

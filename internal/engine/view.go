@@ -22,9 +22,14 @@ func (g *Game) View(playerID string) GameView {
 		Winners:          g.Winners(),
 	}
 	for i, st := range g.d.Calendar {
-		gv.Calendar = append(gv.Calendar, StationView{
+		sv := StationView{
 			ID: st.ID, Index: i, Section: st.Section, Type: StationType(st.Type), Name: st.Name, Info: st.Info,
-		})
+		}
+		if c := g.d.Competitions[st.Competition]; c != nil {
+			sv.Venue, sv.Distance = c.Venue, c.Distance
+		}
+
+		gv.Calendar = append(gv.Calendar, sv)
 	}
 
 	for _, pl := range g.players {
@@ -98,6 +103,7 @@ func (g *Game) CurrentPhase(playerID string) PhaseView {
 			ID: cs.def.ID, Name: cs.name, Kind: StationType(cs.def.Kind), Weights: maps.Clone(cs.weights),
 			Races: g.raceViews(cs, g.playerByID(playerID)), Weather: cs.weather, TeamEvent: cs.team(),
 			Notes: slices.Clone(cs.notes), Context: cs.def.Context, CityBoatMod: cs.cityBoatMod,
+			Venue: cs.def.Venue, Distance: cs.def.Distance,
 		}
 	}
 

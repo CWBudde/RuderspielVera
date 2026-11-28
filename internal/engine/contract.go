@@ -202,6 +202,10 @@ type StationView struct {
 	Type    StationType `json:"type"`
 	Name    string      `json:"name"` // German fallback, e.g. "Hildesheimer Regatta"
 	Info    string      `json:"info"` // German fallback: what happens here
+	// Venue and Distance (metres) of a competition station; empty / 0 for other stations or when
+	// unknown. Venue is a proper name and not translated.
+	Venue    string `json:"venue,omitempty"`
+	Distance int    `json:"distance,omitempty"`
 }
 
 type PlayerSummary struct {
@@ -253,9 +257,11 @@ type CompetitionView struct {
 	// Context is matched against TrainerEffect.Context ("", "ergo", "sprint", "langstrecke").
 	Context string `json:"context,omitempty"`
 	// CityBoatMod is added to the value of städtische Boote (Ereignis modifier, may be negative).
-	CityBoatMod int   `json:"cityBoatMod,omitempty"`
-	TeamEvent   bool  `json:"teamEvent"` // JTFO: all races form one team score
-	Notes       []Msg `json:"notes"`     // rule hints (static competition notes, Ereignis modifiers)
+	CityBoatMod int    `json:"cityBoatMod,omitempty"`
+	TeamEvent   bool   `json:"teamEvent"`          // JTFO: all races form one team score
+	Notes       []Msg  `json:"notes"`              // rule hints (static competition notes, Ereignis modifiers)
+	Venue       string `json:"venue,omitempty"`    // e.g. "Maschsee, Hannover" (not translated)
+	Distance    int    `json:"distance,omitempty"` // race length in metres, 0 = varies / unknown
 }
 
 // PhaseView is what the current station asks of the viewing player.

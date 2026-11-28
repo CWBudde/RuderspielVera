@@ -71,4 +71,4 @@ members generated from private photos, published with the user's OK (the photos 
 | people/tobias-b       | web/src/assets/art/people/tobias-b.jpg       | 600x800   | people-tobias-b01       | exec-eea33639-69c1-40c2-9f92-a6e767a6806f   | 2026-11-27 | likeness, published                   |
 | people/vera-b         | web/src/assets/art/people/vera-b.jpg         | 600x800   | people-vera-b01         | exec-060eeb17-1d5d-4da6-8422-7e1a6d5e817f   | 2026-11-27 | likeness, published                   |
 | people/yara-a         | web/src/assets/art/people/yara-a.jpg         | 600x800   | people-yara-a01         | exec-b73fe65f-451a-4fd0-8288-4bf9fe9d3abc   | 2026-11-27 | likeness, published                   |
-| people/friedjof       | web/src/assets/art/people/friedjof.jpg       | 600x800   | people-friedjof01       | exec-d81ab060-3140-4329-8a5c-ff17aa662b1b   | 2026-11-28 | trainer Fridtjof, named portrait      |
+| people/fridtjof       | web/src/assets/art/people/fridtjof.jpg       | 600x800   | people-fridtjof01       | exec-d81ab060-3140-4329-8a5c-ff17aa662b1b   | 2026-11-28 | trainer Fridtjof, named portrait      |

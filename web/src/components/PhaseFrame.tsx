@@ -1,8 +1,9 @@
 import type { ReactNode } from "react";
-import { Dice5 } from "lucide-react";
+import { Dice5, MapPin } from "lucide-react";
 import { useGame } from "@/hooks/game";
 import { stationName } from "@/i18n/data";
 import { cn } from "@/lib/utils";
+import { venueLine } from "@/lib/labels";
 import { t, tm } from "@/i18n";
 
 /** Common frame for every Aktion view: title, prompt, content and a sticky action bar. */
@@ -25,6 +26,7 @@ export function PhaseFrame({
   const st = view.calendar[view.current];
   const ownTitle = title !== stationName(st);
   const ereignisse = view.activeEreignisse ?? [];
+  const venue = venueLine(st);
   return (
     <div className={cn("flex flex-col", className)}>
       <header className="mb-3">
@@ -41,6 +43,11 @@ export function PhaseFrame({
             )}
           >
             {prompt}
+          </p>
+        )}
+        {venue && (
+          <p className="mt-1 inline-flex items-center gap-1 text-sm text-ink/70">
+            <MapPin className="size-3.5" aria-hidden /> {venue}
           </p>
         )}
         {headerExtra}

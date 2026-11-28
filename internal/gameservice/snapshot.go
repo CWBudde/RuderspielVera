@@ -15,8 +15,9 @@ import (
 // motivation, weaker guest crews, shorter regular regattas; 5: Krebs chance scaled by boat size
 // and crew Technik, Seelenzwilling links a teammate, Wanderfahrt for Junioren only; 6: named city
 // boats dealt at random with values 1/2/4, loan boats worth 0, own eights Kraftwerk / Paintrain,
-// boat values count once instead of twice per seat).
-const SnapshotVersion = 6
+// boat values count once instead of twice per seat; 7: Hannover content pack, eight more
+// Ereignisse and six more event cards change the seeded deck draws).
+const SnapshotVersion = 7
 
 // Snapshot is everything needed to rebuild a game with engine.Replay: config (incl. seed),
 // tokens and the decision log. It is the on-disk file of the HTTP server and the localStorage

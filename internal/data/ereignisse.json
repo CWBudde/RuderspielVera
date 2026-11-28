@@ -227,5 +227,79 @@
     "effect": "guest_mod",
     "value": -2,
     "description": "Der Bus der Gäste stand stundenlang auf der A2: Beim nächsten Wettkampf sind die Gastmannschaften schwächer (−2 auf jede Eigenschaft)."
+  },
+  {
+    "id": "anhaenger-panne",
+    "name": "Anhänger-Panne",
+    "weight": 8,
+    "scope": "water",
+    "effect": "material_chance",
+    "value": 80,
+    "description": "Der Bootsanhänger bleibt auf der Autobahn liegen, die Boote kommen spät an und werden hastig aufgeriggt: Beim nächsten Wasserwettkampf ist Materialschaden wahrscheinlicher."
+  },
+  {
+    "id": "laub-arbeitsdienst",
+    "name": "Arbeitsdienst: Laub",
+    "weight": 8,
+    "scope": "any",
+    "effect": "training_points",
+    "value": 7,
+    "description": "Zehn Kubikmeter Laub liegen auf dem Bootsplatz, und nur wenige Freiwillige sind da: Das nächste Training bringt nur 7 Trainingspunkte."
+  },
+  {
+    "id": "projektwoche",
+    "name": "Projektwoche",
+    "weight": 8,
+    "scope": "any",
+    "effect": "training_points",
+    "value": 13,
+    "description": "Projektwoche: Statt Unterricht geht es jeden Tag zum Bootshaus. Das nächste Training bringt 13 Trainingspunkte."
+  },
+  {
+    "id": "wellengang",
+    "name": "Wellengang",
+    "weight": 8,
+    "scope": "water",
+    "effect": "krebs_chance",
+    "value": 120,
+    "description": "Wind und Wellen auf der Regattastrecke, die ersten Boote laufen voll: Beim nächsten Wasserwettkampf ist ein Krebs wahrscheinlicher."
+  },
+  {
+    "id": "lichterfahrt",
+    "name": "Lichterfahrt auf dem Maschsee",
+    "weight": 6,
+    "scope": "any",
+    "effect": "all_stat",
+    "stat": "motivation",
+    "value": 2,
+    "description": "Mit Sondergenehmigung geht es nach Einbruch der Dunkelheit mit Lichterketten aufs Wasser: Alle Ruderer +2 Motivation."
+  },
+  {
+    "id": "nikolausrudern",
+    "name": "Nikolausrudern",
+    "weight": 6,
+    "scope": "any",
+    "effect": "all_stat",
+    "stat": "technik",
+    "value": 1,
+    "description": "Verkleidet und in gemischten Booten wird ruhig und sauber gerudert: Alle Ruderer +1 Technik."
+  },
+  {
+    "id": "spendenlauf",
+    "name": "Spendenlauf",
+    "weight": 8,
+    "scope": "any",
+    "effect": "sponsor_pick",
+    "value": 1,
+    "description": "Runde um Runde für die Vereinskasse: Bei der nächsten Kartenauswahl darf das Team mit den wenigsten Medaillenpunkten eine Karte mehr wählen."
+  },
+  {
+    "id": "bootswart",
+    "name": "Der Bootswart greift durch",
+    "weight": 8,
+    "scope": "water",
+    "effect": "city_boat_mod",
+    "value": 1,
+    "description": "Der Bootswart hat die städtischen Boote neu eingestellt und poliert: Beim nächsten Wasserwettkampf zählen sie +1."
   }
 ]

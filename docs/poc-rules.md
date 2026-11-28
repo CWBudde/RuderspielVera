@@ -176,7 +176,8 @@ random walk:
   enters at least one race.
 - Score per entry (§10.1 working model, PoC weights):
   `crew = Σ over rowers Σ weight·stat` (rounded at the end),
-  `total = crew + boat value × 2 × seats + (trainer effect + trainer mood) × seats + event bonuses − Krebs penalty`.
+  `total = crew + boat value + (trainer effect + trainer mood) × seats + event bonuses − Krebs penalty`
+  (the boat value counts once per entry, `rules.json` `boatValuePerSeat: false`, `boatValueFactor: 1`).
 - PoC assumption: per competition each player enters **at most one crew per race**; every rower
   starts **at most once** per competition and every boat is used **at most once** per competition.
   Races may be left empty.
@@ -214,12 +215,16 @@ random walk:
 - PoC assumption (designer rule): one d1000 per boat entry, mutually exclusive, probabilities in
   per mille (`rules.json` `incidents`). Capsizing gets rarer the more rowers a boat has:
 
-  | Boat | Kentern | Materialschaden | Krebs |  Clean |
-  | ---- | ------: | --------------: | ----: | -----: |
-  | 1x   |     2 % |             3 % |  15 % |   80 % |
-  | 2x   |     1 % |             3 % |  15 % |   81 % |
-  | 4x   |   0.5 % |             3 % |  15 % | 81.5 % |
-  | 8x   |   0.2 % |             3 % |  15 % | 81.8 % |
+  | Boat | Kentern | Materialschaden | Krebs base | Krebs boat size |
+  | ---- | ------: | --------------: | ---------: | --------------: |
+  | 1x   |     2 % |             3 % |      7.5 % |          × 1.00 |
+  | 2x   |     1 % |             3 % |      7.5 % |          × 1.15 |
+  | 4x   |   0.5 % |             3 % |      7.5 % |          × 1.30 |
+  | 8x   |   0.2 % |             3 % |      7.5 % |          × 1.50 |
+
+  Krebs is scaled per crew (`rules.json` `krebsScaling`): base (or an Ereignis base) × boat-size
+  factor × (14 × seats) / crew Technik sum, clamped to 1 %…22.5 %. A crew with more Technik than
+  the reference 14 per seat catches fewer crabs.
 
   Order on the die: Kentern first, then Materialschaden, then Krebs.
 

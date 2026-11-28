@@ -118,6 +118,9 @@ resolves and opens the next phase.
   value without a chosen boat (the viewer's best eight, loan boat) and `guestScore` the guest crew's total. Entry
   total = round(Σ weight·stat) + boat·boatScale + (trainer effect + trainer.mood)·trainerScale +
   event bonus − penalty.
+- **Venue and distance**: calendar `StationView`s of competition stations and `phase.competition`
+  carry `venue` (a proper name such as "Maschsee, Hannover", not translated) and `distance` (race
+  length in metres). Both are omitted when unknown or not a competition (`competitions.json`).
 - **Trainer mood**: every `TrainerView` (team cards, draft offer) carries `mood` (Laune, public,
   rules.json `trainerMood`, −2…+2) and `moodTrend` (change at the last section start, for a trend
   arrow). The mood is added to the per-seat trainer effect of every entry with that trainer, also

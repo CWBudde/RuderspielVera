@@ -5,7 +5,7 @@ import { StationIcon } from "@/components/icons";
 import { artUrl } from "@/components/Art";
 import { ResultView } from "@/components/ResultView";
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet";
-import { stationLabel, isCompetition, stationColor } from "@/lib/labels";
+import { stationLabel, isCompetition, stationColor, venueLine } from "@/lib/labels";
 import { cn } from "@/lib/utils";
 import { t } from "@/i18n";
 import { stationInfo, stationName } from "@/i18n/data";
@@ -171,7 +171,10 @@ export function SeasonScreen() {
                   </span>
                   {selected.index + 1}. {stationName(selected)}
                 </SheetTitle>
-                <SheetDescription>{stationInfo(selected) || stationLabel(selected.type)}</SheetDescription>
+                <SheetDescription>
+                  {stationInfo(selected) || stationLabel(selected.type)}
+                  {venueLine(selected) && <span className="block">{venueLine(selected)}</span>}
+                </SheetDescription>
               </SheetHeader>
               <div className="px-4">
                 {selectedResult ? (

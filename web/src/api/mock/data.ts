@@ -383,7 +383,7 @@ export const TRAINERS: TrainerView[] = [
     ],
   },
   {
-    id: "tr-friedjof",
+    id: "tr-fridtjof",
     mood: 0,
     moodTrend: 0,
     name: "Fridtjof",

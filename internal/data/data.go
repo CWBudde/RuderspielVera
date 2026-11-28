@@ -216,6 +216,10 @@ type Competition struct {
 	Races    []Race             `json:"races,omitempty"`
 	Variants map[string][]Race  `json:"variants,omitempty"` // JTFO: variant key -> races
 	Notes    []string           `json:"notes,omitempty"`
+	// Venue is where the competition takes place (a proper name, not translated), e.g.
+	// "Maschsee, Hannover". Distance is the race length in metres; 0 when it varies or is unknown.
+	Venue    string `json:"venue,omitempty"`
+	Distance int    `json:"distance,omitempty"`
 	// GuestOffset is added to the guest crews' stat level at this competition.
 	GuestOffset float64 `json:"guestOffset,omitempty"`
 }
