@@ -28,7 +28,7 @@ export type BoatClass = string;
 export const Boat1x: BoatClass = "1x";
 export const Boat2x: BoatClass = "2x";
 export const Boat4x: BoatClass = "4x";
-export const Boat8x: BoatClass = "8x"; // only RVB-Endspurt, shared identical boat
+export const Boat8x: BoatClass = "8x"; // only RVB-Endspurt; the best own eight rows (not chosen)
 export const BoatErgo: BoatClass = "ergo"; // ergometer, no boat card
 export type Weather = string;
 export const WeatherRegen: Weather = "regen";
@@ -208,8 +208,8 @@ export interface RaceSpec {
   boatScale: number /* int */;
   trainerScale: number /* int */;
   /**
-   * FixedBoatValue is the base value used without an own boat: the shared eight (8x) or the loan
-   * boat (loanBoat races). 0 for ergo.
+   * FixedBoatValue is the base value used without a chosen boat: the viewer's best own eight (8x)
+   * or the loan boat (loanBoat races). 0 for ergo.
    */
   fixedBoatValue?: number /* int */;
   /**
@@ -288,6 +288,11 @@ export interface EreignisView {
 export interface DraftCard {
   id: string;
   kind: string; // "rower" | "boat" | "trainer"
+  /**
+   * Personal: only offered to you at this pick (the eight Paintrain for human players before the
+   * RVB-Endspurt); taking it uses up the pick and leaves the open offer for the others.
+   */
+  personal?: boolean;
   rower?: RowerView;
   boat?: BoatView;
   trainer?: TrainerView;
@@ -357,7 +362,7 @@ export interface TrainingAlloc {
 export interface Entry {
   raceId: string;
   rowerIds: string[]; // len == race seats
-  boatId?: string; // empty for ergo and 8x (shared eight)
+  boatId?: string; // empty for ergo and 8x (the best own eight rows)
 }
 /**
  * Decision is a tagged union by Kind (must match Phase.Kind). Only the matching fields are read.

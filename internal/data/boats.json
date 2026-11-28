@@ -1,42 +1,14 @@
 [
-  {
-    "id": "stadt-1x",
-    "name": "Städtischer Einer",
-    "class": "1x",
-    "value": 3,
-    "group": "city",
-    "city": true,
-    "artKey": "boat-1x"
-  },
-  {
-    "id": "stadt-2x",
-    "name": "Städtischer Zweier",
-    "class": "2x",
-    "value": 3,
-    "group": "city",
-    "city": true,
-    "artKey": "boat-2x"
-  },
-  {
-    "id": "stadt-4x",
-    "name": "Städtischer Vierer",
-    "class": "4x",
-    "value": 3,
-    "group": "city",
-    "city": true,
-    "artKey": "boat-4x"
-  },
-
-  { "id": "ice-man", "name": "Ice-Man", "class": "1x", "value": 6, "group": "standard", "artKey": "boat-1x" },
-  { "id": "manpower", "name": "Manpower", "class": "1x", "value": 7, "group": "standard", "artKey": "boat-1x" },
-  { "id": "kalypso", "name": "Kalypso", "class": "1x", "value": 5, "group": "standard", "artKey": "boat-1x" },
-  { "id": "reinfall", "name": "Reinfall", "class": "1x", "value": 5, "group": "standard", "artKey": "boat-1x" },
-  { "id": "bi-turbo", "name": "Bi-Turbo", "class": "2x", "value": 7, "group": "standard", "artKey": "boat-2x" },
-  { "id": "black-sword", "name": "Black Sword", "class": "2x", "value": 6, "group": "standard", "artKey": "boat-2x" },
-  { "id": "goodspeed", "name": "Goodspeed", "class": "2x", "value": 5, "group": "standard", "artKey": "boat-2x" },
-  { "id": "simsalabim", "name": "Simsalabim", "class": "4x", "value": 6, "group": "standard", "artKey": "boat-4x" },
-  { "id": "oshi", "name": "Oshi", "class": "4x", "value": 5, "group": "standard", "artKey": "boat-4x" },
-  { "id": "need-4-speed", "name": "Need 4 Speed", "class": "4x", "value": 7, "group": "standard", "artKey": "boat-4x" },
+  { "id": "ice-man", "name": "Ice-Man", "class": "1x", "value": 1, "group": "city", "city": true, "artKey": "boat-1x" },
+  { "id": "manpower", "name": "Manpower", "class": "1x", "value": 1, "group": "city", "city": true, "artKey": "boat-1x" },
+  { "id": "kalypso", "name": "Kalypso", "class": "1x", "value": 1, "group": "city", "city": true, "artKey": "boat-1x" },
+  { "id": "reinfall", "name": "Reinfall", "class": "1x", "value": 1, "group": "city", "city": true, "artKey": "boat-1x" },
+  { "id": "bi-turbo", "name": "Bi-Turbo", "class": "2x", "value": 2, "group": "city", "city": true, "artKey": "boat-2x" },
+  { "id": "black-sword", "name": "Black Sword", "class": "2x", "value": 2, "group": "city", "city": true, "artKey": "boat-2x" },
+  { "id": "goodspeed", "name": "Goodspeed", "class": "2x", "value": 2, "group": "city", "city": true, "artKey": "boat-2x" },
+  { "id": "simsalabim", "name": "Simsalabim", "class": "4x", "value": 4, "group": "city", "city": true, "artKey": "boat-4x" },
+  { "id": "oshi", "name": "Oshi", "class": "4x", "value": 4, "group": "city", "city": true, "artKey": "boat-4x" },
+  { "id": "need-4-speed", "name": "Need 4 Speed", "class": "4x", "value": 4, "group": "city", "city": true, "artKey": "boat-4x" },
 
   {
     "id": "zwergenkreuzer",
@@ -58,12 +30,21 @@
   { "id": "wilhelm", "name": "Wilhelm", "class": "4x", "value": 8, "group": "premium", "artKey": "boat-4x" },
 
   {
-    "id": "endspurt-achter",
-    "name": "Endspurt-Achter",
+    "id": "kraftwerk",
+    "name": "Kraftwerk",
     "class": "8x",
-    "value": 0,
-    "group": "shared",
-    "shared": true,
+    "value": 8,
+    "group": "eight",
+    "starter": true,
+    "artKey": "boat-8x"
+  },
+  {
+    "id": "paintrain",
+    "name": "Paintrain",
+    "class": "8x",
+    "value": 12,
+    "group": "eight",
+    "humanOffer": true,
     "artKey": "boat-8x"
   }
 ]

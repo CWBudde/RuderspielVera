@@ -328,27 +328,79 @@ func (g *Game) dealTrainers(perPlayer int) {
 	}
 }
 
-// dealBoats gives every player a copy of each city boat and puts the other boats (except the
-// shared eight) into the draft pool.
+// dealBoats deals every player one random city boat per class and a copy of every starter boat,
+// and puts the undealt city boats and the other boats (except humanOffer boats) into the draft
+// pool. If a class has fewer city boats
+// than players, the shortfall is dealt as copies of random city boats of that class. Dealt boats
+// get a per-player ID suffix so copies stay unique.
 func (g *Game) dealBoats() {
+	dealt := map[string]bool{}
+
+	for _, cls := range []BoatClass{Boat1x, Boat2x, Boat4x} {
+		var defs []*data.Boat
+
+		for i := range g.d.Boats {
+			if b := &g.d.Boats[i]; b.City && BoatClass(b.Class) == cls {
+				defs = append(defs, b)
+			}
+		}
+
+		if len(defs) == 0 {
+			continue
+		}
+
+		shuffle(g.rng, defs)
+
+		for k, p := range g.players {
+			var b *data.Boat
+			if k < len(defs) {
+				b = defs[k]
+			} else {
+				b = defs[g.rng.IntN(len(defs))]
+			}
+
+			dealt[b.ID] = true
+			p.boats = append(p.boats, ownBoat(b, p))
+		}
+	}
+
 	for i := range g.d.Boats {
 		b := &g.d.Boats[i]
+
 		switch {
-		case b.City:
+		case b.Starter:
 			for _, p := range g.players {
-				p.boats = append(p.boats, &boat{
-					id: b.ID + "-" + p.id, defID: b.ID, name: b.Name, class: BoatClass(b.Class),
-					value: b.Value, city: true, artKey: b.ArtKey,
-				})
+				p.boats = append(p.boats, ownBoat(b, p))
 			}
-		case b.Shared:
+		case b.HumanOffer, dealt[b.ID]:
 		default:
 			g.pool = append(g.pool, poolCard{boat: &boat{
 				id: b.ID, defID: b.ID, name: b.Name, class: BoatClass(b.Class),
-				value: b.Value, artKey: b.ArtKey,
+				value: b.Value, city: b.City, artKey: b.ArtKey,
 			}})
 		}
 	}
+}
+
+// ownBoat is player p's copy of boat card b; the ID suffix keeps copies unique.
+func ownBoat(b *data.Boat, p *player) *boat {
+	return &boat{
+		id: b.ID + "-" + p.id, defID: b.ID, name: b.Name, class: BoatClass(b.Class),
+		value: b.Value, city: b.City, artKey: b.ArtKey,
+	}
+}
+
+// bestBoat returns the player's most valuable boat of a class (nil if none).
+func (p *player) bestBoat(cls BoatClass) *boat {
+	var best *boat
+
+	for _, b := range p.boats {
+		if b.class == cls && (best == nil || b.value > best.value) {
+			best = b
+		}
+	}
+
+	return best
 }
 
 // sortRowers orders a roster A, B, Kinder and then by starting strength.

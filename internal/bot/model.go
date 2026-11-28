@@ -130,10 +130,6 @@ func (b *brain) boatPoints(race engine.RaceSpec, bt *engine.BoatView) float64 {
 	switch {
 	case race.Class == engine.BoatErgo:
 		return 0
-	case race.Class == engine.Boat8x:
-		if sb := b.d.SharedBoat(); sb != nil {
-			val = sb.Value
-		}
 	case bt == nil:
 		if race.LoanBoat {
 			val = rules.LoanBoatValue
@@ -143,6 +139,19 @@ func (b *brain) boatPoints(race engine.RaceSpec, bt *engine.BoatView) float64 {
 	}
 
 	return float64(val * rules.BoatScale(race.Seats))
+}
+
+// bestEight returns the team's most valuable eight (nil if none).
+func bestEight(tm *team) *engine.BoatView {
+	var best *engine.BoatView
+
+	for i := range tm.boats {
+		if bt := &tm.boats[i]; bt.Class == engine.Boat8x && (best == nil || bt.Value > best.Value) {
+			best = bt
+		}
+	}
+
+	return best
 }
 
 // expectedTrainer is the expected per-entry bonus of the team's best trainer at a future
@@ -182,6 +191,42 @@ func (b *brain) expectedTrainer(tm *team, c *compModel) float64 {
 	}
 
 	return sum / float64(len(weathers))
+}
+
+// expectedEventBonus mirrors the engine's event card bonus of a rower at a future competition,
+// averaged over the weather table when the card needs certain weathers.
+func (b *brain) expectedEventBonus(r engine.RowerView, c *compModel) float64 {
+	if r.Event == nil || r.Event.Spent {
+		return 0
+	}
+
+	def := b.d.EventType(r.Event.Type)
+	if def == nil || def.Bonus == 0 || !data.ScopeMatches(def.Scope, c.def) {
+		return 0
+	}
+
+	if def.Context != "" && def.Context != c.def.Context {
+		return 0
+	}
+
+	if len(def.Weathers) == 0 {
+		return float64(def.Bonus)
+	}
+
+	table := b.d.Rules.WeatherTable
+	if !c.def.Water || len(table) == 0 {
+		return 0
+	}
+
+	hits := 0
+
+	for _, w := range table {
+		if slices.Contains(def.Weathers, w) {
+			hits++
+		}
+	}
+
+	return float64(def.Bonus*hits) / float64(len(table))
 }
 
 // bestTrainer returns the trainer with the best effect plus mood at the open competition (or "").
@@ -232,12 +277,14 @@ func (b *brain) scorer(
 
 		s := 0.0
 		for _, x := range crew {
-			s += pr.indiv[r][x]
+			s += pr.indiv[r][x] + b.expectedEventBonus(tm.rowers[x], c)
 		}
 
 		var bt *engine.BoatView
 		if boat >= 0 {
 			bt = &tm.boats[boat]
+		} else if race.Class == engine.Boat8x {
+			bt = bestEight(tm) // eights are not chosen: the best own eight rows
 		}
 
 		s += b.boatPoints(race, bt)

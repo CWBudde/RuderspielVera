@@ -31,16 +31,21 @@ type Rower struct {
 	ArtKey    string         `json:"artKey"`
 }
 
-// Boat is a boat card. City boats are templates; the engine gives every player one copy each.
+// Boat is a boat card. At the start every player is dealt one random city boat per class and a
+// copy of every starter boat (the eight Kraftwerk); the undealt city boats join the draft pool.
+// HumanOffer boats never enter the pool: each human player is offered a copy in the last draft
+// before the competition that rows them (the eight Paintrain before the RVB-Endspurt), at the
+// cost of that draft pick.
 type Boat struct {
-	ID     string `json:"id"`
-	Name   string `json:"name"`
-	Class  string `json:"class"` // 1x | 2x | 4x | 8x
-	Value  int    `json:"value"`
-	Group  string `json:"group"` // city | standard | premium | shared
-	City   bool   `json:"city,omitempty"`
-	Shared bool   `json:"shared,omitempty"` // the identical RVB eight
-	ArtKey string `json:"artKey"`
+	ID         string `json:"id"`
+	Name       string `json:"name"`
+	Class      string `json:"class"` // 1x | 2x | 4x | 8x
+	Value      int    `json:"value"`
+	Group      string `json:"group"` // city | premium | eight
+	City       bool   `json:"city,omitempty"`
+	Starter    bool   `json:"starter,omitempty"`    // every player gets a copy at the start
+	HumanOffer bool   `json:"humanOffer,omitempty"` // offered to human players only, see above
+	ArtKey     string `json:"artKey"`
 }
 
 // TrainerEffect applies per boat / ergo entry when weather and context match (empty = any).
@@ -438,10 +443,10 @@ func (d *Data) Boat(id string) *Boat {
 	return nil
 }
 
-// SharedBoat returns the shared RVB eight (or nil).
-func (d *Data) SharedBoat() *Boat {
+// StarterBoat returns the starter boat of a class (the eight Kraftwerk for "8x") or nil.
+func (d *Data) StarterBoat(class string) *Boat {
 	for i := range d.Boats {
-		if d.Boats[i].Shared {
+		if d.Boats[i].Starter && d.Boats[i].Class == class {
 			return &d.Boats[i]
 		}
 	}

@@ -287,6 +287,7 @@ export const uiDe = {
   "draft.kind.rower": "Ruderer",
   "draft.kind.boat": "Boot",
   "draft.kind.trainer": "Trainer",
+  "draft.personal": "Nur für dich: kostet deinen Zug",
   // Event and Ereignis reveal
   "reveal.event": "Event",
   "reveal.reward": "Belohnung: {reward}",
@@ -346,7 +347,7 @@ export const uiDe = {
   "regatta.seatChange": "Platz {n}: {name} – ändern",
   "regatta.seatFill": "Platz {n} besetzen",
   "regatta.seat": "Platz {n}",
-  "regatta.sharedEight": "Gemeinsamer Achter für alle Teams, Bootswert {value}.",
+  "regatta.ownEight": "Dein bestes eigenes Achter-Boot rudert, Bootswert {value}.",
   "regatta.ready": "Bereit zum Melden",
   "regatta.clear": "Leeren",
   "regatta.noBoatOfClass": "Du hast kein Boot dieser Klasse.",

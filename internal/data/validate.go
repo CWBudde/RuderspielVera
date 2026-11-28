@@ -107,7 +107,7 @@ func (d *Data) validateRowers(p *problems) map[string]bool {
 // validateBoats checks the boat cards and returns their IDs.
 func (d *Data) validateBoats(p *problems, ids map[string]bool) map[string]bool {
 	boatIDs := map[string]bool{}
-	shared := 0
+	starters := map[string]int{}
 
 	for _, b := range d.Boats {
 		if b.ID == "" || boatIDs[b.ID] || ids[b.ID] {
@@ -119,17 +119,33 @@ func (d *Data) validateBoats(p *problems, ids map[string]bool) map[string]bool {
 			p.addf("boat %s: bad class %q", b.ID, b.Class)
 		}
 
-		if b.Value < 0 || b.Value > 10 {
-			p.addf("boat %s: value %d outside 0..10", b.ID, b.Value)
+		maxValue := 10
+		if b.Class == "8x" {
+			maxValue = 12
 		}
 
-		if b.Shared {
-			shared++
+		if b.Value < 0 || b.Value > maxValue {
+			p.addf("boat %s: value %d outside 0..%d", b.ID, b.Value, maxValue)
+		}
+
+		if (b.City && (b.Starter || b.HumanOffer)) || (b.Starter && b.HumanOffer) {
+			p.addf("boat %s: city, starter and humanOffer exclude each other", b.ID)
+		}
+
+		if b.Class == "8x" && !b.Starter && !b.HumanOffer {
+			p.addf("boat %s: an eight must be a starter or humanOffer boat", b.ID)
+		}
+
+		if b.Starter {
+			starters[b.Class]++
+			if starters[b.Class] == 2 {
+				p.addf("boats: more than one starter boat for class %s", b.Class)
+			}
 		}
 	}
 
-	if shared != 1 {
-		p.addf("boats: want exactly one shared eight, got %d", shared)
+	if d.StarterBoat("8x") == nil {
+		p.addf("boats: no starter eight")
 	}
 
 	for _, cls := range []string{"1x", "2x", "4x"} {

@@ -41,7 +41,7 @@ const (
 	Boat1x   BoatClass = "1x"
 	Boat2x   BoatClass = "2x"
 	Boat4x   BoatClass = "4x"
-	Boat8x   BoatClass = "8x"   // only RVB-Endspurt, shared identical boat
+	Boat8x   BoatClass = "8x"   // only RVB-Endspurt; the best own eight rows (not chosen)
 	BoatErgo BoatClass = "ergo" // ergometer, no boat card
 )
 
@@ -236,8 +236,8 @@ type RaceSpec struct {
 	// trainer part = matching trainer effects × TrainerScale.
 	BoatScale    int `json:"boatScale"`
 	TrainerScale int `json:"trainerScale"`
-	// FixedBoatValue is the base value used without an own boat: the shared eight (8x) or the loan
-	// boat (loanBoat races). 0 for ergo.
+	// FixedBoatValue is the base value used without a chosen boat: the viewer's best own eight (8x)
+	// or the loan boat (loanBoat races). 0 for ergo.
 	FixedBoatValue int `json:"fixedBoatValue,omitempty"`
 	// GuestScore is the guest crew's (Gastmannschaft) total in this race, 0 if there is none.
 	GuestScore int `json:"guestScore,omitempty"`
@@ -306,11 +306,14 @@ type EreignisView struct {
 }
 
 type DraftCard struct {
-	ID      string       `json:"id"`
-	Kind    string       `json:"kind"` // "rower" | "boat" | "trainer"
-	Rower   *RowerView   `json:"rower,omitempty"`
-	Boat    *BoatView    `json:"boat,omitempty"`
-	Trainer *TrainerView `json:"trainer,omitempty"`
+	ID   string `json:"id"`
+	Kind string `json:"kind"` // "rower" | "boat" | "trainer"
+	// Personal: only offered to you at this pick (the eight Paintrain for human players before the
+	// RVB-Endspurt); taking it uses up the pick and leaves the open offer for the others.
+	Personal bool         `json:"personal,omitempty"`
+	Rower    *RowerView   `json:"rower,omitempty"`
+	Boat     *BoatView    `json:"boat,omitempty"`
+	Trainer  *TrainerView `json:"trainer,omitempty"`
 }
 
 // ---------- results / log ----------
@@ -392,7 +395,7 @@ type TrainingAlloc struct {
 type Entry struct {
 	RaceID   string   `json:"raceId"`
 	RowerIDs []string `json:"rowerIds"`         // len == race seats
-	BoatID   string   `json:"boatId,omitempty"` // empty for ergo and 8x (shared eight)
+	BoatID   string   `json:"boatId,omitempty"` // empty for ergo and 8x (the best own eight rows)
 }
 
 // Decision is a tagged union by Kind (must match Phase.Kind). Only the matching fields are read.

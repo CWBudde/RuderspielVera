@@ -58,7 +58,7 @@ func TestNewDeal(t *testing.T) {
 			}
 		}
 
-		if len(pl.boats) != 3 || len(pl.trainers) != 2 {
+		if len(pl.boats) != 4 || len(pl.trainers) != 2 {
 			t.Errorf("%s: %d boats, %d trainers", pl.id, len(pl.boats), len(pl.trainers))
 		}
 	}
@@ -76,12 +76,65 @@ func TestNewDeal(t *testing.T) {
 		}
 	}
 
-	if rowers != 1 || boats != 21 || trainers != 4 {
-		t.Errorf("pool = %d rowers, %d boats, %d trainers; want 1/21/4", rowers, boats, trainers)
+	if rowers != 1 || boats != 12 || trainers != 4 {
+		t.Errorf("pool = %d rowers, %d boats, %d trainers; want 1/12/4", rowers, boats, trainers)
 	}
 
 	if g.CurrentPhase("p1").Kind != PhaseAck {
 		t.Errorf("first phase should be the setup ack")
+	}
+}
+
+// TestDealCityBoats checks that every player gets one named city boat per class (value 1/2/4)
+// plus the eight Kraftwerk (8),
+// that a short class is filled with copies, and that undealt city boats join the draft pool.
+func TestDealCityBoats(t *testing.T) {
+	t.Parallel()
+
+	values := map[BoatClass]int{Boat1x: 1, Boat2x: 2, Boat4x: 4, Boat8x: 8}
+
+	for _, tc := range []struct{ players, poolCity int }{{2, 4}, {3, 1}, {4, 0}} {
+		cfg := Config{Seed: 11}
+		for i := range tc.players {
+			cfg.Players = append(cfg.Players, PlayerConfig{ID: fmt.Sprintf("p%d", i+1)})
+		}
+
+		g, err := New(cfg)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		ids := map[string]bool{}
+
+		for _, pl := range g.players {
+			got := map[BoatClass]int{}
+
+			for _, b := range pl.boats {
+				got[b.class]++
+
+				if b.city != (b.class != Boat8x) || b.value != values[b.class] || b.defID == "" || ids[b.id] {
+					t.Errorf("%d players, %s: bad boat %+v", tc.players, pl.id, *b)
+				}
+
+				ids[b.id] = true
+			}
+
+			if !maps.Equal(got, map[BoatClass]int{Boat1x: 1, Boat2x: 1, Boat4x: 1, Boat8x: 1}) {
+				t.Errorf("%d players, %s: boats per class %v", tc.players, pl.id, got)
+			}
+		}
+
+		city := 0
+
+		for _, c := range g.pool {
+			if c.boat != nil && c.boat.city {
+				city++
+			}
+		}
+
+		if city != tc.poolCity {
+			t.Errorf("%d players: %d city boats in the pool, want %d", tc.players, city, tc.poolCity)
+		}
 	}
 }
 

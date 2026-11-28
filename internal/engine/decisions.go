@@ -85,7 +85,7 @@ func (g *Game) validate(pl *player, p *phase, d Decision) error {
 	case PhaseRegatta:
 		return g.validateEntries(pl, p.comp, d.TrainerID, d.Entries)
 	case PhaseDraft:
-		if g.draft.offerIndex(d.DraftCardID) < 0 {
+		if !g.draft.valid(d.DraftCardID) {
 			return invalid("err.cardNotOffered")
 		}
 

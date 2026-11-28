@@ -102,8 +102,13 @@ export function DraftPhase() {
                     waiting && "opacity-70",
                   )}
                 >
-                  <span className="mb-3 inline-block rounded-full border-2 border-ink bg-white px-2 text-xs font-bold">
-                    {tData(`draft.kind.${c.kind}`, c.kind)}
+                  <span
+                    className={cn(
+                      "mb-3 inline-block rounded-full border-2 border-ink px-2 text-xs font-bold",
+                      c.personal ? "bg-navy text-white" : "bg-white",
+                    )}
+                  >
+                    {c.personal ? t("draft.personal") : tData(`draft.kind.${c.kind}`, c.kind)}
                   </span>
                   <div
                     className={cn(on && "[&>article]:outline-4 [&>article]:outline-offset-4 [&>article]:outline-lake")}

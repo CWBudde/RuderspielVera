@@ -96,7 +96,7 @@ func (g *Game) CurrentPhase(playerID string) PhaseView {
 	if cs := p.comp; cs != nil {
 		pv.Competition = &CompetitionView{
 			ID: cs.def.ID, Name: cs.name, Kind: StationType(cs.def.Kind), Weights: maps.Clone(cs.weights),
-			Races: g.raceViews(cs), Weather: cs.weather, TeamEvent: cs.team(),
+			Races: g.raceViews(cs, g.playerByID(playerID)), Weather: cs.weather, TeamEvent: cs.team(),
 			Notes: slices.Clone(cs.notes), Context: cs.def.Context, CityBoatMod: cs.cityBoatMod,
 		}
 	}
@@ -104,6 +104,14 @@ func (g *Game) CurrentPhase(playerID string) PhaseView {
 	if p.kind == PhaseDraft && g.draft != nil {
 		for _, c := range g.draft.offer {
 			pv.DraftOffer = append(pv.DraftOffer, g.draftCardView(c))
+		}
+
+		if g.draft.order[g.draft.turn] == playerID {
+			for _, c := range g.draft.personal {
+				dc := g.draftCardView(c)
+				dc.Personal = true
+				pv.DraftOffer = append(pv.DraftOffer, dc)
+			}
 		}
 
 		pv.DraftOrder = slices.Clone(g.draft.order)
@@ -132,7 +140,9 @@ var stageNames = map[stage]PhaseStage{
 }
 
 // raceViews returns the open competition's races with the scoring hints for client estimates.
-func (g *Game) raceViews(cs *compState) []RaceSpec {
+// raceViews returns the races of a competition as the viewer sees them: the fixed boat value of an
+// eight race is the viewer's best own eight (the starter eight for spectators).
+func (g *Game) raceViews(cs *compState, viewer *player) []RaceSpec {
 	races := slices.Clone(cs.races)
 	for i := range races {
 		r := &races[i]
@@ -143,7 +153,13 @@ func (g *Game) raceViews(cs *compState) []RaceSpec {
 		switch {
 		case r.Class == BoatErgo:
 			r.BoatScale = 0
-		case r.Class == Boat8x || r.LoanBoat:
+		case r.Class == Boat8x:
+			if viewer != nil {
+				r.FixedBoatValue = g.boatValue(cs, *r, viewer.bestBoat(Boat8x))
+			} else if sb := g.d.StarterBoat(string(Boat8x)); sb != nil {
+				r.FixedBoatValue = sb.Value
+			}
+		case r.LoanBoat:
 			r.FixedBoatValue = g.boatValue(cs, *r, nil)
 		}
 

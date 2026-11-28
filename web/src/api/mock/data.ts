@@ -528,7 +528,7 @@ function race(id: string, cls: string, ages: AgeGroup[], genders: Gender[], mixe
       ? `${groupName(ages[0], genders[0])} ${CLASS_NAME[cls]}`
       : `${genders.length === 1 ? (genders[0] === "w" ? "Frauen" : "Männer") : "Offen"} ${CLASS_NAME[cls]}`);
   const seats = SEATS[cls];
-  // Mirrors rules.json: boat value ×2 per seat, trainer effect per seat; the shared eight is worth 0.
+  // Mirrors rules.json: boat value counts once, trainer effect per seat.
   return {
     id,
     name: label,
@@ -538,7 +538,7 @@ function race(id: string, cls: string, ages: AgeGroup[], genders: Gender[], mixe
     genders,
     mixed,
     seats,
-    boatScale: cls === "ergo" ? 0 : 2 * seats,
+    boatScale: cls === "ergo" ? 0 : 1,
     trainerScale: seats,
   };
 }

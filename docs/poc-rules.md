@@ -67,23 +67,27 @@ Yara (w).
 
 ### 2.3 Boats
 
-- PoC assumption: every player starts with a city boat (_städtisches Boot_) 1x, 2x and 4x, value 3.
-- PoC assumption: the named boats of §14.5 go into the draft pool. First group value 5–7, outlined
-  second group value 8–10:
+- Designer rule: the first name group of §14.5 are the city boats (_städtische Boote_), value
+  1 (1x), 2 (2x) and 4 (4x). At the start every player is dealt one random city boat per class; if
+  a class has fewer boats than players (2x and 4x with 4 players), the shortfall is dealt as
+  copies. Undealt city boats go into the draft pool. The outlined second group (value 8–10) goes
+  into the draft pool:
 
-  | Class  | First group (5–7)                            | Outlined group (8–10)                                          |
-  | ------ | -------------------------------------------- | -------------------------------------------------------------- |
-  | Einer  | Ice-Man 6, Manpower 7, Kalypso 5, Reinfall 5 | Zwergenkreuzer 8, Traumstart 9, Rennschlumpf 8, Singlespeed 10 |
-  | Zweier | Bi-Turbo 7, Black Sword 6, Goodspeed 5       | Freiheit 8, X-Wing 10, Laufwunder 9, H zwei O 8                |
-  | Vierer | Simsalabim 6, Oshi 5, Need 4 Speed 7         | Q 10, 5 Freunde 9, Wilhelm 8                                   |
+  | Class  | City boats (value)                       | Outlined group (8–10)                                          |
+  | ------ | ---------------------------------------- | -------------------------------------------------------------- |
+  | Einer  | Ice-Man, Manpower, Kalypso, Reinfall (1) | Zwergenkreuzer 8, Traumstart 9, Rennschlumpf 8, Singlespeed 10 |
+  | Zweier | Bi-Turbo, Black Sword, Goodspeed (2)     | Freiheit 8, X-Wing 10, Laufwunder 9, H zwei O 8                |
+  | Vierer | Simsalabim, Oshi, Need 4 Speed (4)       | Q 10, 5 Freunde 9, Wilhelm 8                                   |
 
-  Note: §14.5 lists **21** named boats (not 22).
-
-- The shared RVB eight ("Endspurt-Achter") is identical for everyone and has value 0 (§6.2).
-- PoC balancing rule: a boat's value counts **twice per seat** (`boatValuePerSeat`,
-  `boatValueFactor: 2`): Singlespeed in the 1x = +20, Q in the 4x = +80, a city 4x = +24. The card
-  values themselves stay as in §14.5.
-- PoC assumption: at JTFO a player without a suitable free own boat gets a **Leihboot** (value 2).
+- Designer rule: every player owns the eight **Kraftwerk** (value 8), rowed only at the
+  RVB-Endspurt. Human players (not bots) are offered the eight **Paintrain** (value 12) in the last
+  draft before the RVB-Endspurt, as an extra card only for them; taking it costs that draft pick.
+  If the pool is empty by then, that draft opens just for the offer. Eights are not chosen in a
+  lineup: the best own eight rows (`boats.json` `starter` / `humanOffer`).
+- Designer rule: a boat's value counts **once**, not per seat (`boatValuePerSeat: false`,
+  `boatValueFactor: 1`; replaces the ×2-per-seat balancing of 10.x): a city 4x adds 4, Kraftwerk 8,
+  Paintrain 12.
+- Designer rule: a **Leihboot** (loan boat, JTFO and Hildesheim) has value 0.
 
 ### 2.4 Trainers (§14.4)
 
@@ -143,8 +147,8 @@ random walk:
 
   With 3 players every B- and A-Junior is dealt; only one Kind remains for the draft.
 
-- City 1x/2x/4x and 2 random trainers per player. Remaining trainers (4 with 3 players) and all
-  named boats go into the draft pool.
+- One random city boat per class, the eight Kraftwerk and 2 random trainers per player. Remaining
+  trainers (4 with 3 players), undealt city boats and the outlined boats go into the draft pool.
 
 ## 3. Training and special stations
 
@@ -199,7 +203,7 @@ random walk:
   - It is not a stat change: training, camps, Tausch and stat-based events (Phönix, Verdopplung,
     Seelenzwilling, Wachstum) never see or move it. A crew that capsizes or breaks gets no medal
     and no bonus. At JTFO the team medal gives it to every rower of the team.
-- Loan boats (Leihboote, value 2, `rules.json` `loanBoatValue`): in races marked `loanBoat`
+- Loan boats (Leihboote, value 0, `rules.json` `loanBoatValue`): in races marked `loanBoat`
   (Hildesheim and JTFO) an entry may leave out its own boat and row a loan boat instead. A loan boat
   is not an own boat, so the one-start-per-boat rule doesn't limit it. Without loan boats a player
   with only the city 1x and 2x could enter just 2 of Hildesheim's 8 races.
@@ -236,7 +240,7 @@ random walk:
 | Verbandsregatta II                              | Technik 1.5, Geschw. 1, Motivation 1 | 2x A w/m, 4x B m, 1x Kinder w                        |
 | JTFO                                            | Geschw. 1, Technik 1, Motivation 1   | team competition, see 4.4                            |
 | RVH-Herbstsprintregatta (Sprint)                | Geschw. 2, Kraft 1, Motivation 1     | 1x/2x/4x × Mädchen/Jungen, all ages (6)              |
-| RVB-Endspurtregatta (Sprint)                    | Geschw. 2, Technik 1, Motivation 1   | Mixed-Vierer, Mixed-Achter (shared eight)            |
+| RVB-Endspurtregatta (Sprint)                    | Geschw. 2, Technik 1, Motivation 1   | Mixed-Vierer, Mixed-Achter (own eight)               |
 
 Motivation counts with weight 1 in **every** competition (designer rule; data validation enforces a
 Motivation weight > 0).
@@ -252,12 +256,12 @@ ages). The Kinder-Vierer is open to both genders (there are only 5 Kinder boys).
   (2x + 2x + 2x). All ages and genders allowed.
 - Each boat is scored and gets its own incident roll. Team score = sum of the boats; a capsized or
   broken boat contributes 0. One medal per team (gold/silver), Siegesmotivation for all team members.
-  Missing own boats are replaced by Leihboote (value 2).
+  Missing own boats are replaced by Leihboote (value 0).
 
 ### 4.5 RVB-Endspurtregatta (§11.6)
 
 - Mixed rule (PoC): at least one girl, one boy and two age groups per boat.
-- Mixed-Vierer uses an own 4x; the Mixed-Achter uses the shared eight (value 0).
+- Mixed-Vierer uses an own 4x; the Mixed-Achter uses the best own eight (Kraftwerk 8 or Paintrain 12).
 
 ### 4.6 Gastmannschaften (guest crews)
 
@@ -269,7 +273,7 @@ also has a **guest crew** from another club (`rules.json` `guests`):
 index + guestOffset of the competition` (Kinder 14, B 18, A 22, growth 0.2 per station, so +10
   by the RVB-Endspurt; before the balancing pass 10.3: 15 / 19 / 23 and 0.3).
 - Guest total = `round(seats × Σ weights × level)` + guest boat value 5 (scaled like player boats,
-  i.e. ×2 per seat; no boat at Ergo-Cups, value 0 in the shared eight). No trainer, no incidents.
+  i.e. counted once; no boat at Ergo-Cups, the Kraftwerk value 8 in the eight). No trainer, no incidents.
 - The guest crew is ranked like a player entry: if it is faster it takes gold (or silver) away,
   but it never scores points. At JTFO one guest team (sum of the guest boats) joins the team
   ranking only.

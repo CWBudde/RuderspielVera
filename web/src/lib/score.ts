@@ -43,7 +43,7 @@ export function boatBaseValue(boat: BoatView, comp: CompetitionView): number {
   return Math.max(0, boat.value + (boat.city ? (comp.cityBoatMod ?? 0) : 0));
 }
 
-/** Boat part of an entry: own boat, or the loan boat / shared eight (race.fixedBoatValue), × race.boatScale. */
+/** Boat part of an entry: own boat, or the loan boat / your best eight (race.fixedBoatValue), × race.boatScale. */
 export function boatPart(race: RaceSpec, boat: BoatView | undefined, comp: CompetitionView): number {
   if (race.class === "ergo") return 0;
   const base = boat && race.class !== "8x" ? boatBaseValue(boat, comp) : (race.fixedBoatValue ?? 0);

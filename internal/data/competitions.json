@@ -190,7 +190,7 @@
       }
     ],
     "notes": [
-      "Langstrecke: Fehlt ein freies eigenes Boot, wird ein Leihboot (Wert 2) gestellt. So kann jedes Team in allen Rennen starten."
+      "Langstrecke: Fehlt ein freies eigenes Boot, wird ein Leihboot (Wert 0) gestellt. So kann jedes Team in allen Rennen starten."
     ]
   },
   "jtfo": {
@@ -294,7 +294,7 @@
     },
     "notes": [
       "Teamwertung: Die Leistungen aller Boote werden addiert, es gibt eine Medaille pro Team.",
-      "Fehlt ein passendes eigenes Boot, wird ein Leihboot (Wert 2) gestellt."
+      "Fehlt ein passendes eigenes Boot, wird ein Leihboot (Wert 0) gestellt."
     ]
   },
   "kassel": {
@@ -497,7 +497,7 @@
     ],
     "notes": [
       "Mixed: mindestens ein Mädchen, ein Junge und zwei Altersgruppen pro Boot.",
-      "Der Achter ist für alle gleich (Bootswert 0)."
+      "Im Achter rudert dein bestes eigenes Boot: Kraftwerk (Wert 8) oder, falls gekauft, Paintrain (Wert 12)."
     ]
   },
   "rvh": {

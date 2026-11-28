@@ -288,6 +288,7 @@ export const uiEn: Record<keyof typeof uiDe, string> = {
   "draft.kind.rower": "Rower",
   "draft.kind.boat": "Boat",
   "draft.kind.trainer": "Coach",
+  "draft.personal": "Only for you: costs your pick",
   // Event and Ereignis reveal
   "reveal.event": "Event",
   "reveal.reward": "Reward: {reward}",
@@ -345,7 +346,7 @@ export const uiEn: Record<keyof typeof uiDe, string> = {
   "regatta.seatChange": "Seat {n}: {name} – change",
   "regatta.seatFill": "Fill seat {n}",
   "regatta.seat": "Seat {n}",
-  "regatta.sharedEight": "Shared eight for all teams, boat value {value}.",
+  "regatta.ownEight": "Your best own eight rows, boat value {value}.",
   "regatta.ready": "Ready to enter",
   "regatta.clear": "Clear",
   "regatta.noBoatOfClass": "You have no boat of this class.",

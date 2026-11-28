@@ -27,9 +27,14 @@ func (g *Game) scoreEntry(cs *compState, race RaceSpec, re raceEntry) EntryResul
 
 	er.Crew = int(math.Round(crew))
 
-	er.BoatValue = g.boatValue(cs, race, re.boat) * g.d.Rules.BoatScale(race.Seats)
-	if re.boat != nil {
-		er.BoatID = re.boat.id
+	bt := re.boat
+	if race.Class == Boat8x {
+		bt = re.pl.bestBoat(Boat8x) // eights are not chosen: the best own eight rows
+	}
+
+	er.BoatValue = g.boatValue(cs, race, bt) * g.d.Rules.BoatScale(race.Seats)
+	if bt != nil {
+		er.BoatID = bt.id
 	}
 
 	if re.trainer != nil {
@@ -63,12 +68,6 @@ func eventBonus(def *data.EventType, cs *compState) int {
 func (g *Game) boatValue(cs *compState, race RaceSpec, bt *boat) int {
 	switch {
 	case race.Class == BoatErgo:
-		return 0
-	case race.Class == Boat8x:
-		if sb := g.d.SharedBoat(); sb != nil {
-			return sb.Value
-		}
-
 		return 0
 	case bt == nil:
 		if race.LoanBoat {
@@ -234,7 +233,7 @@ func guestScore(d *data.Data, comp *data.Competition, station int, race RaceSpec
 	switch race.Class {
 	case BoatErgo:
 	case Boat8x:
-		if sb := d.SharedBoat(); sb != nil {
+		if sb := d.StarterBoat(string(Boat8x)); sb != nil {
 			boat = sb.Value
 		}
 	default:

@@ -457,7 +457,7 @@ function LineupBuilder({
                     <Art artKey="boat-8x" label={boatClassLabel("8x")} />
                   </div>
                   <p className="text-xs text-muted-foreground">
-                    {t("regatta.sharedEight", { value: race.fixedBoatValue ?? 0 })}
+                    {t("regatta.ownEight", { value: race.fixedBoatValue ?? 0 })}
                   </p>
                 </div>
               )}

@@ -39,7 +39,11 @@ resolves and opens the next phase.
   see `waiting: true`. Bots ahead of a human pick immediately, so the human sees the reduced offer.
 - After the final RVB-Endspurt result: `gameover` with `winners`.
 - Draft: each pick is its own phase (new `phaseId`); no draft after the final competition.
-- Entries: `boatId` is empty for ergo races and the shared eight (`class: "8x"`), and may be empty
+  A `DraftCard` with `personal: true` is offered only to the player on turn (the eight Paintrain
+  for human players in the last draft before the RVB-Endspurt); taking it uses up the pick and
+  leaves the open offer for the others. That draft opens even when the pool is empty.
+- Entries: `boatId` is empty for ergo races and eights (`class: "8x"`: the player's best own
+  eight rows, Kraftwerk or a bought Paintrain; the result's `boatId` names it), and may be empty
   in races with `loanBoat: true` (JTFO and Hildesheim: a loan boat is used; it is not an own boat,
   so any number of entries may use one).
 - Engine errors: `engine.ErrStalePhase` → 409; `*engine.ValidationError` (a `Msg`) → 400.
@@ -59,7 +63,7 @@ resolves and opens the next phase.
   `TrainerEffect.context`, `competition.cityBoatMod` is added to städtische Boote. Per race:
   `boatScale` and `trainerScale` multiply the boat value and the per-seat trainer effect
   (`rules.json` `boatValuePerSeat`/`boatValueFactor`, `trainerPerSeat`), `fixedBoatValue` is the base
-  value without own boat (shared eight, loan boat) and `guestScore` the guest crew's total. Entry
+  value without a chosen boat (the viewer's best eight, loan boat) and `guestScore` the guest crew's total. Entry
   total = round(Σ weight·stat) + boat·boatScale + (trainer effect + trainer.mood)·trainerScale +
   event bonus − penalty.
 - **Trainer mood**: every `TrainerView` (team cards, draft offer) carries `mood` (Laune, public,
@@ -83,7 +87,8 @@ resolves and opens the next phase.
   Motivation training, Hildesheim loan boats; 3: season-aware Ereignisse, larger event and Ereignis
   decks, trainer mood; 4: temporary Siegesmotivation, weaker guest crews, shorter regular regattas;
   5: Krebs chance scaled by boat size and crew Technik, Seelenzwilling links a teammate, Wanderfahrt
-  for Junioren only).
+  for Junioren only; 6: named city boats dealt at random with values 1/2/4, loan boats worth 0,
+  own eights Kraftwerk / Paintrain, boat values count once instead of twice per seat).
   Importing an older version fails with `err.snapshotOld`.
 - Bots: `internal/bot.Decide(g, playerID, personality, rng)` (`Taktiker` / `Bauchgefuehl`,
   `bot.PersonalityFor(seat)`); the bot RNG is separate from the game RNG.
