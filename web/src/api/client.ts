@@ -212,3 +212,56 @@ export function joinCodeFromUrl(): string {
     return "";
   }
 }
+
+// ---------- Resume link: continue a seat on another device ----------
+
+/** A seat can move to another device only if it lives on the Go server (not wasm, not the mock). */
+export const resumeAvailable = (s: Session) => multiplayerAvailable && !s.mock;
+
+// Game ids and tokens are hex, player ids "p1".."p4": "gameId.playerId.token" is compact and URL-safe.
+const RESUME_PART = /^[A-Za-z0-9_-]{1,128}$/;
+
+/**
+ * The personal resume link for a seat (?resume=gameId.playerId.token). It carries the seat token,
+ * so whoever opens it controls the seat.
+ */
+export function resumeLink(s: Session): string {
+  const url = new URL(import.meta.env.BASE_URL, window.location.origin);
+  url.searchParams.set("resume", [s.gameId, s.playerId, s.token].join("."));
+  return url.toString();
+}
+
+/**
+ * Reads ?resume=… from the address bar: undefined if absent, null if present but malformed.
+ * Ignored in builds without the server and in mock mode.
+ */
+export function resumeSessionFromUrl(): Session | null | undefined {
+  if (!multiplayerAvailable || isMockRequested()) return undefined;
+  let raw: string | null = null;
+  try {
+    raw = new URLSearchParams(window.location.search).get("resume");
+  } catch {
+    return undefined;
+  }
+  if (raw === null) return undefined;
+  const parts = raw.trim().split(".");
+  if (parts.length !== 3 || !parts.every((p) => RESUME_PART.test(p))) return null;
+  const [gameId, playerId, token] = parts;
+  return { gameId, playerId, token, mock: false };
+}
+
+/**
+ * Checks a seat against the server. Resolves with the game view, or null when the game is a lobby
+ * that has not started yet (409); rejects with the ApiError otherwise (e.g. 401/404 for a bad link).
+ */
+export async function validateSession(s: Session): Promise<GameView | null> {
+  try {
+    return await getGame(s);
+  } catch (e) {
+    if (e instanceof ApiError && e.status === 409) {
+      await getLobby(s); // the lobby endpoint checks the token
+      return null;
+    }
+    throw e;
+  }
+}

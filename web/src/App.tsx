@@ -1,4 +1,4 @@
-import { lazy, Suspense, useCallback, useEffect, useState } from "react";
+import { lazy, Suspense, useCallback, useEffect, useRef, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
@@ -10,7 +10,9 @@ import {
   joinCodeFromUrl,
   joinLobby,
   loadSession,
+  resumeSessionFromUrl,
   saveSession,
+  validateSession,
   type Session,
 } from "@/api/client";
 import { GameProvider, useGameQuery } from "@/hooks/game";
@@ -26,15 +28,42 @@ export function App() {
   // Subscribing here re-renders the whole tree when the language changes.
   useLang();
   const mockRequested = isMockRequested();
+  // A resume link (?resume=…) moves a seat to this device; it wins over everything else.
+  const [resume] = useState(() => resumeSessionFromUrl());
   // An invite link (?join=CODE) opens the start screen with the code filled in.
-  const [joinCode] = useState(() => joinCodeFromUrl());
+  const [joinCode] = useState(() => (resume === undefined ? joinCodeFromUrl() : ""));
   const [stored, setStored] = useState<Session | null>(() => loadSession());
   const [session, setSession] = useState<Session | null>(() => {
     const s = loadSession();
-    return s && (!mockRequested || s.mock) && !joinCode ? s : null;
+    return s && (!mockRequested || s.mock) && !joinCode && resume === undefined ? s : null;
   });
   const [creating, setCreating] = useState(false);
+  const [resuming, setResuming] = useState(resume !== undefined);
   const qc = useQueryClient();
+
+  // Validate the resume link before it replaces the stored session, so a bad link never costs
+  // this device its current seat. The ref keeps StrictMode's double effect from running it twice.
+  const resumeHandled = useRef(false);
+  useEffect(() => {
+    if (resume === undefined || resumeHandled.current) return;
+    resumeHandled.current = true;
+    window.history.replaceState(null, "", window.location.pathname);
+    void (async () => {
+      try {
+        if (!resume) throw new ApiError(0, t("resume.invalid"));
+        const view = await validateSession(resume);
+        if (view) qc.setQueryData(["game", resume.gameId], view);
+        saveSession(resume);
+        setStored(resume);
+        setSession(resume);
+      } catch (e) {
+        // Deferred a tick: the Toaster mounts after App and would miss a toast from this effect.
+        setTimeout(() => toast.error(e instanceof ApiError ? e.message : t("resume.invalid")));
+      } finally {
+        setResuming(false);
+      }
+    })();
+  }, [resume, qc]);
 
   const create = async (name: string, seed: number | undefined) => {
     setCreating(true);
@@ -65,6 +94,7 @@ export function App() {
     }
   };
 
+  if (resuming) return <Loading />;
   if (!session) {
     return (
       <StartScreen

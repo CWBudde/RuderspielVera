@@ -5,6 +5,7 @@ import { Bot, Check, Copy, Crown, Loader2, Play, Share2, User } from "lucide-rea
 import { ApiError, getLobby, joinLink, startLobby, type Session } from "@/api/client";
 import { Button } from "@/components/ui/button";
 import { LanguageToggle } from "@/components/LanguageToggle";
+import { ResumeLink } from "@/components/ResumeLink";
 import { t } from "@/i18n";
 
 /**
@@ -153,6 +154,8 @@ export function LobbyScreen({
             )}
           </>
         )}
+
+        {lobby && <ResumeLink session={session} className="mt-5" />}
 
         <Button type="button" variant="outline" className="mt-3 w-full" onClick={onLeave}>
           {t("app.toStart")}

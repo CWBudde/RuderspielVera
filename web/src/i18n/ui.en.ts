@@ -100,6 +100,13 @@ export const uiEn: Record<keyof typeof uiDe, string> = {
   "lobby.botsFill_one": "A computer takes the free seat.",
   "lobby.botsFill_other": "Computers take the {count} free seats.",
   "lobby.waitingForHost": "Waiting for the start …",
+  // Resume link (continue a seat on another device)
+  "resume.button": "Continue on another device",
+  "resume.copied": "Link copied",
+  "resume.hint":
+    "Open the link on your other device. It is personal: whoever has it plays your seat, so don't share it with others.",
+  "resume.shareText": "My personal link to continue my Ruderspiel game. Don't pass it on!",
+  "resume.invalid": "This resume link is invalid.",
   // App shell
   "shell.tab.season": "Season",
   "shell.tab.team": "Team",

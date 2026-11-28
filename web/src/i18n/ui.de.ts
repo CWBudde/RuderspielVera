@@ -99,6 +99,13 @@ export const uiDe = {
   "lobby.botsFill_one": "1 freier Platz wird von einem Computer übernommen.",
   "lobby.botsFill_other": "{count} freie Plätze übernehmen Computer.",
   "lobby.waitingForHost": "Warte auf den Start …",
+  // Resume link (continue a seat on another device)
+  "resume.button": "Auf anderem Gerät weiterspielen",
+  "resume.copied": "Link kopiert",
+  "resume.hint":
+    "Öffne den Link auf deinem anderen Gerät. Er ist persönlich: Wer ihn hat, spielt auf deinem Platz – gib ihn nicht weiter.",
+  "resume.shareText": "Mein persönlicher Link zum Weiterspielen im Ruderspiel – nicht weitergeben!",
+  "resume.invalid": "Dieser Link zum Weiterspielen ist ungültig.",
   // App shell
   "shell.tab.season": "Saison",
   "shell.tab.team": "Team",

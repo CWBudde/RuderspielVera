@@ -16,6 +16,7 @@ import { ActionScreen } from "@/screens/ActionScreen";
 import { StandingsScreen } from "@/screens/StandingsScreen";
 import { t, type UiKey } from "@/i18n";
 import { LanguageToggle } from "@/components/LanguageToggle";
+import { ResumeLink } from "@/components/ResumeLink";
 import { stationName } from "@/i18n/data";
 
 export type Tab = "saison" | "team" | "aktion" | "wertung";
@@ -178,6 +179,7 @@ export function AppShell() {
             <span className="font-semibold">{t("lang.label")}</span>
             <LanguageToggle />
           </div>
+          <ResumeLink session={session} />
           <Button variant="outline" onClick={leave}>
             <LogOut /> {t("shell.toStartScreen")}
           </Button>
