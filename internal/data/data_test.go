@@ -17,8 +17,8 @@ func TestLoad(t *testing.T) {
 		t.Errorf("rowers = %d, want 55", len(d.Rowers))
 	}
 
-	if len(d.Calendar) != 52 {
-		t.Errorf("stations = %d, want 52", len(d.Calendar))
+	if len(d.Calendar) != 53 {
+		t.Errorf("stations = %d, want 53", len(d.Calendar))
 	}
 
 	if len(d.Trainers) != 10 {

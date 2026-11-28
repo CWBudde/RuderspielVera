@@ -114,16 +114,17 @@ the next 3 competitions, no stacking (docs/poc-rules.md 4.1). Season tie: shared
 
 **Competition weights.**
 
-| Competition            | Weights                                        | Races (each player max 1 entry per race)                                                                                                                           |
-| ---------------------- | ---------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Hildesheim (long)      | Ausdauer 2, Motivation 1                       | 1x and 2x for A and B, girls/boys → 8 races                                                                                                                        |
-| Ergo-Cups ×3           | Kraft 2, Motivation 1                          | single, 3 age groups × 2 genders → 6 races; no boat, no incidents, no weather                                                                                      |
-| Bremen, Schillerschule | Geschwindigkeit 1, Technik 1, Motivation 0.5   | 4 races per regatta, chosen from the 18-class matrix (1x/2x/4x × age × gender), fixed list in competitions.json, rotating so every class appears during the season |
-| Kasselregatta          | Geschwindigkeit 1, Kraft 1, Motivation 0.5     | 4 races                                                                                                                                                            |
-| Verbandsregatta I/II   | Technik 1.5, Geschwindigkeit 1, Motivation 0.5 | 4 races each                                                                                                                                                       |
-| JTFO                   | Geschwindigkeit 1, Technik 1                   | team competition: 2 players → var. C, 3 → var. B (2x+4x+2x), 4 → var. A; team score = sum of the 3 boats, one medal for the team                                   |
-| RVH-Herbstsprint       | Geschwindigkeit 2, Kraft 1                     | 1x/2x/4x per gender, ages mixed → 6 races                                                                                                                          |
-| RVB-Endspurt           | Geschwindigkeit 2, Technik 1, Motivation 0.5   | Mixed-4x (≥1 girl, ≥1 boy, ≥2 age groups) and Mixed-8x (same rule, shared identical eight, boat value 0)                                                           |
+| Competition            | Weights                                        | Races (each player max 1 entry per race)                                                                                         |
+| ---------------------- | ---------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
+| Hildesheim (long)      | Ausdauer 2, Motivation 1                       | 1x and 2x for A and B, girls/boys → 8 races                                                                                      |
+| Ergo-Cups ×3           | Kraft 2, Motivation 1                          | single, 3 age groups × 2 genders → 6 races; no boat, no incidents, no weather                                                    |
+| Bremen, Schillerschule | Geschwindigkeit 1, Technik 1, Motivation 0.5   | all 18 classes (1x/2x/4x × age × gender)                                                                                         |
+| Kasselregatta          | Geschwindigkeit 1, Kraft 1, Motivation 0.5     | all 18 classes                                                                                                                   |
+| Verbandsregatta I/II   | Technik 1.5, Geschwindigkeit 1, Motivation 0.5 | all 18 classes each                                                                                                              |
+| Bundeswettbewerb       | Geschwindigkeit 1, Technik 1, Motivation 1     | Kinder only: 1x/2x/4x × girls/boys → 6 races                                                                                     |
+| JTFO                   | Geschwindigkeit 1, Technik 1                   | team competition: 2 players → var. C, 3 → var. B (2x+4x+2x), 4 → var. A; team score = sum of the 3 boats, one medal for the team |
+| RVH-Herbstsprint       | Geschwindigkeit 2, Kraft 1                     | 1x/2x/4x per gender, ages mixed → 6 races                                                                                        |
+| RVB-Endspurt           | Geschwindigkeit 2, Technik 1, Motivation 0.5   | Mixed-4x (≥1 girl, ≥1 boy, ≥2 age groups) and Mixed-8x (same rule, shared identical eight, boat value 0)                         |
 
 A rower may start in **at most one race per regatta** (forces trade-offs with 9+ rowers). Empty races
 award nothing; a race with a single starter gives Gold only if it finishes (capsize/breakage = no medal).

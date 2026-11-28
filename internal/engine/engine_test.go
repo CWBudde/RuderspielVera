@@ -1285,8 +1285,8 @@ func TestFullSeasonSmoke(t *testing.T) {
 		g := newGame(t, seed)
 		playToEnd(t, g, seed)
 
-		if len(g.Results()) != 12 {
-			t.Fatalf("seed %d: %d competitions, want 12", seed, len(g.Results()))
+		if len(g.Results()) != 13 {
+			t.Fatalf("seed %d: %d competitions, want 13", seed, len(g.Results()))
 		}
 
 		if len(g.Winners()) == 0 {
@@ -1294,7 +1294,7 @@ func TestFullSeasonSmoke(t *testing.T) {
 		}
 
 		v := g.View("p1")
-		if v.Phase.Kind != PhaseGameOver || len(v.Winners) == 0 || v.Current != 51 {
+		if v.Phase.Kind != PhaseGameOver || len(v.Winners) == 0 || v.Current != 52 {
 			t.Fatalf("seed %d: end view %+v", seed, v.Phase)
 		}
 
@@ -1322,7 +1322,7 @@ func TestOtherPlayerCounts(t *testing.T) {
 		}
 
 		playToEnd(t, g, 11)
-		jtfo := g.Results()[9]
+		jtfo := g.Results()[10]
 
 		wantBoats := map[int]int{2: 3, 4: 3}[np]
 		if len(jtfo.Races) != wantBoats+1 {

@@ -146,7 +146,7 @@ func TestBotsNeverRejected(t *testing.T) {
 	ds := []decider{botDecider(Bauchgefuehl), botDecider(Taktiker), botDecider(Bauchgefuehl)}
 	for seed := uint64(1); seed <= uint64(seasons); seed++ {
 		g := playSeason(t, seed, ds)
-		if len(g.Results()) != 12 {
+		if len(g.Results()) != 13 {
 			t.Fatalf("seed %d: %d competitions", seed, len(g.Results()))
 		}
 	}

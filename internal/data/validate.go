@@ -430,8 +430,8 @@ func (d *Data) validateBalancing(p *problems) {
 
 // validateCalendar checks the station sequence.
 func (d *Data) validateCalendar(p *problems) {
-	if len(d.Calendar) != 52 {
-		p.addf("calendar: want 52 stations, got %d", len(d.Calendar))
+	if len(d.Calendar) != 53 {
+		p.addf("calendar: want 53 stations, got %d", len(d.Calendar))
 	}
 
 	stIDs := map[string]bool{}

@@ -13,6 +13,22 @@
     },
     "races": [
       {
+        "id": "1x-kinder-w",
+        "name": "Mädchen Einer",
+        "class": "1x",
+        "ages": ["kinder"],
+        "genders": ["w"],
+        "seats": 1
+      },
+      {
+        "id": "1x-kinder-m",
+        "name": "Jungen Einer",
+        "class": "1x",
+        "ages": ["kinder"],
+        "genders": ["m"],
+        "seats": 1
+      },
+      {
         "id": "1x-b-w",
         "name": "Juniorinnen B Einer",
         "class": "1x",
@@ -29,6 +45,86 @@
         "seats": 1
       },
       {
+        "id": "1x-a-w",
+        "name": "Juniorinnen A Einer",
+        "class": "1x",
+        "ages": ["a"],
+        "genders": ["w"],
+        "seats": 1
+      },
+      {
+        "id": "1x-a-m",
+        "name": "Junioren A Einer",
+        "class": "1x",
+        "ages": ["a"],
+        "genders": ["m"],
+        "seats": 1
+      },
+      {
+        "id": "2x-kinder-w",
+        "name": "Mädchen Zweier",
+        "class": "2x",
+        "ages": ["kinder"],
+        "genders": ["w"],
+        "seats": 2
+      },
+      {
+        "id": "2x-kinder-m",
+        "name": "Jungen Zweier",
+        "class": "2x",
+        "ages": ["kinder"],
+        "genders": ["m"],
+        "seats": 2
+      },
+      {
+        "id": "2x-b-w",
+        "name": "Juniorinnen B Zweier",
+        "class": "2x",
+        "ages": ["b", "kinder"],
+        "genders": ["w"],
+        "seats": 2
+      },
+      {
+        "id": "2x-b-m",
+        "name": "Junioren B Zweier",
+        "class": "2x",
+        "ages": ["b", "kinder"],
+        "genders": ["m"],
+        "seats": 2
+      },
+      {
+        "id": "2x-a-w",
+        "name": "Juniorinnen A Zweier",
+        "class": "2x",
+        "ages": ["a", "b"],
+        "genders": ["w"],
+        "seats": 2
+      },
+      {
+        "id": "2x-a-m",
+        "name": "Junioren A Zweier",
+        "class": "2x",
+        "ages": ["a", "b"],
+        "genders": ["m"],
+        "seats": 2
+      },
+      {
+        "id": "4x-kinder-w",
+        "name": "Mädchen Vierer",
+        "class": "4x",
+        "ages": ["kinder"],
+        "genders": ["w"],
+        "seats": 4
+      },
+      {
+        "id": "4x-kinder-m",
+        "name": "Jungen Vierer",
+        "class": "4x",
+        "ages": ["kinder"],
+        "genders": ["m"],
+        "seats": 4
+      },
+      {
         "id": "4x-b-w",
         "name": "Juniorinnen B Vierer",
         "class": "4x",
@@ -41,6 +137,22 @@
         "name": "Junioren B Vierer",
         "class": "4x",
         "ages": ["b", "kinder"],
+        "genders": ["m"],
+        "seats": 4
+      },
+      {
+        "id": "4x-a-w",
+        "name": "Juniorinnen A Vierer",
+        "class": "4x",
+        "ages": ["a", "b"],
+        "genders": ["w"],
+        "seats": 4
+      },
+      {
+        "id": "4x-a-m",
+        "name": "Junioren A Vierer",
+        "class": "4x",
+        "ages": ["a", "b"],
         "genders": ["m"],
         "seats": 4
       }
@@ -319,6 +431,54 @@
     },
     "races": [
       {
+        "id": "1x-kinder-w",
+        "name": "Mädchen Einer",
+        "class": "1x",
+        "ages": ["kinder"],
+        "genders": ["w"],
+        "seats": 1
+      },
+      {
+        "id": "1x-kinder-m",
+        "name": "Jungen Einer",
+        "class": "1x",
+        "ages": ["kinder"],
+        "genders": ["m"],
+        "seats": 1
+      },
+      {
+        "id": "1x-b-w",
+        "name": "Juniorinnen B Einer",
+        "class": "1x",
+        "ages": ["b"],
+        "genders": ["w"],
+        "seats": 1
+      },
+      {
+        "id": "1x-b-m",
+        "name": "Junioren B Einer",
+        "class": "1x",
+        "ages": ["b"],
+        "genders": ["m"],
+        "seats": 1
+      },
+      {
+        "id": "1x-a-w",
+        "name": "Juniorinnen A Einer",
+        "class": "1x",
+        "ages": ["a"],
+        "genders": ["w"],
+        "seats": 1
+      },
+      {
+        "id": "1x-a-m",
+        "name": "Junioren A Einer",
+        "class": "1x",
+        "ages": ["a"],
+        "genders": ["m"],
+        "seats": 1
+      },
+      {
         "id": "2x-kinder-w",
         "name": "Mädchen Zweier",
         "class": "2x",
@@ -333,6 +493,70 @@
         "ages": ["kinder"],
         "genders": ["m"],
         "seats": 2
+      },
+      {
+        "id": "2x-b-w",
+        "name": "Juniorinnen B Zweier",
+        "class": "2x",
+        "ages": ["b", "kinder"],
+        "genders": ["w"],
+        "seats": 2
+      },
+      {
+        "id": "2x-b-m",
+        "name": "Junioren B Zweier",
+        "class": "2x",
+        "ages": ["b", "kinder"],
+        "genders": ["m"],
+        "seats": 2
+      },
+      {
+        "id": "2x-a-w",
+        "name": "Juniorinnen A Zweier",
+        "class": "2x",
+        "ages": ["a", "b"],
+        "genders": ["w"],
+        "seats": 2
+      },
+      {
+        "id": "2x-a-m",
+        "name": "Junioren A Zweier",
+        "class": "2x",
+        "ages": ["a", "b"],
+        "genders": ["m"],
+        "seats": 2
+      },
+      {
+        "id": "4x-kinder-w",
+        "name": "Mädchen Vierer",
+        "class": "4x",
+        "ages": ["kinder"],
+        "genders": ["w"],
+        "seats": 4
+      },
+      {
+        "id": "4x-kinder-m",
+        "name": "Jungen Vierer",
+        "class": "4x",
+        "ages": ["kinder"],
+        "genders": ["m"],
+        "seats": 4
+      },
+      {
+        "id": "4x-b-w",
+        "name": "Juniorinnen B Vierer",
+        "class": "4x",
+        "ages": ["b", "kinder"],
+        "genders": ["w"],
+        "seats": 4
+      },
+      {
+        "id": "4x-b-m",
+        "name": "Junioren B Vierer",
+        "class": "4x",
+        "ages": ["b", "kinder"],
+        "genders": ["m"],
+        "seats": 4
       },
       {
         "id": "4x-a-w",
@@ -591,6 +815,38 @@
     },
     "races": [
       {
+        "id": "1x-kinder-w",
+        "name": "Mädchen Einer",
+        "class": "1x",
+        "ages": ["kinder"],
+        "genders": ["w"],
+        "seats": 1
+      },
+      {
+        "id": "1x-kinder-m",
+        "name": "Jungen Einer",
+        "class": "1x",
+        "ages": ["kinder"],
+        "genders": ["m"],
+        "seats": 1
+      },
+      {
+        "id": "1x-b-w",
+        "name": "Juniorinnen B Einer",
+        "class": "1x",
+        "ages": ["b"],
+        "genders": ["w"],
+        "seats": 1
+      },
+      {
+        "id": "1x-b-m",
+        "name": "Junioren B Einer",
+        "class": "1x",
+        "ages": ["b"],
+        "genders": ["m"],
+        "seats": 1
+      },
+      {
         "id": "1x-a-w",
         "name": "Juniorinnen A Einer",
         "class": "1x",
@@ -607,11 +863,67 @@
         "seats": 1
       },
       {
-        "id": "4x-kinder-mix",
-        "name": "Kinder Vierer (gemischt)",
+        "id": "2x-kinder-w",
+        "name": "Mädchen Zweier",
+        "class": "2x",
+        "ages": ["kinder"],
+        "genders": ["w"],
+        "seats": 2
+      },
+      {
+        "id": "2x-kinder-m",
+        "name": "Jungen Zweier",
+        "class": "2x",
+        "ages": ["kinder"],
+        "genders": ["m"],
+        "seats": 2
+      },
+      {
+        "id": "2x-b-w",
+        "name": "Juniorinnen B Zweier",
+        "class": "2x",
+        "ages": ["b", "kinder"],
+        "genders": ["w"],
+        "seats": 2
+      },
+      {
+        "id": "2x-b-m",
+        "name": "Junioren B Zweier",
+        "class": "2x",
+        "ages": ["b", "kinder"],
+        "genders": ["m"],
+        "seats": 2
+      },
+      {
+        "id": "2x-a-w",
+        "name": "Juniorinnen A Zweier",
+        "class": "2x",
+        "ages": ["a", "b"],
+        "genders": ["w"],
+        "seats": 2
+      },
+      {
+        "id": "2x-a-m",
+        "name": "Junioren A Zweier",
+        "class": "2x",
+        "ages": ["a", "b"],
+        "genders": ["m"],
+        "seats": 2
+      },
+      {
+        "id": "4x-kinder-w",
+        "name": "Mädchen Vierer",
         "class": "4x",
         "ages": ["kinder"],
-        "genders": ["w", "m"],
+        "genders": ["w"],
+        "seats": 4
+      },
+      {
+        "id": "4x-kinder-m",
+        "name": "Jungen Vierer",
+        "class": "4x",
+        "ages": ["kinder"],
+        "genders": ["m"],
         "seats": 4
       },
       {
@@ -620,6 +932,30 @@
         "class": "4x",
         "ages": ["b", "kinder"],
         "genders": ["w"],
+        "seats": 4
+      },
+      {
+        "id": "4x-b-m",
+        "name": "Junioren B Vierer",
+        "class": "4x",
+        "ages": ["b", "kinder"],
+        "genders": ["m"],
+        "seats": 4
+      },
+      {
+        "id": "4x-a-w",
+        "name": "Juniorinnen A Vierer",
+        "class": "4x",
+        "ages": ["a", "b"],
+        "genders": ["w"],
+        "seats": 4
+      },
+      {
+        "id": "4x-a-m",
+        "name": "Junioren A Vierer",
+        "class": "4x",
+        "ages": ["a", "b"],
+        "genders": ["m"],
         "seats": 4
       }
     ]
@@ -653,6 +989,54 @@
         "seats": 1
       },
       {
+        "id": "1x-b-w",
+        "name": "Juniorinnen B Einer",
+        "class": "1x",
+        "ages": ["b"],
+        "genders": ["w"],
+        "seats": 1
+      },
+      {
+        "id": "1x-b-m",
+        "name": "Junioren B Einer",
+        "class": "1x",
+        "ages": ["b"],
+        "genders": ["m"],
+        "seats": 1
+      },
+      {
+        "id": "1x-a-w",
+        "name": "Juniorinnen A Einer",
+        "class": "1x",
+        "ages": ["a"],
+        "genders": ["w"],
+        "seats": 1
+      },
+      {
+        "id": "1x-a-m",
+        "name": "Junioren A Einer",
+        "class": "1x",
+        "ages": ["a"],
+        "genders": ["m"],
+        "seats": 1
+      },
+      {
+        "id": "2x-kinder-w",
+        "name": "Mädchen Zweier",
+        "class": "2x",
+        "ages": ["kinder"],
+        "genders": ["w"],
+        "seats": 2
+      },
+      {
+        "id": "2x-kinder-m",
+        "name": "Jungen Zweier",
+        "class": "2x",
+        "ages": ["kinder"],
+        "genders": ["m"],
+        "seats": 2
+      },
+      {
         "id": "2x-b-w",
         "name": "Juniorinnen B Zweier",
         "class": "2x",
@@ -667,20 +1051,7 @@
         "ages": ["b", "kinder"],
         "genders": ["m"],
         "seats": 2
-      }
-    ]
-  },
-  "vr2": {
-    "name": "Verbandsregatta II",
-    "kind": "regatta",
-    "venue": "Maschsee, Hannover",
-    "water": true,
-    "weights": {
-      "geschwindigkeit": 1,
-      "motivation": 1,
-      "technik": 1.5
-    },
-    "races": [
+      },
       {
         "id": "2x-a-w",
         "name": "Juniorinnen A Zweier",
@@ -698,6 +1069,30 @@
         "seats": 2
       },
       {
+        "id": "4x-kinder-w",
+        "name": "Mädchen Vierer",
+        "class": "4x",
+        "ages": ["kinder"],
+        "genders": ["w"],
+        "seats": 4
+      },
+      {
+        "id": "4x-kinder-m",
+        "name": "Jungen Vierer",
+        "class": "4x",
+        "ages": ["kinder"],
+        "genders": ["m"],
+        "seats": 4
+      },
+      {
+        "id": "4x-b-w",
+        "name": "Juniorinnen B Vierer",
+        "class": "4x",
+        "ages": ["b", "kinder"],
+        "genders": ["w"],
+        "seats": 4
+      },
+      {
         "id": "4x-b-m",
         "name": "Junioren B Vierer",
         "class": "4x",
@@ -706,12 +1101,240 @@
         "seats": 4
       },
       {
+        "id": "4x-a-w",
+        "name": "Juniorinnen A Vierer",
+        "class": "4x",
+        "ages": ["a", "b"],
+        "genders": ["w"],
+        "seats": 4
+      },
+      {
+        "id": "4x-a-m",
+        "name": "Junioren A Vierer",
+        "class": "4x",
+        "ages": ["a", "b"],
+        "genders": ["m"],
+        "seats": 4
+      }
+    ]
+  },
+  "bw": {
+    "name": "Bundeswettbewerb",
+    "kind": "regatta",
+    "distance": 1000,
+    "water": true,
+    "guestOffset": 2.5,
+    "weights": {
+      "geschwindigkeit": 1,
+      "motivation": 1,
+      "technik": 1
+    },
+    "notes": ["Nur Kinder dürfen starten."],
+    "races": [
+      {
         "id": "1x-kinder-w",
         "name": "Mädchen Einer",
         "class": "1x",
         "ages": ["kinder"],
         "genders": ["w"],
         "seats": 1
+      },
+      {
+        "id": "1x-kinder-m",
+        "name": "Jungen Einer",
+        "class": "1x",
+        "ages": ["kinder"],
+        "genders": ["m"],
+        "seats": 1
+      },
+      {
+        "id": "2x-kinder-w",
+        "name": "Mädchen Zweier",
+        "class": "2x",
+        "ages": ["kinder"],
+        "genders": ["w"],
+        "seats": 2
+      },
+      {
+        "id": "2x-kinder-m",
+        "name": "Jungen Zweier",
+        "class": "2x",
+        "ages": ["kinder"],
+        "genders": ["m"],
+        "seats": 2
+      },
+      {
+        "id": "4x-kinder-w",
+        "name": "Mädchen Vierer",
+        "class": "4x",
+        "ages": ["kinder"],
+        "genders": ["w"],
+        "seats": 4
+      },
+      {
+        "id": "4x-kinder-m",
+        "name": "Jungen Vierer",
+        "class": "4x",
+        "ages": ["kinder"],
+        "genders": ["m"],
+        "seats": 4
+      }
+    ]
+  },
+  "vr2": {
+    "name": "Verbandsregatta II",
+    "kind": "regatta",
+    "venue": "Maschsee, Hannover",
+    "water": true,
+    "weights": {
+      "geschwindigkeit": 1,
+      "motivation": 1,
+      "technik": 1.5
+    },
+    "races": [
+      {
+        "id": "1x-kinder-w",
+        "name": "Mädchen Einer",
+        "class": "1x",
+        "ages": ["kinder"],
+        "genders": ["w"],
+        "seats": 1
+      },
+      {
+        "id": "1x-kinder-m",
+        "name": "Jungen Einer",
+        "class": "1x",
+        "ages": ["kinder"],
+        "genders": ["m"],
+        "seats": 1
+      },
+      {
+        "id": "1x-b-w",
+        "name": "Juniorinnen B Einer",
+        "class": "1x",
+        "ages": ["b"],
+        "genders": ["w"],
+        "seats": 1
+      },
+      {
+        "id": "1x-b-m",
+        "name": "Junioren B Einer",
+        "class": "1x",
+        "ages": ["b"],
+        "genders": ["m"],
+        "seats": 1
+      },
+      {
+        "id": "1x-a-w",
+        "name": "Juniorinnen A Einer",
+        "class": "1x",
+        "ages": ["a"],
+        "genders": ["w"],
+        "seats": 1
+      },
+      {
+        "id": "1x-a-m",
+        "name": "Junioren A Einer",
+        "class": "1x",
+        "ages": ["a"],
+        "genders": ["m"],
+        "seats": 1
+      },
+      {
+        "id": "2x-kinder-w",
+        "name": "Mädchen Zweier",
+        "class": "2x",
+        "ages": ["kinder"],
+        "genders": ["w"],
+        "seats": 2
+      },
+      {
+        "id": "2x-kinder-m",
+        "name": "Jungen Zweier",
+        "class": "2x",
+        "ages": ["kinder"],
+        "genders": ["m"],
+        "seats": 2
+      },
+      {
+        "id": "2x-b-w",
+        "name": "Juniorinnen B Zweier",
+        "class": "2x",
+        "ages": ["b", "kinder"],
+        "genders": ["w"],
+        "seats": 2
+      },
+      {
+        "id": "2x-b-m",
+        "name": "Junioren B Zweier",
+        "class": "2x",
+        "ages": ["b", "kinder"],
+        "genders": ["m"],
+        "seats": 2
+      },
+      {
+        "id": "2x-a-w",
+        "name": "Juniorinnen A Zweier",
+        "class": "2x",
+        "ages": ["a", "b"],
+        "genders": ["w"],
+        "seats": 2
+      },
+      {
+        "id": "2x-a-m",
+        "name": "Junioren A Zweier",
+        "class": "2x",
+        "ages": ["a", "b"],
+        "genders": ["m"],
+        "seats": 2
+      },
+      {
+        "id": "4x-kinder-w",
+        "name": "Mädchen Vierer",
+        "class": "4x",
+        "ages": ["kinder"],
+        "genders": ["w"],
+        "seats": 4
+      },
+      {
+        "id": "4x-kinder-m",
+        "name": "Jungen Vierer",
+        "class": "4x",
+        "ages": ["kinder"],
+        "genders": ["m"],
+        "seats": 4
+      },
+      {
+        "id": "4x-b-w",
+        "name": "Juniorinnen B Vierer",
+        "class": "4x",
+        "ages": ["b", "kinder"],
+        "genders": ["w"],
+        "seats": 4
+      },
+      {
+        "id": "4x-b-m",
+        "name": "Junioren B Vierer",
+        "class": "4x",
+        "ages": ["b", "kinder"],
+        "genders": ["m"],
+        "seats": 4
+      },
+      {
+        "id": "4x-a-w",
+        "name": "Juniorinnen A Vierer",
+        "class": "4x",
+        "ages": ["a", "b"],
+        "genders": ["w"],
+        "seats": 4
+      },
+      {
+        "id": "4x-a-m",
+        "name": "Junioren A Vierer",
+        "class": "4x",
+        "ages": ["a", "b"],
+        "genders": ["m"],
+        "seats": 4
       }
     ]
   }

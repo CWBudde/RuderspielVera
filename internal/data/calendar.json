@@ -195,6 +195,14 @@
     "competition": "vr1",
     "info": "Technik zählt besonders."
   },
+  {
+    "id": "s7-bw",
+    "section": 7,
+    "type": "regatta",
+    "name": "Bundeswettbewerb",
+    "competition": "bw",
+    "info": "Nur Kinder starten."
+  },
 
   { "id": "s8-event", "section": 8, "type": "event", "name": "Event", "info": "Eventkarten für einzelne Ruderer." },
   {
