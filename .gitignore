@@ -3,7 +3,7 @@
 node_modules/
 web/dist/
 art/gen/
-.claude/skills/gfx-imagegen/bin/
+.claude/skills/gfx-imagegen/
 .playwright-mcp/
 *.log
 /reference-rowers/
