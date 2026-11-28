@@ -386,7 +386,7 @@ export const TRAINERS: TrainerView[] = [
     id: "tr-friedjof",
     mood: 0,
     moodTrend: 0,
-    name: "Friedjof",
+    name: "Fridtjof",
     ability: "Ruhige Hand",
     artKey: "trainer-m",
     description: "Bei normalem Wetter +3 pro Boot.",

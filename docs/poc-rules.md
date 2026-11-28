@@ -105,7 +105,7 @@ pass (section 10) so that a trainer matters against crew scores.
 | Julian     | Ergo-Spezialist      | Ergo-Cups +8 per start, Hitze −6                          |
 | Aron       | Sprintcoach          | Sprint regattas (RVH, RVB) +8, Wind −6                    |
 | Salim      | Langstreckenprofi    | Long distance (Hildesheim) +10, Regen −6                  |
-| Friedjof   | Gewohnheitstier      | Normal weather +8, Kälte −8                               |
+| Fridtjof   | Gewohnheitstier      | Normal weather +8, Kälte −8                               |
 | Josef      | Nordlicht            | Wind +6, Regen +6, Hitze −12                              |
 | Clara      | Schönwettertrainerin | Hitze +6, Normal +6, Wind −8                              |
 

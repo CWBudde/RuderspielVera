@@ -491,9 +491,9 @@ Insgesamt ergeben die drei Listen 55 Einträge, entsprechend dem handschriftlich
 
 ### 14.4 Trainer (10 Einträge)
 
-Frau Linke, Herr Sack, Hannah, Caro, Julian, Aron, Salim, Friedjof, Josef, Clara.
+Frau Linke, Herr Sack, Hannah, Caro, Julian, Aron, Salim, Fridtjof, Josef, Clara.
 
-Insbesondere Friedjof und weitere ähnlich klingende Namen bitte vor dem Kartendruck bestätigen. Sämtliche individuellen Trainerfähigkeiten sind noch zu definieren.
+Die Schreibweise „Fridtjof“ ist bestätigt; weitere ähnlich klingende Namen bitte vor dem Kartendruck bestätigen. Sämtliche individuellen Trainerfähigkeiten sind noch zu definieren.
 
 ### 14.5 Boote
 
