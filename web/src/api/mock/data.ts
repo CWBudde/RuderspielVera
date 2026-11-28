@@ -317,7 +317,7 @@ export const TRAINERS: TrainerView[] = [
     id: "tr-linke",
     mood: 0,
     moodTrend: 0,
-    name: "Frau Linke",
+    name: "Frau Lincke",
     ability: "Regenjacke",
     artKey: "trainer-w",
     description: "Bei Regen +4 pro Boot, bei Wind −3.",

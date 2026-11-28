@@ -427,7 +427,7 @@ func TestTrainerAgeBonus(t *testing.T) {
 
 	f := g.d.Rules.TrainerAgeScale(1)
 	if got, want := ageBonus("frau-linke"), 3*f; got != want { // one Kind
-		t.Errorf("Frau Linke: %d, want %d", got, want)
+		t.Errorf("Frau Lincke: %d, want %d", got, want)
 	}
 
 	if got, want := ageBonus("herr-sack"), 3*2*f; got != want { // two A + one B junior

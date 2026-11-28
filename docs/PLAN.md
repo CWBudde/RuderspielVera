@@ -130,7 +130,7 @@ award nothing; a race with a single starter gives Gold only if it finishes (caps
 
 **Weather and trainer order.** Weather (d6 per §8) is revealed **before** trainer choice and lineup, so
 trainer choice is the strategic reaction §7.1 describes. Each trainer has 1–2 weather effects per boat
-(e.g. Herr Sack: Hitze +5, Regen −5; Frau Linke: Regen +4, Wind −3; Caro: Wind +5, Kälte −2; …) and
+(e.g. Herr Sack: Hitze +5, Regen −5; Frau Lincke: Regen +4, Wind −3; Caro: Wind +5, Kälte −2; …) and
 some have a non-weather ability (Ergo +3 per entry; Sprint +2 per boat; Langstrecke +3). All 10 defined
 in trainers.json. Trainers apply once per boat / ergo entry.
 
